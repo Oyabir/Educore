@@ -1,0 +1,162 @@
+{% extends "platformTK/Prof/HomeBase.html" %}
+
+{% load static %}
+
+{% block content %}
+    {% include 'platformTK/Prof/navbar.html' %}
+
+    <div class="container-xxl py-5">
+        <div class="row">
+            <!-- Group Information -->
+            <div class="col-lg-6 mb-4">
+                <div class="card group-info-card">
+                    <div class="card-body">
+                        <h2 class="card-title">Concours de Dessin</h2>
+                        <p><strong>Date:</strong> 12/01/2023</p>
+                        <p><strong>Lieu:</strong> Takouine Smart Center</p>
+                        <p><strong>Participants:</strong> 50</p>
+                        <a href="{% url "Répartition_points" %}" class="btn btn-primary rounded-pill py-sm-3 px-sm-5 me-3 animated slideInLeft">Répartition des points</a>
+                        {% comment %} <a href="" class="btn btn-dark rounded-pill py-sm-3 px-sm-5 animated slideInRight">Recompation</a> {% endcomment %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Students List -->
+            <div class="col-lg-6 mb-4">
+                <div class="card students-list-card">
+                    <div class="card-body">
+                        <h2 class="card-title">Students in this Group</h2>
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Phone Number</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% comment %} {% for student in students %} {% endcomment %}
+                                    <tr>
+                                        <td>1</td>
+                                        <td>Name</td>
+                                        <td>email@gmail.com</td>
+                                        <td>0688888888</td>
+                                    </tr>
+                                    <tr>
+                                        <td>1</td>
+                                        <td>Name</td>
+                                        <td>email@gmail.com</td>
+                                        <td>0688888888</td>
+                                    </tr>
+                                    <tr>
+                                        <td>1</td>
+                                        <td>Name</td>
+                                        <td>email@gmail.com</td>
+                                        <td>0688888888</td>
+                                    </tr><tr>
+                                        <td>1</td>
+                                        <td>Name</td>
+                                        <td>email@gmail.com</td>
+                                        <td>0688888888</td>
+                                    </tr><tr>
+                                        <td>1</td>
+                                        <td>Name</td>
+                                        <td>email@gmail.com</td>
+                                        <td>0688888888</td>
+                                    </tr>
+                                {% comment %} {% empty %}
+                                    <tr>
+                                        <td colspan="4" class="text-center">No students found.</td>
+                                    </tr>
+                                {% endfor %} {% endcomment %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+
+<style>
+    /* General Body Styling */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
+    color: #212529;
+    margin: 0;
+    padding: 0;
+}
+
+/* Card Styling */
+.card {
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border: 1px solid #ced4da;
+}
+
+/* Group Info Card */
+.group-info-card {
+    padding: 20px;
+}
+
+.group-info-card .card-title {
+    color: #00796b;
+    border-bottom: 2px solid #00796b;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+/* Students List Card */
+.students-list-card {
+    padding: 20px;
+}
+
+.students-list-card .card-title {
+    color: #00796b;
+    border-bottom: 2px solid #00796b;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+/* Table Styling */
+.table {
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.table thead th {
+    background-color: #00796b;
+    color: #ffffff;
+    font-weight: bold;
+}
+
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: #f1f1f1;
+}
+
+.table td, .table th {
+    padding: 12px;
+    vertical-align: middle;
+    text-align: center;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .card {
+        padding: 15px;
+    }
+
+    .table td, .table th {
+        padding: 10px;
+    }
+}
+
+</style>

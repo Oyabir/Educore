@@ -1,0 +1,54 @@
+{% extends "platformTK/Prof/HomeBase.html" %}
+
+{% load static %}
+
+{% block content %}
+    {% include 'platformTK/Prof/navbar.html' %}
+    
+    <div class="container-xxl py-5">
+        <div class="row justify-content-center">
+        
+            <!-- Competitions Table -->
+            <div class="col-lg-12 mb-4">
+                <div class="table-wrapper">
+                    <h2 class="table-title">Groupes</h2>
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Nom</th>
+                                <th>Date</th>
+                                <th>Lieu</th>
+                                <th>Participants</th>
+                                <th>ALL</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td>Compétition de Mathématiques</td>
+                                <td>2024-09-15</td>
+                                <td>École Primaire</td>
+                                <td>50</td>
+                                <td><a href="{% url "group_detail" %}">Show</a></td>
+                            </tr>
+                            <tr>
+                                <td>2</td>
+                                <td>Concours de Dessin</td>
+                                <td>2024-10-05</td>
+                                <td>Centre Culturel</td>
+                                <td>50</td>
+                                <td><a href="{% url "group_detail" %}">Show</a></td>
+                            </tr>
+                            <!-- Add more rows as needed -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+
+  
+{% endblock  %}

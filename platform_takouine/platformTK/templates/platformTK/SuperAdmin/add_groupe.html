@@ -1,0 +1,271 @@
+{% extends "platformTK/SuperAdmin/HomeBase.html" %}
+
+{% load static %}
+
+{% block content %}
+{% include 'platformTK/SuperAdmin/navbar.html' %}
+
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-center">Groups</h2>
+        <button class="btn btn-primary" onclick="openModal()" style="background-color: #fe5d37;">Add New Group</button>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>Group Name</th>
+                    <th>Description</th>
+                    <th>Members</th>
+                    <th>Code Group</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for group in groups %}
+                <tr>
+                    <td>{{ group.name }}</td>
+                    <td>{{ group.description }}</td>
+                    <td>{{ group.etudiants.count }}</td>
+                    <td>{{ group.code_group }}</td>
+                    <td>
+                        <button class="btn btn-warning btn-sm">Edit</button>
+                        <button class="btn btn-danger btn-sm">Delete</button>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" class="text-center">No groups found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+
+<!-- Modal -->
+<div id="groupModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2>Add New Group</h2>
+        </div>
+        <div class="modal-body">
+            <form action="{% url "group_list" %}" method="POST">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="groupName" class="form-label">Group Name</label>
+                    <input type="text" class="form-control" id="groupName" name="group_name" required>
+                </div>
+                <div class="mb-3">
+                    <label for="description" class="form-label">Description</label>
+                    <textarea class="form-control" id="description" name="description" rows="1" required></textarea>
+                </div>
+                <div class="mb-3">
+                    <label for="studentSearch" class="form-label">Search Students</label>
+                    <input type="text" class="form-control" id="studentSearch" placeholder="Search students..." onkeyup="filterOptions('studentSearch', 'students')">
+                    <select multiple class="form-control mt-2" id="students" name="students">
+                        {% for etudiant in etudiants %}
+                        <option value="{{ etudiant.id }}">{{ etudiant.prenom }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="profSearch" class="form-label">Search Professors</label>
+                    <input type="text" class="form-control" id="profSearch" placeholder="Search professors..." onkeyup="filterOptions('profSearch', 'profs')">
+                    <select multiple class="form-control mt-2" id="profs" name="profs">
+                        {% for prof in profs %}
+                        <option value="{{ prof.id }}">{{ prof.prenom }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="text-center">
+                    <button type="submit" class="btn btn-primary">Add Group</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+<script>
+    function filterOptions(searchId, selectId) {
+        var input, filter, select, options, option, i;
+        input = document.getElementById(searchId);
+        filter = input.value.toLowerCase();
+        select = document.getElementById(selectId);
+        options = select.getElementsByTagName('option');
+        
+        for (i = 0; i < options.length; i++) {
+            option = options[i];
+            if (option.textContent.toLowerCase().indexOf(filter) > -1) {
+                option.style.display = "";
+            } else {
+                option.style.display = "none";
+            }
+        }
+    }
+</script>
+
+
+
+
+<style>
+    .container {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    .table {
+        margin-top: 20px;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .table-striped tbody tr:nth-of-type(odd) {
+        background-color: #f9f9f9;
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: #e1f5fe;
+    }
+
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1050;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgba(0, 0, 0, 0.5);
+        padding-top: 60px;
+        animation: fadeIn 0.3s;
+    }
+
+    .modal-content {
+        background-color: #ffffff;
+        margin: 5% auto;
+        padding: 20px;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        width: 80%;
+        max-width: 500px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+        animation: slideIn 0.5s;
+        position: relative;
+    }
+
+    .modal-header {
+        background-color: #fe5d37;
+        color: #ffffff;
+        border-bottom: 1px solid #e5e5e5;
+        padding: 15px;
+        border-radius: 10px 10px 0 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .modal-title {
+        font-size: 24px;
+    }
+
+    .close {
+        color: #ffffff;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer;
+        transition: color 0.3s;
+    }
+
+    .close:hover {
+        color: #ffccbc;
+    }
+
+    .btn-primary {
+        background-color: #007bff;
+        border: none;
+        border-radius: 5px;
+        padding: 10px 20px;
+        transition: background-color 0.3s;
+    }
+
+    .btn-primary:hover {
+        background-color: #0056b3;
+    }
+
+    .btn-success {
+        background-color: #28a745;
+        border: none;
+        border-radius: 5px;
+        padding: 10px 20px;
+        transition: background-color 0.3s;
+    }
+
+    .btn-success:hover {
+        background-color: #218838;
+    }
+
+    .btn-warning {
+        background-color: #ffc107;
+        border: none;
+        border-radius: 5px;
+        padding: 10px 20px;
+        transition: background-color 0.3s;
+        color: #212529;
+    }
+
+    .btn-warning:hover {
+        background-color: #e0a800;
+    }
+
+    .btn-danger {
+        background-color: #dc3545;
+        border: none;
+        border-radius: 5px;
+        padding: 10px 20px;
+        transition: background-color 0.3s;
+    }
+
+    .btn-danger:hover {
+        background-color: #c82333;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @keyframes slideIn {
+        from { transform: translateY(-20px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+</style>
+
+<script>
+    function openModal() {
+        document.getElementById("groupModal").style.display = "block";
+    }
+
+    function closeModal() {
+        document.getElementById("groupModal").style.display = "none";
+    }
+
+    // Close modal when clicking outside of it
+    window.onclick = function(event) {
+        if (event.target == document.getElementById("groupModal")) {
+            closeModal();
+        }
+    }
+</script>
+
+{% endblock %}
