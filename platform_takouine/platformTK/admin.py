@@ -22,7 +22,7 @@ class ProfAdmin(admin.ModelAdmin):
 
 
 
-@admin.register(Group)
+@admin.register(Groups)
 class GroupAdmin(admin.ModelAdmin):
     list_display = ('name',)
     filter_horizontal = ('etudiants', 'profs')

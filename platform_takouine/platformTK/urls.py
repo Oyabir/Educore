@@ -7,7 +7,6 @@ urlpatterns = [
     path('', views.home, name='home'),
     path('login/', views.login, name='login'),
 
-    
     path('homeProf/', views.homeProf, name='homeProf'),
 
     path('Groupes/', views.Groupes, name='Groupes'),
@@ -24,6 +23,9 @@ urlpatterns = [
     
     path('add_student/', views.add_student, name='add_student'),
     path('add_etudiant/', views.add_etudiant, name='add_etudiant'),
+    
+    path('add_students_from_file/', views.add_students_from_file, name='add_students_from_file'),
+
 
 
 

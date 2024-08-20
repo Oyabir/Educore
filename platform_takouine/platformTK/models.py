@@ -70,7 +70,7 @@ def generate_group_code():
 
 
 
-class Group(models.Model):
+class Groups(models.Model):
     name = models.CharField(max_length=100)
     description = models.CharField(max_length=300)
     code_group = models.CharField(max_length=100, unique=True, blank=True, editable=False)

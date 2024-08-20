@@ -6,9 +6,41 @@
 {% include 'platformTK/SuperAdmin/navbar.html' %}
 
 <div class="container mt-5">
+    {% if messages %}
+	{% for message in messages %}
+	  {% if message.tags == 'error' %}
+		<div class="alert alert-danger" role="alert">
+		  {{ message }}
+		</div>
+	  {% endif %}
+	{% endfor %}
+	{% endif %}
+
+	{% if messages %}
+  {% for message in messages %}
+      {% if message.tags == 'success' %}
+        <div class="alert alert-success" role="alert">
+          {{ message }}
+        </div>
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+	
+  
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="text-center">Etudiants</h2>
         <button class="btn btn-primary" onclick="openModal()" style="background-color: #fe5d37;">Add Etudiant</button>
+        {% if error %}
+        <p style="color: red;">{{ error }}</p>
+    {% endif %}
+    <form action="{% url 'add_students_from_file' %}" method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div>
+            <label for="file">Choose a CSV or Excel file:</label>
+            <input type="file" id="file" name="file" accept=".csv, .xlsx" required>
+        </div>
+        <button type="submit">Upload</button>
+    </form>
     </div>
     <div class="table-responsive">
         <table class="table table-striped table-hover">

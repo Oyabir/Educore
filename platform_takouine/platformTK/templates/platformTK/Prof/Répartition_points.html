@@ -9,8 +9,8 @@
         <div class="container-xxl py-5">
             <div class="container">
                 <div class="text-center mx-auto mb-5 wow fadeInUp" data-wow-delay="0.1s" style="max-width: 600px;">
-                    <h1 class="mb-3">School Classes</h1>
-                    <p>Eirmod sed ipsum dolor sit rebum labore magna erat. Tempor ut dolore lorem kasd vero ipsum sit eirmod sit. Ipsum diam justo sed rebum vero dolor duo.</p>
+                    <h1 class="mb-3">Students of Groupe GG11</h1>
+                    {% comment %} <p>Eirmod sed ipsum dolor sit rebum labore magna erat. Tempor ut dolore lorem kasd vero ipsum sit eirmod sit. Ipsum diam justo sed rebum vero dolor duo.</p> {% endcomment %}
                 </div>
                 <div class="row g-4">
                     <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
@@ -19,114 +19,674 @@
                                 <img class="img-fluid rounded-circle" src="img/classes-1.jpg" alt="">
                             </div>
                             <div class="bg-light rounded p-4 pt-5 mt-n5">
-                                <a class="d-block text-center h3 mt-3 mb-4" href="">Art & Drawing</a>
+                                <a class="d-block text-center h3 mt-3 mb-4" href="">Mohamed Guessoum</a>
                                 <div class="d-flex align-items-center justify-content-between mb-4">
                                     <div class="d-flex align-items-center">
-                                        <img class="rounded-circle flex-shrink-0" src="img/user.jpg" alt="" style="width: 45px; height: 45px;">
+                                        {% comment %} <img class="rounded-circle flex-shrink-0" src="{% static 'img/user.jpg' %}" alt="" style="width: 70px;height: 70px;margin-left: 36px;"> {% endcomment %}
+                                        <img class="rounded-circle flex-shrink-0" src="{% static 'img/user.jpg' %}" alt="" style="width: 55px;height: 55px;">
                                         <div class="ms-3">
-                                            <h6 class="text-primary mb-1">Jhon Doe</h6>
-                                            <small>Teacher</small>
-                                        </div>
+                                            <h6 class="text-primary mb-1">Mohamed Guessoum</h6>
+                                            <small>GG11</small>
+                                        </div> 
                                     </div>
                                     <span class="bg-primary text-white rounded-pill py-2 px-3" href="">$99</span>
                                 </div>
                                 <div class="row g-1">
                                     <div class="col-4">
                                         <div class="border-top border-3 border-primary pt-2">
-                                            <h6 class="text-primary mb-1">Age:</h6>
-                                            <small>3-5 Years</small>
+                                            <h6 class="text-primary mb-1">Add:</h6>
+                                            <small> 
+                                                <button type="button" class="bg-primary text-white rounded-pill py-2 px-3" data-bs-toggle="modal" data-bs-target="#addItemModal">Add</button> 
+                                            </small>
+                                            {% comment %} <small><span class="bg-primary text-white rounded-pill py-2 px-3" href="">Add</span></small> {% endcomment %}
                                         </div>
                                     </div>
                                     <div class="col-4">
-                                        <div class="border-top border-3 border-success pt-2">
+                                        {% comment %} <div class="border-top border-3 border-success pt-2">
                                             <h6 class="text-success mb-1">Time:</h6>
                                             <small>9-10 AM</small>
-                                        </div>
+                                        </div> {% endcomment %}
                                     </div>
                                     <div class="col-4">
                                         <div class="border-top border-3 border-warning pt-2">
-                                            <h6 class="text-warning mb-1">Capacity:</h6>
-                                            <small>30 Kids</small>
+                                            <h6 class="text-warning mb-1">Minus:</h6>
+                                            <small>
+                                                <a href="#" data-bs-toggle="modal" data-bs-target="#minusItemModal">
+                                                    <button class="bg-primary text-white rounded-pill py-2 px-3">Minus</button>
+                                                </a>
+                                            </small>                                       
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.3s">
-                        <div class="classes-item">
-                            <div class="bg-light rounded-circle w-75 mx-auto p-3">
-                                <img class="img-fluid rounded-circle" src="img/classes-2.jpg" alt="">
-                            </div>
-                            <div class="bg-light rounded p-4 pt-5 mt-n5">
-                                <a class="d-block text-center h3 mt-3 mb-4" href="">Color Management</a>
-                                <div class="d-flex align-items-center justify-content-between mb-4">
-                                    <div class="d-flex align-items-center">
-                                        <img class="rounded-circle flex-shrink-0" src="img/user.jpg" alt="" style="width: 45px; height: 45px;">
-                                        <div class="ms-3">
-                                            <h6 class="text-primary mb-1">Jhon Doe</h6>
-                                            <small>Teacher</small>
-                                        </div>
-                                    </div>
-                                    <span class="bg-primary text-white rounded-pill py-2 px-3" href="">$99</span>
+
+
+                <!-- Add Item Modal -->
+            <div id="addItemModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="addItemModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="addItemModalLabel">Select Amount to Add</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <form>
+                                <div class="mb-3">
+                                    <label for="dropdownAmount" class="form-label">Choose an amount</label>
+                                    <select class="form-select" id="dropdownAmount" aria-label="Amount select">
+                                        <option selected>Select an amount</option>
+                                        <option value="1">1$</option>
+                                        <option value="5">5$</option>
+                                        <option value="10">10$</option>
+                                    </select>
                                 </div>
-                                <div class="row g-1">
-                                    <div class="col-4">
-                                        <div class="border-top border-3 border-primary pt-2">
-                                            <h6 class="text-primary mb-1">Age:</h6>
-                                            <small>3-5 Years</small>
-                                        </div>
-                                    </div>
-                                    <div class="col-4">
-                                        <div class="border-top border-3 border-success pt-2">
-                                            <h6 class="text-success mb-1">Time:</h6>
-                                            <small>9-10 AM</small>
-                                        </div>
-                                    </div>
-                                    <div class="col-4">
-                                        <div class="border-top border-3 border-warning pt-2">
-                                            <h6 class="text-warning mb-1">Capacity:</h6>
-                                            <small>30 Kids</small>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                            </form>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-primary" onclick="triggerAnimation()">Save changes</button>
                         </div>
                     </div>
-                    <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.5s">
+                </div>
+            </div>
+
+            <!-- Winning Animation -->
+            <div id="winAnimation" class="win-animation d-none">
+                <div class="animation-container">
+                    <div class="trophy-icon">🏆</div>
+                    <div class="confetti-container">
+                        <div class="confetti-emoji">
+                            <span>🎉</span>
+                            <span>🎉</span>
+                            <span>🎉</span>
+                        </div>
+                        <div class="confetti">
+                            <div class="confetti-piece"></div>
+                            <div class="confetti-piece"></div>
+                            <div class="confetti-piece"></div>
+                            <div class="confetti-piece"></div>
+                            <div class="confetti-piece"></div>
+                        </div>
+                    </div>
+                    <div class="stars">
+                        <div class="star"></div>
+                        <div class="star"></div>
+                        <div class="star"></div>
+                        <div class="star"></div>
+                        <div class="star"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Winning Sound -->
+            <audio id="winningSound" src="{% static 'mixkit-small-group-moderate-applause-505.wav' %}" preload="auto"></audio>
+
+
+                    <style>
+                        .win-animation {
+                            position: fixed;
+                            top: 50%;
+                            left: 50%;
+                            transform: translate(-50%, -50%);
+                            text-align: center;
+                            width: 300px;
+                            z-index: 1055; /* Higher than modal */
+                            background: rgba(255, 255, 255, 0.95); /* Slightly opaque background */
+                            padding: 20px;
+                            border-radius: 15px;
+                            box-shadow: 0 0 25px rgba(0, 0, 0, 0.5);
+                            animation: fadeIn 0.5s ease-out;
+                            overflow: hidden; /* Hide overflowing elements */
+                        }
+                        
+                        .animation-container {
+                            position: relative;
+                            height: 300px; /* Ensure the container is tall enough to accommodate falling elements */
+                        }
+                        
+                        .trophy-icon {
+                            font-size: 6rem;
+                            color: gold;
+                            animation: sparkle 2s ease-in-out infinite;
+                        }
+                        
+                        .confetti-container {
+                            position: absolute;
+                            top: 20%;
+                            left: 50%;
+                            transform: translateX(-50%);
+                            width: 100%;
+                            height: 100%;
+                            overflow: hidden;
+                        }
+                        
+                        .confetti-emoji {
+                            display: flex;
+                            justify-content: center;
+                            position: absolute;
+                            transform: translateX(-50%);
+                            font-size: 3rem;
+                            animation: emojiMove 3s linear infinite;
+                        }
+                        
+                        .confetti-emoji span {
+                            display: inline-block;
+                            margin: 0 10px; /* Space between emojis */
+                        }
+                        
+                        .confetti {
+                            position: absolute;
+                            width: 100%;
+                            height: 100%;
+                            overflow: hidden;
+                            top: 0;
+                            left: 0;
+                        }
+                        
+                        .confetti-piece {
+                            position: absolute;
+                            width: 10px;
+                            height: 10px;
+                            background-color: #f00;
+                            opacity: 0.8;
+                            animation: confetti 3s linear infinite;
+                        }
+                        
+                        .confetti-piece:nth-child(1) {
+                            background-color: #ff0;
+                            left: 10%;
+                            animation-delay: 0s;
+                        }
+                        
+                        .confetti-piece:nth-child(2) {
+                            background-color: #0f0;
+                            left: 30%;
+                            animation-delay: 0.2s;
+                        }
+                        
+                        .confetti-piece:nth-child(3) {
+                            background-color: #00f;
+                            left: 50%;
+                            animation-delay: 0.4s;
+                        }
+                        
+                        .confetti-piece:nth-child(4) {
+                            background-color: #f0f;
+                            left: 70%;
+                            animation-delay: 0.6s;
+                        }
+                        
+                        .confetti-piece:nth-child(5) {
+                            background-color: #0ff;
+                            left: 90%;
+                            animation-delay: 0.8s;
+                        }
+                        
+                        .stars {
+                            position: absolute;
+                            top: 0;
+                            left: 0;
+                            width: 100%;
+                            height: 100%;
+                            overflow: hidden;
+                        }
+                        
+                        .star {
+                            position: absolute;
+                            width: 15px;
+                            height: 15px;
+                            background: radial-gradient(circle, #fff, transparent);
+                            border-radius: 50%;
+                            box-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
+                            animation: starFall 5s linear infinite;
+                        }
+                        
+                        .star:nth-child(1) {
+                            top: 10%;
+                            left: 10%;
+                            animation-delay: 0s;
+                        }
+                        
+                        .star:nth-child(2) {
+                            top: 20%;
+                            left: 30%;
+                            animation-delay: 1s;
+                        }
+                        
+                        .star:nth-child(3) {
+                            top: 40%;
+                            left: 50%;
+                            animation-delay: 2s;
+                        }
+                        
+                        .star:nth-child(4) {
+                            top: 60%;
+                            left: 70%;
+                            animation-delay: 3s;
+                        }
+                        
+                        .star:nth-child(5) {
+                            top: 80%;
+                            left: 90%;
+                            animation-delay: 4s;
+                        }
+                        
+                        .d-none {
+                            display: none;
+                        }
+                        
+                        @keyframes fadeIn {
+                            from { opacity: 0; }
+                            to { opacity: 1; }
+                        }
+                        
+                        @keyframes sparkle {
+                            0%, 100% {
+                                text-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+                            }
+                            50% {
+                                text-shadow: 0 0 30px rgba(255, 215, 0, 1);
+                            }
+                        }
+                        
+                        @keyframes confetti {
+                            0% {
+                                transform: translateY(-1000px) rotate(0deg);
+                            }
+                            100% {
+                                transform: translateY(1000px) rotate(360deg);
+                            }
+                        }
+                        
+                        @keyframes emojiMove {
+                            0% {
+                                transform: translateY(-100px);
+                                opacity: 1;
+                            }
+                            50% {
+                                transform: translateY(0px);
+                                opacity: 1;
+                            }
+                            100% {
+                                transform: translateY(100px);
+                                opacity: 0;
+                            }
+                        }
+                        
+                        @keyframes starFall {
+                            0% {
+                                transform: translateY(-100vh);
+                                opacity: 1;
+                            }
+                            100% {
+                                transform: translateY(100vh);
+                                opacity: 0;
+                            }
+                        }
+                        
+                    </style>
+                    <script>
+                        function triggerAnimation() {
+                            // Get the selected amount
+                            var selectedAmount = document.getElementById('dropdownAmount').value;
+                            
+                            // Check if a valid amount is selected
+                            if (selectedAmount && selectedAmount !== 'Select an amount') {
+                                // Close the modal
+                                $('#addItemModal').modal('hide');
+                        
+                                // Show the winning animation
+                                document.getElementById('winAnimation').classList.remove('d-none');
+                                
+                                // Play winning sound
+                                var winningSound = document.getElementById('winningSound');
+                                winningSound.play();
+                                
+                                // Hide the animation after 8 seconds
+                                setTimeout(() => {
+                                    document.getElementById('winAnimation').classList.add('d-none');
+                                }, 6000); // Adjust the time as per the animation duration
+                            } else {
+                                // Optionally, you can add a message or alert if no valid amount is selected
+                                alert('Please select a valid amount.');
+                            }
+                        }
+                    </script>
+
+
+                   <!-- Minus Item Modal -->
+<div id="minusItemModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="minusItemModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="minusItemModalLabel">Select Amount to Subtract</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="mb-3">
+                        <label for="dropdownMinusAmount" class="form-label">Choose an amount</label>
+                        <select class="form-select" id="dropdownMinusAmount" aria-label="Amount select">
+                            <option selected>Select an amount</option>
+                            <option value="1">-1$</option>
+                            <option value="5">-5$</option>
+                            <option value="10">-10$</option>
+                            <!-- Add more options as needed -->
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="triggerLossAnimation()">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Losing Animation -->
+<div id="lossAnimation" class="win-animation d-none">
+    <div class="animation-container">
+        <div class="sad-face">😞</div>
+        <div class="confetti-container">
+            <div class="confetti-emoji">
+                <span>💔</span>
+                <span>💔</span>
+                <span>💔</span>
+            </div>
+            <div class="confetti">
+                <div class="confetti-piece"></div>
+                <div class="confetti-piece"></div>
+                <div class="confetti-piece"></div>
+                <div class="confetti-piece"></div>
+                <div class="confetti-piece"></div>
+            </div>
+        </div>
+        <div class="stars">
+            <div class="star"></div>
+            <div class="star"></div>
+            <div class="star"></div>
+            <div class="star"></div>
+            <div class="star"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Losing Sound -->
+<audio id="losingSound" src="{% static 'verloren-89595.mp3' %}" preload="auto"></audio>
+
+
+<style>
+    .win-animation {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        width: 300px;
+        z-index: 1055; /* Higher than modal */
+        background: rgba(255, 255, 255, 0.95); /* Slightly opaque background */
+        padding: 20px;
+        border-radius: 15px;
+        box-shadow: 0 0 25px rgba(0, 0, 0, 0.5);
+        animation: fadeIn 0.5s ease-out;
+        overflow: hidden; /* Hide overflowing elements */
+    }
+
+    .animation-container {
+        position: relative;
+        height: 300px; /* Ensure the container is tall enough to accommodate falling elements */
+    }
+
+    .sad-face {
+        font-size: 6rem;
+        color: #ff4d4d; /* Red color to signify sadness */
+        animation: sadAnimation 2s ease-in-out infinite;
+    }
+
+    .confetti-container {
+        position: absolute;
+        top: 20%;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+    }
+
+    .confetti-emoji {
+        display: flex;
+        justify-content: center;
+        position: absolute;
+        transform: translateX(-50%);
+        font-size: 3rem;
+        animation: emojiMove 3s linear infinite;
+    }
+
+    .confetti-emoji span {
+        display: inline-block;
+        margin: 0 10px; /* Space between emojis */
+    }
+
+    .confetti {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        top: 0;
+        left: 0;
+    }
+
+    .confetti-piece {
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        background-color: #f00;
+        opacity: 0.8;
+        animation: confetti 3s linear infinite;
+    }
+
+    .confetti-piece:nth-child(1) {
+        background-color: #ff0;
+        left: 10%;
+        animation-delay: 0s;
+    }
+
+    .confetti-piece:nth-child(2) {
+        background-color: #0f0;
+        left: 30%;
+        animation-delay: 0.2s;
+    }
+
+    .confetti-piece:nth-child(3) {
+        background-color: #00f;
+        left: 50%;
+        animation-delay: 0.4s;
+    }
+
+    .confetti-piece:nth-child(4) {
+        background-color: #f0f;
+        left: 70%;
+        animation-delay: 0.6s;
+    }
+
+    .confetti-piece:nth-child(5) {
+        background-color: #0ff;
+        left: 90%;
+        animation-delay: 0.8s;
+    }
+
+    .stars {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+    }
+
+    .star {
+        position: absolute;
+        width: 15px;
+        height: 15px;
+        background: radial-gradient(circle, #fff, transparent);
+        border-radius: 50%;
+        box-shadow: 0 0 5px rgba(255, 255, 255, 0.8);
+        animation: starFall 5s linear infinite;
+    }
+
+    .star:nth-child(1) {
+        top: 10%;
+        left: 10%;
+        animation-delay: 0s;
+    }
+
+    .star:nth-child(2) {
+        top: 20%;
+        left: 30%;
+        animation-delay: 1s;
+    }
+
+    .star:nth-child(3) {
+        top: 40%;
+        left: 50%;
+        animation-delay: 2s;
+    }
+
+    .star:nth-child(4) {
+        top: 60%;
+        left: 70%;
+        animation-delay: 3s;
+    }
+
+    .star:nth-child(5) {
+        top: 80%;
+        left: 90%;
+        animation-delay: 4s;
+    }
+
+    .d-none {
+        display: none;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @keyframes sadAnimation {
+        0%, 100% {
+            text-shadow: 0 0 10px rgba(255, 0, 0, 0.6);
+        }
+        50% {
+            text-shadow: 0 0 20px rgba(255, 0, 0, 1);
+        }
+    }
+
+    @keyframes confetti {
+        0% {
+            transform: translateY(-1000px) rotate(0deg);
+        }
+        100% {
+            transform: translateY(1000px) rotate(360deg);
+        }
+    }
+
+    @keyframes emojiMove {
+        0% {
+            transform: translateY(-100px);
+            opacity: 1;
+        }
+        50% {
+            transform: translateY(0px);
+            opacity: 1;
+        }
+        100% {
+            transform: translateY(100px);
+            opacity: 0;
+        }
+    }
+
+    @keyframes starFall {
+        0% {
+            transform: translateY(-100vh);
+            opacity: 1;
+        }
+        100% {
+            transform: translateY(100vh);
+            opacity: 0;
+        }
+    }
+</style>
+
+<script>
+    function triggerLossAnimation() {
+        // Get the selected amount
+        var selectedAmount = document.getElementById('dropdownMinusAmount').value;
+        
+        // Check if a valid amount is selected
+        if (selectedAmount && selectedAmount !== 'Select an amount') {
+            // Close the modal
+            $('#minusItemModal').modal('hide');
+    
+            // Show the losing animation
+            document.getElementById('lossAnimation').classList.remove('d-none');
+            
+            // Play losing sound
+            var losingSound = document.getElementById('losingSound');
+            losingSound.play();
+            
+            // Hide the animation after 8 seconds
+            setTimeout(() => {
+                document.getElementById('lossAnimation').classList.add('d-none');
+            }, 6000); // Adjust the time as per the animation duration
+        } else {
+            // Optionally, you can add a message or alert if no valid amount is selected
+            alert('Please select a valid amount.');
+        }
+    }
+</script>
+
+
+
+                    <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
                         <div class="classes-item">
                             <div class="bg-light rounded-circle w-75 mx-auto p-3">
-                                <img class="img-fluid rounded-circle" src="img/classes-3.jpg" alt="">
+                                <img class="img-fluid rounded-circle" src="img/classes-1.jpg" alt="">
                             </div>
                             <div class="bg-light rounded p-4 pt-5 mt-n5">
-                                <a class="d-block text-center h3 mt-3 mb-4" href="">Athletic & Dance</a>
+                                <a class="d-block text-center h3 mt-3 mb-4" href="">Mohamed Guessoum</a>
                                 <div class="d-flex align-items-center justify-content-between mb-4">
                                     <div class="d-flex align-items-center">
-                                        <img class="rounded-circle flex-shrink-0" src="img/user.jpg" alt="" style="width: 45px; height: 45px;">
+                                        {% comment %} <img class="rounded-circle flex-shrink-0" src="{% static 'img/user.jpg' %}" alt="" style="width: 70px;height: 70px;margin-left: 36px;"> {% endcomment %}
+                                        <img class="rounded-circle flex-shrink-0" src="{% static 'img/user.jpg' %}" alt="" style="width: 55px;height: 55px;">
                                         <div class="ms-3">
-                                            <h6 class="text-primary mb-1">Jhon Doe</h6>
-                                            <small>Teacher</small>
-                                        </div>
+                                            <h6 class="text-primary mb-1">Mohamed Guessoum</h6>
+                                            <small>GG11</small>
+                                        </div> 
                                     </div>
                                     <span class="bg-primary text-white rounded-pill py-2 px-3" href="">$99</span>
                                 </div>
                                 <div class="row g-1">
                                     <div class="col-4">
                                         <div class="border-top border-3 border-primary pt-2">
-                                            <h6 class="text-primary mb-1">Age:</h6>
-                                            <small>3-5 Years</small>
+                                            <h6 class="text-primary mb-1">Add:</h6>
+                                            <small> <a href=""><button class="bg-primary text-white rounded-pill py-2 px-3">Add</button></a> </small>
+                                            {% comment %} <small><span class="bg-primary text-white rounded-pill py-2 px-3" href="">Add</span></small> {% endcomment %}
                                         </div>
                                     </div>
                                     <div class="col-4">
-                                        <div class="border-top border-3 border-success pt-2">
+                                        {% comment %} <div class="border-top border-3 border-success pt-2">
                                             <h6 class="text-success mb-1">Time:</h6>
                                             <small>9-10 AM</small>
-                                        </div>
+                                        </div> {% endcomment %}
                                     </div>
                                     <div class="col-4">
                                         <div class="border-top border-3 border-warning pt-2">
-                                            <h6 class="text-warning mb-1">Capacity:</h6>
-                                            <small>30 Kids</small>
+                                            <h6 class="text-warning mb-1">Minus:</h6>
+                                            <small> <a href=""><button class="bg-primary text-white rounded-pill py-2 px-3">Minus</button></a> </small>
                                         </div>
                                     </div>
                                 </div>
@@ -136,117 +696,165 @@
                     <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
                         <div class="classes-item">
                             <div class="bg-light rounded-circle w-75 mx-auto p-3">
-                                <img class="img-fluid rounded-circle" src="img/classes-4.jpg" alt="">
+                                <img class="img-fluid rounded-circle" src="img/classes-1.jpg" alt="">
                             </div>
                             <div class="bg-light rounded p-4 pt-5 mt-n5">
-                                <a class="d-block text-center h3 mt-3 mb-4" href="">Language & Speaking</a>
+                                <a class="d-block text-center h3 mt-3 mb-4" href="">Mohamed Guessoum</a>
                                 <div class="d-flex align-items-center justify-content-between mb-4">
                                     <div class="d-flex align-items-center">
-                                        <img class="rounded-circle flex-shrink-0" src="img/user.jpg" alt="" style="width: 45px; height: 45px;">
+                                        {% comment %} <img class="rounded-circle flex-shrink-0" src="{% static 'img/user.jpg' %}" alt="" style="width: 70px;height: 70px;margin-left: 36px;"> {% endcomment %}
+                                        <img class="rounded-circle flex-shrink-0" src="{% static 'img/user.jpg' %}" alt="" style="width: 55px;height: 55px;">
                                         <div class="ms-3">
-                                            <h6 class="text-primary mb-1">Jhon Doe</h6>
-                                            <small>Teacher</small>
-                                        </div>
+                                            <h6 class="text-primary mb-1">Mohamed Guessoum</h6>
+                                            <small>GG11</small>
+                                        </div> 
                                     </div>
                                     <span class="bg-primary text-white rounded-pill py-2 px-3" href="">$99</span>
                                 </div>
                                 <div class="row g-1">
                                     <div class="col-4">
                                         <div class="border-top border-3 border-primary pt-2">
-                                            <h6 class="text-primary mb-1">Age:</h6>
-                                            <small>3-5 Years</small>
+                                            <h6 class="text-primary mb-1">Add:</h6>
+                                            <small> <a href=""><button class="bg-primary text-white rounded-pill py-2 px-3">Add</button></a> </small>
+                                            {% comment %} <small><span class="bg-primary text-white rounded-pill py-2 px-3" href="">Add</span></small> {% endcomment %}
                                         </div>
                                     </div>
                                     <div class="col-4">
-                                        <div class="border-top border-3 border-success pt-2">
+                                        {% comment %} <div class="border-top border-3 border-success pt-2">
                                             <h6 class="text-success mb-1">Time:</h6>
                                             <small>9-10 AM</small>
-                                        </div>
+                                        </div> {% endcomment %}
                                     </div>
                                     <div class="col-4">
                                         <div class="border-top border-3 border-warning pt-2">
-                                            <h6 class="text-warning mb-1">Capacity:</h6>
-                                            <small>30 Kids</small>
+                                            <h6 class="text-warning mb-1">Minus:</h6>
+                                            <small> <a href=""><button class="bg-primary text-white rounded-pill py-2 px-3">Minus</button></a> </small>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.3s">
+                    <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
                         <div class="classes-item">
                             <div class="bg-light rounded-circle w-75 mx-auto p-3">
-                                <img class="img-fluid rounded-circle" src="img/classes-5.jpg" alt="">
+                                <img class="img-fluid rounded-circle" src="img/classes-1.jpg" alt="">
                             </div>
                             <div class="bg-light rounded p-4 pt-5 mt-n5">
-                                <a class="d-block text-center h3 mt-3 mb-4" href="">Religion & History</a>
+                                <a class="d-block text-center h3 mt-3 mb-4" href="">Mohamed Guessoum</a>
                                 <div class="d-flex align-items-center justify-content-between mb-4">
                                     <div class="d-flex align-items-center">
-                                        <img class="rounded-circle flex-shrink-0" src="img/user.jpg" alt="" style="width: 45px; height: 45px;">
+                                        {% comment %} <img class="rounded-circle flex-shrink-0" src="{% static 'img/user.jpg' %}" alt="" style="width: 70px;height: 70px;margin-left: 36px;"> {% endcomment %}
+                                        <img class="rounded-circle flex-shrink-0" src="{% static 'img/user.jpg' %}" alt="" style="width: 55px;height: 55px;">
                                         <div class="ms-3">
-                                            <h6 class="text-primary mb-1">Jhon Doe</h6>
-                                            <small>Teacher</small>
-                                        </div>
+                                            <h6 class="text-primary mb-1">Mohamed Guessoum</h6>
+                                            <small>GG11</small>
+                                        </div> 
                                     </div>
                                     <span class="bg-primary text-white rounded-pill py-2 px-3" href="">$99</span>
                                 </div>
                                 <div class="row g-1">
                                     <div class="col-4">
                                         <div class="border-top border-3 border-primary pt-2">
-                                            <h6 class="text-primary mb-1">Age:</h6>
-                                            <small>3-5 Years</small>
+                                            <h6 class="text-primary mb-1">Add:</h6>
+                                            <small> <a href=""><button class="bg-primary text-white rounded-pill py-2 px-3">Add</button></a> </small>
+                                            {% comment %} <small><span class="bg-primary text-white rounded-pill py-2 px-3" href="">Add</span></small> {% endcomment %}
                                         </div>
                                     </div>
                                     <div class="col-4">
-                                        <div class="border-top border-3 border-success pt-2">
+                                        {% comment %} <div class="border-top border-3 border-success pt-2">
                                             <h6 class="text-success mb-1">Time:</h6>
                                             <small>9-10 AM</small>
-                                        </div>
+                                        </div> {% endcomment %}
                                     </div>
                                     <div class="col-4">
                                         <div class="border-top border-3 border-warning pt-2">
-                                            <h6 class="text-warning mb-1">Capacity:</h6>
-                                            <small>30 Kids</small>
+                                            <h6 class="text-warning mb-1">Minus:</h6>
+                                            <small> <a href=""><button class="bg-primary text-white rounded-pill py-2 px-3">Minus</button></a> </small>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.5s">
+                    <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
                         <div class="classes-item">
                             <div class="bg-light rounded-circle w-75 mx-auto p-3">
-                                <img class="img-fluid rounded-circle" src="img/classes-6.jpg" alt="">
+                                <img class="img-fluid rounded-circle" src="img/classes-1.jpg" alt="">
                             </div>
                             <div class="bg-light rounded p-4 pt-5 mt-n5">
-                                <a class="d-block text-center h3 mt-3 mb-4" href="">General Knowledge</a>
+                                <a class="d-block text-center h3 mt-3 mb-4" href="">Mohamed Guessoum</a>
                                 <div class="d-flex align-items-center justify-content-between mb-4">
                                     <div class="d-flex align-items-center">
-                                        <img class="rounded-circle flex-shrink-0" src="img/user.jpg" alt="" style="width: 45px; height: 45px;">
+                                        {% comment %} <img class="rounded-circle flex-shrink-0" src="{% static 'img/user.jpg' %}" alt="" style="width: 70px;height: 70px;margin-left: 36px;"> {% endcomment %}
+                                        <img class="rounded-circle flex-shrink-0" src="{% static 'img/user.jpg' %}" alt="" style="width: 55px;height: 55px;">
                                         <div class="ms-3">
-                                            <h6 class="text-primary mb-1">Jhon Doe</h6>
-                                            <small>Teacher</small>
-                                        </div>
+                                            <h6 class="text-primary mb-1">Mohamed Guessoum</h6>
+                                            <small>GG11</small>
+                                        </div> 
                                     </div>
                                     <span class="bg-primary text-white rounded-pill py-2 px-3" href="">$99</span>
                                 </div>
                                 <div class="row g-1">
                                     <div class="col-4">
                                         <div class="border-top border-3 border-primary pt-2">
-                                            <h6 class="text-primary mb-1">Age:</h6>
-                                            <small>3-5 Years</small>
+                                            <h6 class="text-primary mb-1">Add:</h6>
+                                            <small> <a href=""><button class="bg-primary text-white rounded-pill py-2 px-3">Add</button></a> </small>
+                                            {% comment %} <small><span class="bg-primary text-white rounded-pill py-2 px-3" href="">Add</span></small> {% endcomment %}
                                         </div>
                                     </div>
                                     <div class="col-4">
-                                        <div class="border-top border-3 border-success pt-2">
+                                        {% comment %} <div class="border-top border-3 border-success pt-2">
                                             <h6 class="text-success mb-1">Time:</h6>
                                             <small>9-10 AM</small>
-                                        </div>
+                                        </div> {% endcomment %}
                                     </div>
                                     <div class="col-4">
                                         <div class="border-top border-3 border-warning pt-2">
-                                            <h6 class="text-warning mb-1">Capacity:</h6>
-                                            <small>30 Kids</small>
+                                            <h6 class="text-warning mb-1">Minus:</h6>
+                                            <small> <a href=""><button class="bg-primary text-white rounded-pill py-2 px-3">Minus</button></a> </small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
+                        <div class="classes-item">
+                            <div class="bg-light rounded-circle w-75 mx-auto p-3">
+                                <img class="img-fluid rounded-circle" src="img/classes-1.jpg" alt="">
+                            </div>
+                            <div class="bg-light rounded p-4 pt-5 mt-n5">
+                                <a class="d-block text-center h3 mt-3 mb-4" href="">Mohamed Guessoum</a>
+                                <div class="d-flex align-items-center justify-content-between mb-4">
+                                    <div class="d-flex align-items-center">
+                                        {% comment %} <img class="rounded-circle flex-shrink-0" src="{% static 'img/user.jpg' %}" alt="" style="width: 70px;height: 70px;margin-left: 36px;"> {% endcomment %}
+                                        <img class="rounded-circle flex-shrink-0" src="{% static 'img/user.jpg' %}" alt="" style="width: 55px;height: 55px;">
+                                        <div class="ms-3">
+                                            <h6 class="text-primary mb-1">Mohamed Guessoum</h6>
+                                            <small>GG11</small>
+                                        </div> 
+                                    </div>
+                                    <span class="bg-primary text-white rounded-pill py-2 px-3" href="">$99</span>
+                                </div>
+                                <div class="row g-1">
+                                    <div class="col-4">
+                                        <div class="border-top border-3 border-primary pt-2">
+                                            <h6 class="text-primary mb-1">Add:</h6>
+                                            <small> <a href=""><button class="bg-primary text-white rounded-pill py-2 px-3">Add</button></a> </small>
+                                            {% comment %} <small><span class="bg-primary text-white rounded-pill py-2 px-3" href="">Add</span></small> {% endcomment %}
+                                        </div>
+                                    </div>
+                                    <div class="col-4">
+                                        {% comment %} <div class="border-top border-3 border-success pt-2">
+                                            <h6 class="text-success mb-1">Time:</h6>
+                                            <small>9-10 AM</small>
+                                        </div> {% endcomment %}
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="border-top border-3 border-warning pt-2">
+                                            <h6 class="text-warning mb-1">Minus:</h6>
+                                            <small> <a href=""><button class="bg-primary text-white rounded-pill py-2 px-3">Minus</button></a> </small>
                                         </div>
                                     </div>
                                 </div>
