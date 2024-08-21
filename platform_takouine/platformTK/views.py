@@ -5,6 +5,12 @@ from .models import *
 from django.contrib.auth.models import Group, User
 from django.contrib.auth.hashers import make_password
 from django.contrib import messages
+from django.contrib.auth import authenticate,logout
+from django.contrib.auth import authenticate, login
+from .decorators import notLoggedUsers,allowedUsers,forAdmins
+
+
+
 
 
 
@@ -13,8 +19,39 @@ def home(requset):
 
 
 
-def login(requset):
-    return render(requset,"platformTK/login.html")
+@notLoggedUsers
+def login_view(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            login(request, user)
+            if request.user.groups.filter(name='Etudiants').exists():
+                return redirect('/homeEtudiant')  # Redirect to student's home
+            elif request.user.groups.filter(name='Prof').exists():
+                return redirect('/homeProf')
+            elif request.user.groups.filter(name='SuperAdmin').exists():
+                return redirect('/homeSuperAdmin')
+        else:
+            messages.error(request, 'Invalid username or password.')
+    return render(request, "platformTK/login.html")
+
+
+
+
+from django.contrib.auth.decorators import login_required
+
+#Logout for all
+def userLogout(request):
+   logout(request)
+   return redirect('home')
+
+
+
+def homeEtudiant(requset):
+    return render(requset,"platformTK/Etudiant/homeEtudiant.html")
+
 
 
 def homeProf(requset):
@@ -92,18 +129,27 @@ def add_student(requset):
 
 
 
-
-
 def group_list(request):
     if request.method == 'POST':
         group_name = request.POST.get('group_name')
         description = request.POST.get('description')
-        student_ids = request.POST.getlist('students')
-        prof_ids = request.POST.getlist('profs')
+        student_ids_str = request.POST.get('students', '')  # Get the comma-separated student IDs as a string
+        prof_ids_str = request.POST.get('profs', '')  # Get the comma-separated professor IDs as a string
 
+        # Convert the comma-separated strings into lists of integers
+        student_ids = [int(id) for id in student_ids_str.split(',') if id.isdigit()]
+        prof_ids = [int(id) for id in prof_ids_str.split(',') if id.isdigit()]
+
+        # Debugging output to verify received data
+        print("Group Name:", group_name)
+        print("Description:", description)
+        print("Selected Students IDs:", student_ids)
+        print("Selected Professors IDs:", prof_ids)
+
+        # Create and save the new group
         group = Groups(name=group_name, description=description)
         group.save()
-        
+
         # Add students and professors to the group
         students = Etudiant.objects.filter(id__in=student_ids)
         profs = prof.objects.filter(id__in=prof_ids)
@@ -111,8 +157,8 @@ def group_list(request):
         group.etudiants.set(students)
         group.profs.set(profs)
         group.save()
-        
-        return redirect('add_groupe')  
+
+        return redirect('add_groupe')  # Ensure 'add_groupe' is defined in your URL patterns
 
     etudiants = Etudiant.objects.all()
     profs = prof.objects.all()
@@ -123,9 +169,6 @@ def group_list(request):
         'etudiants': etudiants,
         'profs': profs
     })
-
-
-
 
 def add_etudiant(request):
     if request.method == 'POST':

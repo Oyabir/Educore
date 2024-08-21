@@ -44,7 +44,6 @@
 </div>
 
 
-
 <!-- Modal -->
 <div id="groupModal" class="modal">
     <div class="modal-content">
@@ -53,8 +52,9 @@
             <h2>Add New Group</h2>
         </div>
         <div class="modal-body">
-            <form action="{% url "group_list" %}" method="POST">
+            <form method="post" action="{% url 'group_list' %}">
                 {% csrf_token %}
+                <!-- Group Name and Description -->
                 <div class="mb-3">
                     <label for="groupName" class="form-label">Group Name</label>
                     <input type="text" class="form-control" id="groupName" name="group_name" required>
@@ -63,27 +63,57 @@
                     <label for="description" class="form-label">Description</label>
                     <textarea class="form-control" id="description" name="description" rows="1" required></textarea>
                 </div>
+            
+                <!-- Student Search and List -->
                 <div class="mb-3">
                     <label for="studentSearch" class="form-label">Search Students</label>
-                    <input type="text" class="form-control" id="studentSearch" placeholder="Search students..." onkeyup="filterOptions('studentSearch', 'students')">
-                    <select multiple class="form-control mt-2" id="students" name="students">
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="studentSearch" placeholder="Search students...">
+                        <button class="btn btn-primary" type="button" onclick="filterOptions('studentSearch', 'studentList')">Search</button>
+                    </div>
+                    <div class="card mt-3 p-2 scrollable-container" id="studentList">
                         {% for etudiant in etudiants %}
-                        <option value="{{ etudiant.id }}">{{ etudiant.prenom }}</option>
+                        <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-2 filter-item">
+                            <span>{{ etudiant.prenom }}</span>
+                            <button type="button" class="btn btn-primary btn-sm" onclick="addStudent('{{ etudiant.id }}', '{{ etudiant.prenom }}')">Add</button>
+                        </div>                        
                         {% endfor %}
-                    </select>
+                    </div>
                 </div>
-                
+            
+                <!-- Selected Students -->
+                <div class="mt-2">
+                    <label class="form-label">Selected Students</label>
+                    <div id="selectedStudents" class="scrollable-list"></div>
+                    <input type="hidden" id="students" name="students">
+                </div>
+            
+                <!-- Professor Search and List -->
                 <div class="mb-3">
                     <label for="profSearch" class="form-label">Search Professors</label>
-                    <input type="text" class="form-control" id="profSearch" placeholder="Search professors..." onkeyup="filterOptions('profSearch', 'profs')">
-                    <select multiple class="form-control mt-2" id="profs" name="profs">
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="profSearch" placeholder="Search professors...">
+                        <button class="btn btn-primary" type="button" onclick="filterOptions('profSearch', 'profList')">Search</button>
+                    </div>
+                    <div class="card mt-3 p-2 scrollable-container" id="profList">
                         {% for prof in profs %}
-                        <option value="{{ prof.id }}">{{ prof.prenom }}</option>
+                        <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-2 filter-item">
+                            <span>{{ prof.prenom }}</span>
+                            <button type="button" class="btn btn-primary btn-sm" onclick="addProf('{{ prof.id }}', '{{ prof.prenom }}')">Add</button>
+                        </div>
                         {% endfor %}
-                    </select>
+                    </div>
                 </div>
-                
-                <div class="text-center">
+            
+                <!-- Selected Professors -->
+                <div class="mt-2">
+                    <label class="form-label">Selected Professors</label>
+                    <div id="selectedProfs" class="scrollable-list"></div>
+                    <input type="hidden" id="profs" name="profs">
+                </div>
+            
+                <!-- Submit Button -->
+                <div class="text-center mt-3">
                     <button type="submit" class="btn btn-primary">Add Group</button>
                 </div>
             </form>
@@ -92,27 +122,122 @@
 </div>
 
 
+<!-- CSS for Scrollable Containers -->
+<style>
+    .scrollable-container {
+        max-height: 178px; /* Adjust the height as needed */
+        overflow-y: auto;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
 
+    .scrollable-list {
+        max-height: 150px; /* Adjust the height as needed */
+        overflow-y: auto;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 8px;
+    }
 
+    .scrollable-container div,
+    .scrollable-list div {
+        padding: 4px 8px;
+        border-bottom: 1px solid #ddd;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
 
+    .scrollable-container div:last-child,
+    .scrollable-list div:last-child {
+        border-bottom: none;
+    }
+</style>
+
+<!-- JavaScript Functions -->
 <script>
-    function filterOptions(searchId, selectId) {
-        var input, filter, select, options, option, i;
-        input = document.getElementById(searchId);
-        filter = input.value.toLowerCase();
-        select = document.getElementById(selectId);
-        options = select.getElementsByTagName('option');
-        
-        for (i = 0; i < options.length; i++) {
-            option = options[i];
-            if (option.textContent.toLowerCase().indexOf(filter) > -1) {
-                option.style.display = "";
-            } else {
-                option.style.display = "none";
-            }
+    function addStudent(id, name) {
+        if (!document.querySelector(`#selectedStudents div[data-id="${id}"]`)) {
+            var container = document.getElementById('selectedStudents');
+            var item = document.createElement('div');
+            item.setAttribute('data-id', id);
+            item.innerHTML = `${name} <button type="button" class="btn btn-danger btn-sm" onclick="removeStudent('${id}')">Remove</button>`;
+            container.appendChild(item);
+    
+            updateSelectedList('students', id);
         }
     }
+    
+    function addProf(id, name) {
+        if (!document.querySelector(`#selectedProfs div[data-id="${id}"]`)) {
+            var container = document.getElementById('selectedProfs');
+            var item = document.createElement('div');
+            item.setAttribute('data-id', id);
+            item.innerHTML = `${name} <button type="button" class="btn btn-danger btn-sm" onclick="removeProf('${id}')">Remove</button>`;
+            container.appendChild(item);
+    
+            updateSelectedList('profs', id);
+        }
+    }
+    
+    function removeStudent(id) {
+        var item = document.querySelector(`#selectedStudents div[data-id="${id}"]`);
+        if (item) {
+            item.remove();
+            updateSelectedList('students', id, true);
+        }
+    }
+    
+    function removeProf(id) {
+        var item = document.querySelector(`#selectedProfs div[data-id="${id}"]`);
+        if (item) {
+            item.remove();
+            updateSelectedList('profs', id, true);
+        }
+    }
+    
+    function updateSelectedList(type, id, remove = false) {
+        var input = document.getElementById(type);
+        var selectedIds = input.value ? input.value.split(',') : [];
+    
+        if (remove) {
+            selectedIds = selectedIds.filter(selectedId => selectedId !== id);
+        } else {
+            if (!selectedIds.includes(id)) {
+                selectedIds.push(id);
+            }
+        }
+    
+        input.value = selectedIds.join(',');
+    }
+    
+
+    function filterOptions(searchId, listId) {
+        var searchInput = document.getElementById(searchId).value.toLowerCase();
+        var listContainer = document.getElementById(listId);
+        var listItems = listContainer.getElementsByClassName('filter-item');
+        
+        Array.from(listItems).forEach(function(item) {
+            var text = item.querySelector('span').textContent.toLowerCase();
+            if (text.includes(searchInput)) {
+                item.style.display = 'flex';  // Show the matching items
+            } else {
+                item.style.display = 'none';  // Hide non-matching items
+            }
+        });
+    }
+    
+    
+    
+    
+    
+    
+
+    function closeModal() {
+        document.getElementById('groupModal').style.display = 'none';
+    }
 </script>
+
 
 
 
@@ -153,7 +278,7 @@
 
     .modal-content {
         background-color: #ffffff;
-        margin: 5% auto;
+        margin: -4% auto;
         padding: 20px;
         border: 1px solid #ccc;
         border-radius: 10px;
