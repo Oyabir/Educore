@@ -8,6 +8,14 @@ from django.contrib import messages
 from django.contrib.auth import authenticate,logout
 from django.contrib.auth import authenticate, login
 from .decorators import notLoggedUsers,allowedUsers,forAdmins
+from django.shortcuts import render, get_object_or_404
+from django.views.decorators.csrf import csrf_exempt
+from django.http import JsonResponse
+import json
+
+
+
+
 
 
 
@@ -61,7 +69,9 @@ def homeProf(requset):
 
 
 def Groupes(requset):
-    return render(requset,"platformTK/Prof/Groupes.html")
+    groups = Groups.objects.all()
+    context = {"groups":groups}
+    return render(requset,"platformTK/Prof/Groupes.html",context)
 
 
 
@@ -84,17 +94,63 @@ def Profil(requset):
 
 
 
-def group_detail(requset):
-    return render(requset,"platformTK/Prof/group_detail.html")
+def group_detail(request, code_group):
+    # Retrieve the group using the unique code_group
+    group = get_object_or_404(Groups, code_group=code_group)
+    # Get all students associated with this group
+    students = group.etudiants.all()
+    return render(request, "platformTK/Prof/group_detail.html", {"group": group, "students": students})
 
 
 
 
-def Répartition_points(requset):
-    return render(requset,"platformTK/Prof/Répartition_points.html")
+
+def Répartition_points(request, code_group):
+    # Retrieve the group using the unique code_group
+    group = get_object_or_404(Groups, code_group=code_group)
+    # Get all students associated with this group
+    students = group.etudiants.all()
+    return render(request, "platformTK/Prof/Répartition_points.html", {"group": group, "students": students})
 
 
 
+
+
+@csrf_exempt  
+def update_points(request, student_id):
+    if request.method == 'POST':
+        import json
+        data = json.loads(request.body)
+        amount = data.get('amount')
+        
+        try:
+            student = Etudiant.objects.get(id=student_id)
+            student.points += int(amount)
+            student.save()
+            return JsonResponse({'success': True})
+        except Etudiant.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Student not found'})
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})
+
+
+
+
+
+@csrf_exempt  
+def subtract_points(request, student_id):
+    if request.method == 'POST':
+        import json
+        data = json.loads(request.body)
+        amount = data.get('amount')  # This should be a positive value, we'll subtract it
+
+        try:
+            student = Etudiant.objects.get(id=student_id)
+            student.points -= int(amount)  # Subtract the points
+            student.save()
+            return JsonResponse({'success': True})
+        except Etudiant.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Student not found'})
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})
 
 
 
@@ -169,6 +225,7 @@ def group_list(request):
         'etudiants': etudiants,
         'profs': profs
     })
+
 
 def add_etudiant(request):
     if request.method == 'POST':

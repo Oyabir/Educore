@@ -18,29 +18,26 @@
                                 <th>#</th>
                                 <th>Nom</th>
                                 <th>Date</th>
-                                <th>Lieu</th>
+                                <th>Code Group</th>
                                 <th>Participants</th>
                                 <th>ALL</th>
                             </tr>
                         </thead>
                         <tbody>
+                            {% for group in groups %}
                             <tr>
-                                <td>1</td>
-                                <td>Compétition de Mathématiques</td>
-                                <td>2024-09-15</td>
-                                <td>École Primaire</td>
-                                <td>50</td>
-                                <td><a href="{% url "group_detail" %}">Show</a></td>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ group.name }}</td>
+                                <td>{{ group.date_created }}</td>
+                                <td>{{ group.code_group }} </td>
+                                <td>{{ group.etudiants.count }}</td>
+                                <td><a href="{% url 'group_detail' code_group=group.code_group %}">Show</a></td>
                             </tr>
+                            {% empty %}
                             <tr>
-                                <td>2</td>
-                                <td>Concours de Dessin</td>
-                                <td>2024-10-05</td>
-                                <td>Centre Culturel</td>
-                                <td>50</td>
-                                <td><a href="{% url "group_detail" %}">Show</a></td>
+                                <td colspan="4" class="text-center">No groups found.</td>
                             </tr>
-                            <!-- Add more rows as needed -->
+                            {% endfor %}
                         </tbody>
                     </table>
                 </div>

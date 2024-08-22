@@ -19,7 +19,8 @@ class Etudiant(models.Model):
     numéro_de_téléphone = models.CharField(max_length=15, blank=True, null=True)
     avatar = models.ImageField(null=True, blank=True)
     slugEtudiant = models.SlugField(blank=True, null=True)
-    date_created = models.DateField(auto_now_add=True)
+    date_created = models.DateField(auto_now_add=True, null=True, blank=True)
+    points = models.IntegerField(default=0,blank=True, null=True) 
     EtudiantCode = models.CharField(max_length=100, null=True, blank=True, default=generate_etudiant_code)
 
 
@@ -50,7 +51,7 @@ class prof(models.Model):
     numéro_de_téléphone = models.CharField(max_length=15, blank=True, null=True)
     avatar = models.ImageField(null=True, blank=True)
     slugProf = models.SlugField(blank=True, null=True)
-    date_created = models.DateField(auto_now_add=True)
+    date_created = models.DateField(auto_now_add=True, null=True, blank=True)
     ProfCode = models.CharField(max_length=100, null=True, blank=True, default=generate_prof_code)
 
 
@@ -76,6 +77,7 @@ class Groups(models.Model):
     code_group = models.CharField(max_length=100, unique=True, blank=True, editable=False)
     etudiants = models.ManyToManyField(Etudiant, related_name='groups')
     profs = models.ManyToManyField(prof, related_name='groups')
+    date_created = models.DateField(auto_now_add=True, null=True, blank=True)
 
     def save(self, *args, **kwargs):
         if not self.code_group:

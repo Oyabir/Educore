@@ -45,6 +45,7 @@
 
 
 <!-- Modal -->
+<!-- Modal -->
 <div id="groupModal" class="modal">
     <div class="modal-content">
         <div class="modal-header">
@@ -63,55 +64,55 @@
                     <label for="description" class="form-label">Description</label>
                     <textarea class="form-control" id="description" name="description" rows="1" required></textarea>
                 </div>
-            
+
                 <!-- Student Search and List -->
                 <div class="mb-3">
                     <label for="studentSearch" class="form-label">Search Students</label>
                     <div class="input-group">
-                        <input type="text" class="form-control" id="studentSearch" placeholder="Search students...">
-                        <button class="btn btn-primary" type="button" onclick="filterOptions('studentSearch', 'studentList')">Search</button>
+                        <input type="text" class="form-control" id="studentSearch" placeholder="Search students..." oninput="filterList('student')">
                     </div>
                     <div class="card mt-3 p-2 scrollable-container" id="studentList">
                         {% for etudiant in etudiants %}
-                        <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-2 filter-item">
-                            <span>{{ etudiant.prenom }}</span>
-                            <button type="button" class="btn btn-primary btn-sm" onclick="addStudent('{{ etudiant.id }}', '{{ etudiant.prenom }}')">Add</button>
-                        </div>                        
+                        <div data-id="{{ etudiant.id }}" class="student-item">
+                            {{ etudiant.prenom }} {{ etudiant.nom }}
+                            <button type="button" class="btn btn-sm btn-primary" onclick="addStudent({{ etudiant.id }}, '{{ etudiant.prenom }} {{ etudiant.nom }}')">Add</button>
+                        </div>
                         {% endfor %}
                     </div>
                 </div>
-            
+                
+
                 <!-- Selected Students -->
                 <div class="mt-2">
                     <label class="form-label">Selected Students</label>
                     <div id="selectedStudents" class="scrollable-list"></div>
                     <input type="hidden" id="students" name="students">
                 </div>
-            
+
                 <!-- Professor Search and List -->
                 <div class="mb-3">
                     <label for="profSearch" class="form-label">Search Professors</label>
                     <div class="input-group">
-                        <input type="text" class="form-control" id="profSearch" placeholder="Search professors...">
-                        <button class="btn btn-primary" type="button" onclick="filterOptions('profSearch', 'profList')">Search</button>
+                        <input type="text" class="form-control" id="profSearch" placeholder="Search professors..." oninput="filterList('prof')">
                     </div>
                     <div class="card mt-3 p-2 scrollable-container" id="profList">
                         {% for prof in profs %}
-                        <div class="d-flex justify-content-between align-items-center mb-2 border-bottom pb-2 filter-item">
-                            <span>{{ prof.prenom }}</span>
-                            <button type="button" class="btn btn-primary btn-sm" onclick="addProf('{{ prof.id }}', '{{ prof.prenom }}')">Add</button>
+                        <div data-id="{{ prof.id }}" class="prof-item">
+                            {{ prof.prenom }} {{ prof.nom }}
+                            <button type="button" class="btn btn-sm btn-primary" onclick="addProf({{ prof.id }}, '{{ prof.prenom }} {{ prof.nom }}')">Add</button>
                         </div>
                         {% endfor %}
                     </div>
                 </div>
-            
+                
+
                 <!-- Selected Professors -->
                 <div class="mt-2">
                     <label class="form-label">Selected Professors</label>
                     <div id="selectedProfs" class="scrollable-list"></div>
                     <input type="hidden" id="profs" name="profs">
                 </div>
-            
+
                 <!-- Submit Button -->
                 <div class="text-center mt-3">
                     <button type="submit" class="btn btn-primary">Add Group</button>
@@ -120,7 +121,6 @@
         </div>
     </div>
 </div>
-
 
 <!-- CSS for Scrollable Containers -->
 <style>
@@ -154,90 +154,68 @@
     }
 </style>
 
+
 <!-- JavaScript Functions -->
 <script>
-    function addStudent(id, name) {
-        if (!document.querySelector(`#selectedStudents div[data-id="${id}"]`)) {
-            var container = document.getElementById('selectedStudents');
-            var item = document.createElement('div');
-            item.setAttribute('data-id', id);
-            item.innerHTML = `${name} <button type="button" class="btn btn-danger btn-sm" onclick="removeStudent('${id}')">Remove</button>`;
-            container.appendChild(item);
-    
-            updateSelectedList('students', id);
+    function filterList(type) {
+        var input, filter, items, i, txtValue;
+        if (type === 'student') {
+            input = document.getElementById('studentSearch');
+            items = document.querySelectorAll('#studentList .student-item');
+        } else if (type === 'prof') {
+            input = document.getElementById('profSearch');
+            items = document.querySelectorAll('#profList .prof-item');
         }
-    }
-    
-    function addProf(id, name) {
-        if (!document.querySelector(`#selectedProfs div[data-id="${id}"]`)) {
-            var container = document.getElementById('selectedProfs');
-            var item = document.createElement('div');
-            item.setAttribute('data-id', id);
-            item.innerHTML = `${name} <button type="button" class="btn btn-danger btn-sm" onclick="removeProf('${id}')">Remove</button>`;
-            container.appendChild(item);
-    
-            updateSelectedList('profs', id);
-        }
-    }
-    
-    function removeStudent(id) {
-        var item = document.querySelector(`#selectedStudents div[data-id="${id}"]`);
-        if (item) {
-            item.remove();
-            updateSelectedList('students', id, true);
-        }
-    }
-    
-    function removeProf(id) {
-        var item = document.querySelector(`#selectedProfs div[data-id="${id}"]`);
-        if (item) {
-            item.remove();
-            updateSelectedList('profs', id, true);
-        }
-    }
-    
-    function updateSelectedList(type, id, remove = false) {
-        var input = document.getElementById(type);
-        var selectedIds = input.value ? input.value.split(',') : [];
-    
-        if (remove) {
-            selectedIds = selectedIds.filter(selectedId => selectedId !== id);
-        } else {
-            if (!selectedIds.includes(id)) {
-                selectedIds.push(id);
-            }
-        }
-    
-        input.value = selectedIds.join(',');
-    }
-    
-
-    function filterOptions(searchId, listId) {
-        var searchInput = document.getElementById(searchId).value.toLowerCase();
-        var listContainer = document.getElementById(listId);
-        var listItems = listContainer.getElementsByClassName('filter-item');
         
-        Array.from(listItems).forEach(function(item) {
-            var text = item.querySelector('span').textContent.toLowerCase();
-            if (text.includes(searchInput)) {
-                item.style.display = 'flex';  // Show the matching items
+        filter = input.value.toLowerCase();
+
+        // Loop through all list items, and hide those who don't match the search query
+        for (i = 0; i < items.length; i++) {
+            txtValue = items[i].textContent || items[i].innerText;
+            if (txtValue.toLowerCase().indexOf(filter) > -1) {
+                items[i].style.display = "";
             } else {
-                item.style.display = 'none';  // Hide non-matching items
+                items[i].style.display = "none";
             }
-        });
+        }
+    }
+
+    function addStudent(id, name) {
+        var selectedStudents = document.getElementById('selectedStudents');
+        var input = document.getElementById('students');
+        var existingStudent = selectedStudents.querySelector(`[data-id='${id}']`);
+        
+        if (!existingStudent) {
+            var student = document.createElement('div');
+            student.setAttribute('data-id', id);
+            student.innerHTML = name + ' <button type="button" class="btn btn-danger btn-sm" onclick="removeItem(this, \'student\', ' + id + ')">Remove</button>';
+            selectedStudents.appendChild(student);
+            input.value += id + ',';
+        }
     }
     
-    
-    
-    
-    
+
+    function addProf(id, name) {
+        var selectedProfs = document.getElementById('selectedProfs');
+        var input = document.getElementById('profs');
+        var existingProf = selectedProfs.querySelector(`[data-id='${id}']`);
+        
+        if (!existingProf) {
+            var prof = document.createElement('div');
+            prof.setAttribute('data-id', id);
+            prof.innerHTML = name + ' <button type="button" class="btn btn-danger btn-sm" onclick="removeItem(this, \'prof\', ' + id + ')">Remove</button>';
+            selectedProfs.appendChild(prof);
+            input.value += id + ',';
+        }
+    }
     
 
-    function closeModal() {
-        document.getElementById('groupModal').style.display = 'none';
+    function removeItem(button, type, id) {
+        button.parentElement.remove();
+        var input = document.getElementById(type === 'student' ? 'students' : 'profs');
+        input.value = input.value.replace(id + ',', '');
     }
 </script>
-
 
 
 

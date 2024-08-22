@@ -11,72 +11,49 @@
             <div class="col-lg-6 mb-4">
                 <div class="card group-info-card">
                     <div class="card-body">
-                        <h2 class="card-title">Concours de Dessin</h2>
-                        <p><strong>Date:</strong> 12/01/2023</p>
+                        <h2 class="card-title">{{ group.name }}</h2>
+                        <p><strong>Date:</strong>{{ group.date_created }}</p>
                         <p><strong>Lieu:</strong> Takouine Smart Center</p>
-                        <p><strong>Participants:</strong> 50</p>
-                        <a href="{% url "Répartition_points" %}" class="btn btn-primary rounded-pill py-sm-3 px-sm-5 me-3 animated slideInLeft">Répartition des points</a>
+                        <p><strong>Participants:</strong> {{ group.etudiants.count }}</p>
+                        <a href="{% url 'Répartition_points' code_group=group.code_group %}" class="btn btn-primary rounded-pill py-sm-3 px-sm-5 me-3 animated slideInLeft">Répartition des points</a>
                         {% comment %} <a href="" class="btn btn-dark rounded-pill py-sm-3 px-sm-5 animated slideInRight">Recompation</a> {% endcomment %}
                     </div>
                 </div>
             </div>
 
-            <!-- Students List -->
-            <div class="col-lg-6 mb-4">
-                <div class="card students-list-card">
-                    <div class="card-body">
-                        <h2 class="card-title">Students in this Group</h2>
-                        <table class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>Name</th>
-                                    <th>Email</th>
-                                    <th>Phone Number</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% comment %} {% for student in students %} {% endcomment %}
-                                    <tr>
-                                        <td>1</td>
-                                        <td>Name</td>
-                                        <td>email@gmail.com</td>
-                                        <td>0688888888</td>
-                                    </tr>
-                                    <tr>
-                                        <td>1</td>
-                                        <td>Name</td>
-                                        <td>email@gmail.com</td>
-                                        <td>0688888888</td>
-                                    </tr>
-                                    <tr>
-                                        <td>1</td>
-                                        <td>Name</td>
-                                        <td>email@gmail.com</td>
-                                        <td>0688888888</td>
-                                    </tr><tr>
-                                        <td>1</td>
-                                        <td>Name</td>
-                                        <td>email@gmail.com</td>
-                                        <td>0688888888</td>
-                                    </tr><tr>
-                                        <td>1</td>
-                                        <td>Name</td>
-                                        <td>email@gmail.com</td>
-                                        <td>0688888888</td>
-                                    </tr>
-                                {% comment %} {% empty %}
-                                    <tr>
-                                        <td colspan="4" class="text-center">No students found.</td>
-                                    </tr>
-                                {% endfor %} {% endcomment %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+    <!-- Students List -->
+    <div class="col-lg-6 mb-4">
+        <div class="card students-list-card">
+            <div class="card-body">
+                <h2 class="card-title">Students in this Group</h2>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Phone Number</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for student in students %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ student.prenom }} {{ student.nom }}</td>
+                            <td>{{ student.email }}</td>
+                            <td>{{ student.numéro_de_téléphone }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center">No students found in this group.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
+
 {% endblock %}
 
 

@@ -9,34 +9,39 @@
         <div class="container-xxl py-5">
             <div class="container">
                 <div class="text-center mx-auto mb-5 wow fadeInUp" data-wow-delay="0.1s" style="max-width: 600px;">
-                    <h1 class="mb-3">Students of Groupe GG11</h1>
+                    <h1 class="mb-3">Students of {{group.name}}</h1>
                     {% comment %} <p>Eirmod sed ipsum dolor sit rebum labore magna erat. Tempor ut dolore lorem kasd vero ipsum sit eirmod sit. Ipsum diam justo sed rebum vero dolor duo.</p> {% endcomment %}
                 </div>
                 <div class="row g-4">
+                    {% for student in students %}
                     <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
                         <div class="classes-item">
                             <div class="bg-light rounded-circle w-75 mx-auto p-3">
                                 <img class="img-fluid rounded-circle" src="img/classes-1.jpg" alt="">
                             </div>
                             <div class="bg-light rounded p-4 pt-5 mt-n5">
-                                <a class="d-block text-center h3 mt-3 mb-4" href="">Mohamed Guessoum</a>
+                                <a class="d-block text-center h3 mt-3 mb-4" href="">{{student.prenom}} {{student.nom}}</a>
                                 <div class="d-flex align-items-center justify-content-between mb-4">
                                     <div class="d-flex align-items-center">
                                         {% comment %} <img class="rounded-circle flex-shrink-0" src="{% static 'img/user.jpg' %}" alt="" style="width: 70px;height: 70px;margin-left: 36px;"> {% endcomment %}
+                                        {% if student.avatar %}
+                                        <img class="rounded-circle flex-shrink-0" src="{{ student.avatar.url }}" alt="" style="width: 55px;height: 55px;">
+                                        {% else %}
                                         <img class="rounded-circle flex-shrink-0" src="{% static 'img/user.jpg' %}" alt="" style="width: 55px;height: 55px;">
+                                        {% endif %}
                                         <div class="ms-3">
-                                            <h6 class="text-primary mb-1">Mohamed Guessoum</h6>
-                                            <small>GG11</small>
+                                            <h6 class="text-primary mb-1">{{student.prenom}} {{student.nom}}</h6>
+                                            <small>{{group.name}}</small>
                                         </div> 
                                     </div>
-                                    <span class="bg-primary text-white rounded-pill py-2 px-3" href="">$99</span>
+                                    <span class="bg-primary text-white rounded-pill py-2 px-3" href="">${{student.points}}</span>
                                 </div>
                                 <div class="row g-1">
                                     <div class="col-4">
                                         <div class="border-top border-3 border-primary pt-2">
                                             <h6 class="text-primary mb-1">Add:</h6>
                                             <small> 
-                                                <button type="button" class="bg-primary text-white rounded-pill py-2 px-3" data-bs-toggle="modal" data-bs-target="#addItemModal">Add</button> 
+                                                <button type="button" class="bg-primary text-white rounded-pill py-2 px-3" data-bs-toggle="modal" data-bs-target="#addItemModal" data-student-id="{{ student.id }}">Add</button>
                                             </small>
                                             {% comment %} <small><span class="bg-primary text-white rounded-pill py-2 px-3" href="">Add</span></small> {% endcomment %}
                                         </div>
@@ -61,36 +66,38 @@
                             </div>
                         </div>
                     </div>
+                    {% endfor %}
 
 
                 <!-- Add Item Modal -->
-            <div id="addItemModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="addItemModalLabel" aria-hidden="true">
-                <div class="modal-dialog" role="document">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title" id="addItemModalLabel">Select Amount to Add</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <form>
-                                <div class="mb-3">
-                                    <label for="dropdownAmount" class="form-label">Choose an amount</label>
-                                    <select class="form-select" id="dropdownAmount" aria-label="Amount select">
-                                        <option selected>Select an amount</option>
-                                        <option value="1">1$</option>
-                                        <option value="5">5$</option>
-                                        <option value="10">10$</option>
-                                    </select>
-                                </div>
-                            </form>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                            <button type="button" class="btn btn-primary" onclick="triggerAnimation()">Save changes</button>
+                <div id="addItemModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="addItemModalLabel" aria-hidden="true">
+                    <div class="modal-dialog" role="document">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="addItemModalLabel">Select Amount to Add</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <form id="addPointsForm">
+                                    {% csrf_token %}
+                                    <div class="mb-3">
+                                        <label for="dropdownAmount" class="form-label">Choose an amount</label>
+                                        <select class="form-select" id="dropdownAmount" aria-label="Amount select">
+                                            <option selected>Select an amount</option>
+                                            <option value="1">1$</option>
+                                            <option value="5">5$</option>
+                                            <option value="10">10$</option>
+                                        </select>
+                                    </div>
+                                </form>                                
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="button" class="btn btn-primary" onclick="triggerAnimation()">Save changes</button>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
             <!-- Winning Animation -->
             <div id="winAnimation" class="win-animation d-none">
@@ -328,36 +335,57 @@
                         
                     </style>
                     <script>
-                        function triggerAnimation() {
-                            // Get the selected amount
-                            var selectedAmount = document.getElementById('dropdownAmount').value;
-                            
-                            // Check if a valid amount is selected
-                            if (selectedAmount && selectedAmount !== 'Select an amount') {
-                                // Close the modal
-                                $('#addItemModal').modal('hide');
+                        let selectedStudentId = null; // Variable to store the selected student ID
+
+                        // Attach a click event listener to the "Add" button
+                        document.querySelectorAll('[data-bs-target="#addItemModal"]').forEach(button => {
+                            button.addEventListener('click', function () {
+                                selectedStudentId = this.getAttribute('data-student-id');
+                            });
+                        });
                         
-                                // Show the winning animation
+                        function triggerAnimation() {
+                            console.log('triggerAnimation called'); // Debugging line
+                            var selectedAmount = document.getElementById('dropdownAmount').value;
+                        
+                            if (selectedAmount && selectedAmount !== 'Select an amount') {
+                                $('#addItemModal').modal('hide');
                                 document.getElementById('winAnimation').classList.remove('d-none');
-                                
-                                // Play winning sound
                                 var winningSound = document.getElementById('winningSound');
                                 winningSound.play();
-                                
-                                // Hide the animation after 8 seconds
                                 setTimeout(() => {
                                     document.getElementById('winAnimation').classList.add('d-none');
-                                }, 6000); // Adjust the time as per the animation duration
+                                    location.reload(); // Reload the page
+                                }, 6000);
+                        
+                                if (selectedStudentId) {
+                                    fetch(`/update_points/${selectedStudentId}/`, {
+                                        method: 'POST',
+                                        headers: {
+                                            'Content-Type': 'application/json',
+                                            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                                        },
+                                        body: JSON.stringify({ amount: selectedAmount })
+                                    })
+                                    .then(response => response.json())
+                                    .then(data => {
+                                        console.log('Success:', data);
+                                    })
+                                    .catch((error) => {
+                                        console.error('Error:', error);
+                                    });
+                                }
                             } else {
-                                // Optionally, you can add a message or alert if no valid amount is selected
                                 alert('Please select a valid amount.');
                             }
                         }
+                        
+                        
                     </script>
 
-
-                   <!-- Minus Item Modal -->
-<div id="minusItemModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="minusItemModalLabel" aria-hidden="true">
+ <!-- Minus Item Modal -->
+ <!-- Minus Item Modal -->
+ <div id="minusItemModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="minusItemModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -365,7 +393,8 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form>
+                <form id="minusPointsForm">
+                    {% csrf_token %}
                     <div class="mb-3">
                         <label for="dropdownMinusAmount" class="form-label">Choose an amount</label>
                         <select class="form-select" id="dropdownMinusAmount" aria-label="Amount select">
@@ -373,20 +402,19 @@
                             <option value="1">-1$</option>
                             <option value="5">-5$</option>
                             <option value="10">-10$</option>
-                            <!-- Add more options as needed -->
                         </select>
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" onclick="triggerLossAnimation()">Save changes</button>
+                <button type="button" class="btn btn-primary" id="saveChangesButton">Save changes</button>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Losing Animation -->
+<!-- Loss Animation -->
 <div id="lossAnimation" class="win-animation d-none">
     <div class="animation-container">
         <div class="sad-face">😞</div>
@@ -414,8 +442,86 @@
     </div>
 </div>
 
-<!-- Losing Sound -->
+<!-- Loss Sound -->
 <audio id="losingSound" src="{% static 'verloren-89595.mp3' %}" preload="auto"></audio>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        let selectedStudentId = null; // Variable to store the selected student ID
+    
+        // Attach a click event listener to the "Minus" buttons
+        document.querySelectorAll('[data-bs-target="#minusItemModal"]').forEach(button => {
+            button.addEventListener('click', function () {
+                selectedStudentId = this.getAttribute('data-student-id');
+            });
+        });
+    
+        // Add event listener to the Save Changes button
+        document.getElementById('saveChangesButton').addEventListener('click', function() {
+            console.log('Save Changes button clicked'); // Debugging line
+            triggerLossAnimation();
+        });
+    
+        function triggerLossAnimation() {
+            console.log('triggerLossAnimation called'); // Debugging line
+            var selectedAmount = document.getElementById('dropdownMinusAmount').value;
+            console.log('Selected amount:', selectedAmount); // Debugging line
+    
+            if (selectedAmount && selectedAmount !== 'Select an amount') {
+                // Hide the modal
+                var minusModal = bootstrap.Modal.getInstance(document.getElementById('minusItemModal'));
+                if (minusModal) {
+                    minusModal.hide();
+                }
+    
+                // Show the loss animation
+                var lossAnimation = document.getElementById('lossAnimation');
+                if (lossAnimation) {
+                    lossAnimation.classList.remove('d-none');
+                }
+    
+                var losingSound = document.getElementById('losingSound');
+                if (losingSound) {
+                    losingSound.play();
+                }
+    
+                // Delay before hiding the animation and reloading the page
+                setTimeout(() => {
+                    if (lossAnimation) {
+                        lossAnimation.classList.add('d-none');
+                    }
+                    location.reload(); // Reload the page
+                }, 6000);
+    
+                // Make the fetch request if student ID is available
+                if (selectedStudentId) {
+                    fetch(`/subtract_points/${selectedStudentId}/`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                        },
+                        body: JSON.stringify({ amount: selectedAmount })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Success:', data);
+                    })
+                    .catch((error) => {
+                        console.error('Error:', error);
+                    });
+                }
+            } else {
+                alert('Please select a valid amount.');
+            }
+        }
+    });
+    
+</script>
+
+
+
+
 
 
 <style>
@@ -621,246 +727,9 @@
     }
 </style>
 
-<script>
-    function triggerLossAnimation() {
-        // Get the selected amount
-        var selectedAmount = document.getElementById('dropdownMinusAmount').value;
-        
-        // Check if a valid amount is selected
-        if (selectedAmount && selectedAmount !== 'Select an amount') {
-            // Close the modal
-            $('#minusItemModal').modal('hide');
-    
-            // Show the losing animation
-            document.getElementById('lossAnimation').classList.remove('d-none');
-            
-            // Play losing sound
-            var losingSound = document.getElementById('losingSound');
-            losingSound.play();
-            
-            // Hide the animation after 8 seconds
-            setTimeout(() => {
-                document.getElementById('lossAnimation').classList.add('d-none');
-            }, 6000); // Adjust the time as per the animation duration
-        } else {
-            // Optionally, you can add a message or alert if no valid amount is selected
-            alert('Please select a valid amount.');
-        }
-    }
-</script>
 
 
 
-                    <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
-                        <div class="classes-item">
-                            <div class="bg-light rounded-circle w-75 mx-auto p-3">
-                                <img class="img-fluid rounded-circle" src="img/classes-1.jpg" alt="">
-                            </div>
-                            <div class="bg-light rounded p-4 pt-5 mt-n5">
-                                <a class="d-block text-center h3 mt-3 mb-4" href="">Mohamed Guessoum</a>
-                                <div class="d-flex align-items-center justify-content-between mb-4">
-                                    <div class="d-flex align-items-center">
-                                        {% comment %} <img class="rounded-circle flex-shrink-0" src="{% static 'img/user.jpg' %}" alt="" style="width: 70px;height: 70px;margin-left: 36px;"> {% endcomment %}
-                                        <img class="rounded-circle flex-shrink-0" src="{% static 'img/user.jpg' %}" alt="" style="width: 55px;height: 55px;">
-                                        <div class="ms-3">
-                                            <h6 class="text-primary mb-1">Mohamed Guessoum</h6>
-                                            <small>GG11</small>
-                                        </div> 
-                                    </div>
-                                    <span class="bg-primary text-white rounded-pill py-2 px-3" href="">$99</span>
-                                </div>
-                                <div class="row g-1">
-                                    <div class="col-4">
-                                        <div class="border-top border-3 border-primary pt-2">
-                                            <h6 class="text-primary mb-1">Add:</h6>
-                                            <small> <a href=""><button class="bg-primary text-white rounded-pill py-2 px-3">Add</button></a> </small>
-                                            {% comment %} <small><span class="bg-primary text-white rounded-pill py-2 px-3" href="">Add</span></small> {% endcomment %}
-                                        </div>
-                                    </div>
-                                    <div class="col-4">
-                                        {% comment %} <div class="border-top border-3 border-success pt-2">
-                                            <h6 class="text-success mb-1">Time:</h6>
-                                            <small>9-10 AM</small>
-                                        </div> {% endcomment %}
-                                    </div>
-                                    <div class="col-4">
-                                        <div class="border-top border-3 border-warning pt-2">
-                                            <h6 class="text-warning mb-1">Minus:</h6>
-                                            <small> <a href=""><button class="bg-primary text-white rounded-pill py-2 px-3">Minus</button></a> </small>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
-                        <div class="classes-item">
-                            <div class="bg-light rounded-circle w-75 mx-auto p-3">
-                                <img class="img-fluid rounded-circle" src="img/classes-1.jpg" alt="">
-                            </div>
-                            <div class="bg-light rounded p-4 pt-5 mt-n5">
-                                <a class="d-block text-center h3 mt-3 mb-4" href="">Mohamed Guessoum</a>
-                                <div class="d-flex align-items-center justify-content-between mb-4">
-                                    <div class="d-flex align-items-center">
-                                        {% comment %} <img class="rounded-circle flex-shrink-0" src="{% static 'img/user.jpg' %}" alt="" style="width: 70px;height: 70px;margin-left: 36px;"> {% endcomment %}
-                                        <img class="rounded-circle flex-shrink-0" src="{% static 'img/user.jpg' %}" alt="" style="width: 55px;height: 55px;">
-                                        <div class="ms-3">
-                                            <h6 class="text-primary mb-1">Mohamed Guessoum</h6>
-                                            <small>GG11</small>
-                                        </div> 
-                                    </div>
-                                    <span class="bg-primary text-white rounded-pill py-2 px-3" href="">$99</span>
-                                </div>
-                                <div class="row g-1">
-                                    <div class="col-4">
-                                        <div class="border-top border-3 border-primary pt-2">
-                                            <h6 class="text-primary mb-1">Add:</h6>
-                                            <small> <a href=""><button class="bg-primary text-white rounded-pill py-2 px-3">Add</button></a> </small>
-                                            {% comment %} <small><span class="bg-primary text-white rounded-pill py-2 px-3" href="">Add</span></small> {% endcomment %}
-                                        </div>
-                                    </div>
-                                    <div class="col-4">
-                                        {% comment %} <div class="border-top border-3 border-success pt-2">
-                                            <h6 class="text-success mb-1">Time:</h6>
-                                            <small>9-10 AM</small>
-                                        </div> {% endcomment %}
-                                    </div>
-                                    <div class="col-4">
-                                        <div class="border-top border-3 border-warning pt-2">
-                                            <h6 class="text-warning mb-1">Minus:</h6>
-                                            <small> <a href=""><button class="bg-primary text-white rounded-pill py-2 px-3">Minus</button></a> </small>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
-                        <div class="classes-item">
-                            <div class="bg-light rounded-circle w-75 mx-auto p-3">
-                                <img class="img-fluid rounded-circle" src="img/classes-1.jpg" alt="">
-                            </div>
-                            <div class="bg-light rounded p-4 pt-5 mt-n5">
-                                <a class="d-block text-center h3 mt-3 mb-4" href="">Mohamed Guessoum</a>
-                                <div class="d-flex align-items-center justify-content-between mb-4">
-                                    <div class="d-flex align-items-center">
-                                        {% comment %} <img class="rounded-circle flex-shrink-0" src="{% static 'img/user.jpg' %}" alt="" style="width: 70px;height: 70px;margin-left: 36px;"> {% endcomment %}
-                                        <img class="rounded-circle flex-shrink-0" src="{% static 'img/user.jpg' %}" alt="" style="width: 55px;height: 55px;">
-                                        <div class="ms-3">
-                                            <h6 class="text-primary mb-1">Mohamed Guessoum</h6>
-                                            <small>GG11</small>
-                                        </div> 
-                                    </div>
-                                    <span class="bg-primary text-white rounded-pill py-2 px-3" href="">$99</span>
-                                </div>
-                                <div class="row g-1">
-                                    <div class="col-4">
-                                        <div class="border-top border-3 border-primary pt-2">
-                                            <h6 class="text-primary mb-1">Add:</h6>
-                                            <small> <a href=""><button class="bg-primary text-white rounded-pill py-2 px-3">Add</button></a> </small>
-                                            {% comment %} <small><span class="bg-primary text-white rounded-pill py-2 px-3" href="">Add</span></small> {% endcomment %}
-                                        </div>
-                                    </div>
-                                    <div class="col-4">
-                                        {% comment %} <div class="border-top border-3 border-success pt-2">
-                                            <h6 class="text-success mb-1">Time:</h6>
-                                            <small>9-10 AM</small>
-                                        </div> {% endcomment %}
-                                    </div>
-                                    <div class="col-4">
-                                        <div class="border-top border-3 border-warning pt-2">
-                                            <h6 class="text-warning mb-1">Minus:</h6>
-                                            <small> <a href=""><button class="bg-primary text-white rounded-pill py-2 px-3">Minus</button></a> </small>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
-                        <div class="classes-item">
-                            <div class="bg-light rounded-circle w-75 mx-auto p-3">
-                                <img class="img-fluid rounded-circle" src="img/classes-1.jpg" alt="">
-                            </div>
-                            <div class="bg-light rounded p-4 pt-5 mt-n5">
-                                <a class="d-block text-center h3 mt-3 mb-4" href="">Mohamed Guessoum</a>
-                                <div class="d-flex align-items-center justify-content-between mb-4">
-                                    <div class="d-flex align-items-center">
-                                        {% comment %} <img class="rounded-circle flex-shrink-0" src="{% static 'img/user.jpg' %}" alt="" style="width: 70px;height: 70px;margin-left: 36px;"> {% endcomment %}
-                                        <img class="rounded-circle flex-shrink-0" src="{% static 'img/user.jpg' %}" alt="" style="width: 55px;height: 55px;">
-                                        <div class="ms-3">
-                                            <h6 class="text-primary mb-1">Mohamed Guessoum</h6>
-                                            <small>GG11</small>
-                                        </div> 
-                                    </div>
-                                    <span class="bg-primary text-white rounded-pill py-2 px-3" href="">$99</span>
-                                </div>
-                                <div class="row g-1">
-                                    <div class="col-4">
-                                        <div class="border-top border-3 border-primary pt-2">
-                                            <h6 class="text-primary mb-1">Add:</h6>
-                                            <small> <a href=""><button class="bg-primary text-white rounded-pill py-2 px-3">Add</button></a> </small>
-                                            {% comment %} <small><span class="bg-primary text-white rounded-pill py-2 px-3" href="">Add</span></small> {% endcomment %}
-                                        </div>
-                                    </div>
-                                    <div class="col-4">
-                                        {% comment %} <div class="border-top border-3 border-success pt-2">
-                                            <h6 class="text-success mb-1">Time:</h6>
-                                            <small>9-10 AM</small>
-                                        </div> {% endcomment %}
-                                    </div>
-                                    <div class="col-4">
-                                        <div class="border-top border-3 border-warning pt-2">
-                                            <h6 class="text-warning mb-1">Minus:</h6>
-                                            <small> <a href=""><button class="bg-primary text-white rounded-pill py-2 px-3">Minus</button></a> </small>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
-                        <div class="classes-item">
-                            <div class="bg-light rounded-circle w-75 mx-auto p-3">
-                                <img class="img-fluid rounded-circle" src="img/classes-1.jpg" alt="">
-                            </div>
-                            <div class="bg-light rounded p-4 pt-5 mt-n5">
-                                <a class="d-block text-center h3 mt-3 mb-4" href="">Mohamed Guessoum</a>
-                                <div class="d-flex align-items-center justify-content-between mb-4">
-                                    <div class="d-flex align-items-center">
-                                        {% comment %} <img class="rounded-circle flex-shrink-0" src="{% static 'img/user.jpg' %}" alt="" style="width: 70px;height: 70px;margin-left: 36px;"> {% endcomment %}
-                                        <img class="rounded-circle flex-shrink-0" src="{% static 'img/user.jpg' %}" alt="" style="width: 55px;height: 55px;">
-                                        <div class="ms-3">
-                                            <h6 class="text-primary mb-1">Mohamed Guessoum</h6>
-                                            <small>GG11</small>
-                                        </div> 
-                                    </div>
-                                    <span class="bg-primary text-white rounded-pill py-2 px-3" href="">$99</span>
-                                </div>
-                                <div class="row g-1">
-                                    <div class="col-4">
-                                        <div class="border-top border-3 border-primary pt-2">
-                                            <h6 class="text-primary mb-1">Add:</h6>
-                                            <small> <a href=""><button class="bg-primary text-white rounded-pill py-2 px-3">Add</button></a> </small>
-                                            {% comment %} <small><span class="bg-primary text-white rounded-pill py-2 px-3" href="">Add</span></small> {% endcomment %}
-                                        </div>
-                                    </div>
-                                    <div class="col-4">
-                                        {% comment %} <div class="border-top border-3 border-success pt-2">
-                                            <h6 class="text-success mb-1">Time:</h6>
-                                            <small>9-10 AM</small>
-                                        </div> {% endcomment %}
-                                    </div>
-                                    <div class="col-4">
-                                        <div class="border-top border-3 border-warning pt-2">
-                                            <h6 class="text-warning mb-1">Minus:</h6>
-                                            <small> <a href=""><button class="bg-primary text-white rounded-pill py-2 px-3">Minus</button></a> </small>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
