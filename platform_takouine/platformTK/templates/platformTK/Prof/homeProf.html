@@ -162,26 +162,28 @@
                                     <th>#</th>
                                     <th>Nom</th>
                                     <th>Date</th>
-                                    <th>Lieu</th>
+                                    <th>Code Group</th>
                                     <th>Participants</th>
+                                    <th>Total Points</th>
+                                    <th>ALL</th>
                                 </tr>
                             </thead>
                             <tbody>
+                                {% for group in groups %}
                                 <tr>
-                                    <td>1</td>
-                                    <td>Compétition de Mathématiques</td>
-                                    <td>2024-09-15</td>
-                                    <td>École Primaire</td>
-                                    <td>50</td>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>{{ group.name }}</td>
+                                    <td>{{ group.date_created }}</td>
+                                    <td>{{ group.code_group }} </td>
+                                    <td>{{ group.etudiants.count }}</td>
+                                    <th>{{ group.total_points }}</th>
+                                    <td><a href="{% url 'group_detail' code_group=group.code_group %}">Show</a></td>
                                 </tr>
+                                {% empty %}
                                 <tr>
-                                    <td>2</td>
-                                    <td>Concours de Dessin</td>
-                                    <td>2024-10-05</td>
-                                    <td>Centre Culturel</td>
-                                    <td>30</td>
+                                    <td colspan="4" class="text-center">No groups found.</td>
                                 </tr>
-                                <!-- Add more rows as needed -->
+                                {% endfor %}
                             </tbody>
                         </table>
                     </div>
@@ -205,25 +207,22 @@
                                     <th>Nom</th>
                                     <th>Date</th>
                                     <th>Lieu</th>
-                                    <th>Participants</th>
+                                    <th>Show</th>
+                                    <th>section</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td>1</td>
-                                    <td>Compétition de Mathématiques</td>
-                                    <td>2024-09-15</td>
-                                    <td>École Primaire</td>
-                                    <td>50</td>
-                                </tr>
-                                <tr>
-                                    <td>2</td>
-                                    <td>Concours de Dessin</td>
-                                    <td>2024-10-05</td>
-                                    <td>Centre Culturel</td>
-                                    <td>30</td>
-                                </tr>
-                                <!-- Add more rows as needed -->
+                        {% for competition in competitions %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{competition.name}}</td>
+                                <td>2024-09-15</td>
+                                <td>{{competition.number_of_sections}}</td>
+                                <td><a href="{% url 'add_section' competition.id %}">Show</a></td>
+                                <td><a href="{% url 'competition_sections' competition.id %}">View Sections</a></td>
+
+                            </tr>
+                        {% endfor %}
                             </tbody>
                         </table>
                     </div>

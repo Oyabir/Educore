@@ -86,3 +86,28 @@ class Groups(models.Model):
 
     def __str__(self):
         return self.name
+
+    def total_points(self):
+        return self.etudiants.aggregate(total_points=models.Sum('points'))['total_points'] or 0
+
+
+
+
+
+
+class Competitions(models.Model):
+    name = models.CharField(max_length=100)
+    number_of_sections = models.PositiveIntegerField()  # Number of sections for the competition
+
+    def __str__(self):
+        return self.name
+
+
+
+class Sections(models.Model):
+    competition = models.ForeignKey(Competitions, on_delete=models.CASCADE, related_name='sections')
+    section_name = models.CharField(max_length=100)  # Name of the section
+    etudiants = models.ManyToManyField('Etudiant', related_name='sections')  # Many-to-many relationship with Etudiants
+
+    def __str__(self):
+        return f"{self.competition.name} - {self.section_name}"

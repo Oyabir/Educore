@@ -63,7 +63,9 @@ def homeEtudiant(requset):
 
 
 def homeProf(requset):
-    return render(requset,"platformTK/Prof/homeProf.html")
+    groups = Groups.objects.all()
+    competitions = Competitions.objects.all()
+    return render(requset,"platformTK/Prof/homeProf.html",{"groups": groups, "competitions": competitions})
 
 
 
@@ -75,10 +77,70 @@ def Groupes(requset):
 
 
 
+def competitions_list(request):
+    competitions = Competitions.objects.all()
+    context = {"competitions": competitions}
+    return render(request, "platformTK/Prof/Competitions.html", context)
 
 
-def Competitions(requset):
-    return render(requset,"platformTK/Prof/Competitions.html")
+
+def add_competition(request):
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        number_of_sections = request.POST.get('number_of_sections')
+
+        # Validate input
+        if name and number_of_sections:
+            try:
+                number_of_sections = int(number_of_sections)
+                # Save the new competition to the database
+                Competitions.objects.create(
+                    name=name,
+                    number_of_sections=number_of_sections
+                )
+                return redirect('competitions_list')  # Redirect to a page listing competitions
+            except ValueError:
+                # Handle invalid number_of_sections
+                pass
+
+    return redirect('competitions_list')  # Redirect to a page listing competitions if GET request
+
+
+
+
+def add_section(request, competition_id):
+    competition = get_object_or_404(Competitions, id=competition_id)
+    students = Etudiant.objects.all()
+
+    if request.method == 'POST':
+        section_name = request.POST.get('section_name')
+        selected_students = request.POST.getlist('students')  # Get the list of selected students
+
+        if section_name:
+            # Create the new section for the competition
+            section = Sections.objects.create(
+                competition=competition,
+                section_name=section_name
+            )
+
+            # Add selected students to the section
+            section.etudiants.set(selected_students)
+            section.save()
+
+            return redirect('competitions_list')  # Redirect back to the competition list
+
+    return render(request, 'platformTK/Prof/add_section.html', {'competition': competition, 'students': students})
+
+
+
+
+
+
+def competition_sections(request, competition_id):
+    competition = get_object_or_404(Competitions, id=competition_id)
+    sections = competition.sections.all()  # Get all sections related to the competition
+    return render(request, 'platformTK/Prof/competition_sections.html', {'competition': competition, 'sections': sections})
+
 
 
 
@@ -109,7 +171,7 @@ def Répartition_points(request, code_group):
     # Retrieve the group using the unique code_group
     group = get_object_or_404(Groups, code_group=code_group)
     # Get all students associated with this group
-    students = group.etudiants.all()
+    students = group.etudiants.all().order_by('-points')
     return render(request, "platformTK/Prof/Répartition_points.html", {"group": group, "students": students})
 
 
@@ -141,16 +203,20 @@ def subtract_points(request, student_id):
     if request.method == 'POST':
         import json
         data = json.loads(request.body)
-        amount = data.get('amount')  # This should be a positive value, we'll subtract it
+        amount = abs(int(data.get('amount')))  
 
         try:
             student = Etudiant.objects.get(id=student_id)
-            student.points -= int(amount)  # Subtract the points
-            student.save()
-            return JsonResponse({'success': True})
+            if student.points >= amount:
+                student.points -= amount  
+                student.save()
+                return JsonResponse({'success': True})
+            else:
+                return JsonResponse({'success': False, 'error': 'Insufficient points'})
         except Etudiant.DoesNotExist:
             return JsonResponse({'success': False, 'error': 'Student not found'})
     return JsonResponse({'success': False, 'error': 'Invalid request method'})
+
 
 
 

@@ -11,7 +11,14 @@ urlpatterns = [
 
     path('homeProf/', views.homeProf, name='homeProf'),
     path('Groupes/', views.Groupes, name='Groupes'),
-    path('Competitions/', views.Competitions, name='Competitions'),
+    
+    path('competitions_list/', views.competitions_list, name='competitions_list'),
+    path('add_competition/', views.add_competition, name='add_competition'),
+    path('add-section/<int:competition_id>/', views.add_section, name='add_section'),
+    path('competitions/<int:competition_id>/sections/', views.competition_sections, name='competition_sections'),
+
+
+    
     path('Store/', views.Store, name='Store'),
     path('Profil/', views.Profil, name='Profil'),
     path('group_detail/<str:code_group>/', views.group_detail, name='group_detail'),

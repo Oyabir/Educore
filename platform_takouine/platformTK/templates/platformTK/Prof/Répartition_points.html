@@ -56,9 +56,8 @@
                                         <div class="border-top border-3 border-warning pt-2">
                                             <h6 class="text-warning mb-1">Minus:</h6>
                                             <small>
-                                                <a href="#" data-bs-toggle="modal" data-bs-target="#minusItemModal">
-                                                    <button class="bg-primary text-white rounded-pill py-2 px-3">Minus</button>
-                                                </a>
+                                                <!-- Add data-student-id here -->
+                                                <button type="button" class="bg-primary text-white rounded-pill py-2 px-3" data-bs-toggle="modal" data-bs-target="#minusItemModal" data-student-id="{{ student.id }}">Minus</button>
                                             </small>                                       
                                         </div>
                                     </div>
@@ -67,69 +66,6 @@
                         </div>
                     </div>
                     {% endfor %}
-
-
-                <!-- Add Item Modal -->
-                <div id="addItemModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="addItemModalLabel" aria-hidden="true">
-                    <div class="modal-dialog" role="document">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="addItemModalLabel">Select Amount to Add</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                <form id="addPointsForm">
-                                    {% csrf_token %}
-                                    <div class="mb-3">
-                                        <label for="dropdownAmount" class="form-label">Choose an amount</label>
-                                        <select class="form-select" id="dropdownAmount" aria-label="Amount select">
-                                            <option selected>Select an amount</option>
-                                            <option value="1">1$</option>
-                                            <option value="5">5$</option>
-                                            <option value="10">10$</option>
-                                        </select>
-                                    </div>
-                                </form>                                
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                <button type="button" class="btn btn-primary" onclick="triggerAnimation()">Save changes</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-            <!-- Winning Animation -->
-            <div id="winAnimation" class="win-animation d-none">
-                <div class="animation-container">
-                    <div class="trophy-icon">🏆</div>
-                    <div class="confetti-container">
-                        <div class="confetti-emoji">
-                            <span>🎉</span>
-                            <span>🎉</span>
-                            <span>🎉</span>
-                        </div>
-                        <div class="confetti">
-                            <div class="confetti-piece"></div>
-                            <div class="confetti-piece"></div>
-                            <div class="confetti-piece"></div>
-                            <div class="confetti-piece"></div>
-                            <div class="confetti-piece"></div>
-                        </div>
-                    </div>
-                    <div class="stars">
-                        <div class="star"></div>
-                        <div class="star"></div>
-                        <div class="star"></div>
-                        <div class="star"></div>
-                        <div class="star"></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Winning Sound -->
-            <audio id="winningSound" src="{% static 'mixkit-small-group-moderate-applause-505.wav' %}" preload="auto"></audio>
-
 
                     <style>
                         .win-animation {
@@ -334,58 +270,70 @@
                         }
                         
                     </style>
-                    <script>
-                        let selectedStudentId = null; // Variable to store the selected student ID
 
-                        // Attach a click event listener to the "Add" button
-                        document.querySelectorAll('[data-bs-target="#addItemModal"]').forEach(button => {
-                            button.addEventListener('click', function () {
-                                selectedStudentId = this.getAttribute('data-student-id');
-                            });
-                        });
-                        
-                        function triggerAnimation() {
-                            console.log('triggerAnimation called'); // Debugging line
-                            var selectedAmount = document.getElementById('dropdownAmount').value;
-                        
-                            if (selectedAmount && selectedAmount !== 'Select an amount') {
-                                $('#addItemModal').modal('hide');
-                                document.getElementById('winAnimation').classList.remove('d-none');
-                                var winningSound = document.getElementById('winningSound');
-                                winningSound.play();
-                                setTimeout(() => {
-                                    document.getElementById('winAnimation').classList.add('d-none');
-                                    location.reload(); // Reload the page
-                                }, 6000);
-                        
-                                if (selectedStudentId) {
-                                    fetch(`/update_points/${selectedStudentId}/`, {
-                                        method: 'POST',
-                                        headers: {
-                                            'Content-Type': 'application/json',
-                                            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-                                        },
-                                        body: JSON.stringify({ amount: selectedAmount })
-                                    })
-                                    .then(response => response.json())
-                                    .then(data => {
-                                        console.log('Success:', data);
-                                    })
-                                    .catch((error) => {
-                                        console.error('Error:', error);
-                                    });
-                                }
-                            } else {
-                                alert('Please select a valid amount.');
-                            }
-                        }
-                        
-                        
-                    </script>
+<!-- Add Item Modal -->
+<div id="addItemModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="addItemModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addItemModalLabel">Select Amount to Add</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addPointsForm">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="dropdownAmount" class="form-label">Choose an amount</label>
+                        <select class="form-select" id="dropdownAmount" aria-label="Amount select">
+                            <option selected>Select an amount</option>
+                            <option value="1">1$</option>
+                            <option value="5">5$</option>
+                            <option value="10">10$</option>
+                        </select>
+                    </div>
+                </form>                                
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="triggerAnimation()">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
 
- <!-- Minus Item Modal -->
- <!-- Minus Item Modal -->
- <div id="minusItemModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="minusItemModalLabel" aria-hidden="true">
+<!-- Winning Animation -->
+<div id="winAnimation" class="win-animation d-none">
+    <div class="animation-container">
+        <div class="trophy-icon">🏆</div>
+        <div class="confetti-container">
+            <div class="confetti-emoji">
+                <span>🎉</span>
+                <span>🎉</span>
+                <span>🎉</span>
+            </div>
+            <div class="confetti">
+                <div class="confetti-piece"></div>
+                <div class="confetti-piece"></div>
+                <div class="confetti-piece"></div>
+                <div class="confetti-piece"></div>
+                <div class="confetti-piece"></div>
+            </div>
+        </div>
+        <div class="stars">
+            <div class="star"></div>
+            <div class="star"></div>
+            <div class="star"></div>
+            <div class="star"></div>
+            <div class="star"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Winning Sound -->
+<audio id="winningSound" src="{% static 'mixkit-small-group-moderate-applause-505.wav' %}" preload="auto"></audio>
+
+<!-- Minus Item Modal -->
+<div id="minusItemModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="minusItemModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -408,7 +356,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" id="saveChangesButton">Save changes</button>
+                <button type="button" class="btn btn-primary" onclick="triggerLossAnimation()">Save changes</button>
             </div>
         </div>
     </div>
@@ -446,79 +394,102 @@
 <audio id="losingSound" src="{% static 'verloren-89595.mp3' %}" preload="auto"></audio>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        let selectedStudentId = null; // Variable to store the selected student ID
-    
-        // Attach a click event listener to the "Minus" buttons
-        document.querySelectorAll('[data-bs-target="#minusItemModal"]').forEach(button => {
-            button.addEventListener('click', function () {
-                selectedStudentId = this.getAttribute('data-student-id');
-            });
+    let selectedStudentId = null; // Variable to store the selected student ID
+
+    // Attach click event listeners to both "Add" and "Minus" buttons
+    document.querySelectorAll('[data-bs-target="#addItemModal"], [data-bs-target="#minusItemModal"]').forEach(button => {
+        button.addEventListener('click', function () {
+            selectedStudentId = this.getAttribute('data-student-id');
+            console.log('Selected Student ID:', selectedStudentId); // Debug log
         });
-    
-        // Add event listener to the Save Changes button
-        document.getElementById('saveChangesButton').addEventListener('click', function() {
-            console.log('Save Changes button clicked'); // Debugging line
-            triggerLossAnimation();
-        });
-    
-        function triggerLossAnimation() {
-            console.log('triggerLossAnimation called'); // Debugging line
-            var selectedAmount = document.getElementById('dropdownMinusAmount').value;
-            console.log('Selected amount:', selectedAmount); // Debugging line
-    
-            if (selectedAmount && selectedAmount !== 'Select an amount') {
-                // Hide the modal
-                var minusModal = bootstrap.Modal.getInstance(document.getElementById('minusItemModal'));
-                if (minusModal) {
-                    minusModal.hide();
-                }
-    
-                // Show the loss animation
-                var lossAnimation = document.getElementById('lossAnimation');
-                if (lossAnimation) {
-                    lossAnimation.classList.remove('d-none');
-                }
-    
-                var losingSound = document.getElementById('losingSound');
-                if (losingSound) {
-                    losingSound.play();
-                }
-    
-                // Delay before hiding the animation and reloading the page
-                setTimeout(() => {
-                    if (lossAnimation) {
-                        lossAnimation.classList.add('d-none');
-                    }
-                    location.reload(); // Reload the page
-                }, 6000);
-    
-                // Make the fetch request if student ID is available
-                if (selectedStudentId) {
-                    fetch(`/subtract_points/${selectedStudentId}/`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-                        },
-                        body: JSON.stringify({ amount: selectedAmount })
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        console.log('Success:', data);
-                    })
-                    .catch((error) => {
-                        console.error('Error:', error);
-                    });
-                }
-            } else {
-                alert('Please select a valid amount.');
-            }
-        }
     });
     
+    // Function to trigger the winning animation
+    function triggerAnimation() {
+        var selectedAmount = document.getElementById('dropdownAmount').value;
+        console.log('Selected Amount (Add):', selectedAmount); // Debug log
+        if (selectedAmount && selectedAmount !== 'Select an amount') {
+            bootstrap.Modal.getInstance(document.getElementById('addItemModal')).hide();
+            document.getElementById('winAnimation').classList.remove('d-none');
+            document.getElementById('winningSound').play();
+            setTimeout(() => {
+                document.getElementById('winAnimation').classList.add('d-none');
+                location.reload();
+            }, 6000);
+    
+            if (selectedStudentId) {
+                fetch(`/update_points/${selectedStudentId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    },
+                    body: JSON.stringify({ amount: selectedAmount })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Success (Add):', data);
+                })
+                .catch((error) => {
+                    console.error('Error (Add):', error);
+                });
+            } else {
+                alert('No student selected.');
+            }
+        } else {
+            alert('Please select a valid amount.');
+        }
+    }
+    
+    // Function to trigger the loss animation
+    function triggerLossAnimation() {
+        var selectedAmount = document.getElementById('dropdownMinusAmount').value;
+        console.log('Selected Amount (Minus):', selectedAmount); // Debug log
+    
+        if (selectedAmount && selectedAmount !== 'Select an amount') {
+            var amount = parseInt(selectedAmount); 
+            console.log('Parsed Amount:', amount); // Debug log
+            console.log('Selected Student ID (Minus):', selectedStudentId); // Debug log
+    
+            if (selectedStudentId) {
+                fetch(`/subtract_points/${selectedStudentId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    },
+                    body: JSON.stringify({ amount: amount }) 
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        console.log('Points subtracted successfully');
+                        bootstrap.Modal.getInstance(document.getElementById('minusItemModal')).hide();
+                        document.getElementById('lossAnimation').classList.remove('d-none');
+                        document.getElementById('losingSound').play();
+                        setTimeout(() => {
+                            document.getElementById('lossAnimation').classList.add('d-none');
+                            location.reload();
+                        }, 6000);
+                    } else {
+                        console.error('Error (Minus):', data.error);
+                        alert('Failed to subtract points: ' + data.error);
+                    }
+                })
+                .catch((error) => {
+                    console.error('Error (Minus):', error);
+                });
+            } else {
+                alert('No student selected.');
+            }
+        } else {
+            alert('Please select a valid amount.');
+        }
+    }
+    
+    
+    
 </script>
-
 
 
 

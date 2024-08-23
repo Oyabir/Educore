@@ -1,0 +1,27 @@
+{% block content %}
+<div class="container">
+    <h2>Sections in {{ competition.name }}</h2>
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Section Name</th>
+                <th>Students</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for section in sections %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ section.section_name }}</td>
+                    <td>
+                        {% for student in section.etudiants.all %}
+                            {{ student.prenom }} {{ student.nom }}{% if not forloop.last %}, {% endif %}
+                        {% endfor %}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

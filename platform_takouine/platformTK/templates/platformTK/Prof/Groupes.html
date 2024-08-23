@@ -20,6 +20,7 @@
                                 <th>Date</th>
                                 <th>Code Group</th>
                                 <th>Participants</th>
+                                <th>Total Points</th>
                                 <th>ALL</th>
                             </tr>
                         </thead>
@@ -31,6 +32,7 @@
                                 <td>{{ group.date_created }}</td>
                                 <td>{{ group.code_group }} </td>
                                 <td>{{ group.etudiants.count }}</td>
+                                <th>{{ group.total_points }}</th>
                                 <td><a href="{% url 'group_detail' code_group=group.code_group %}">Show</a></td>
                             </tr>
                             {% empty %}
