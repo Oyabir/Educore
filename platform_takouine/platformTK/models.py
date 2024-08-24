@@ -105,9 +105,10 @@ class Competitions(models.Model):
 
 
 class Sections(models.Model):
-    competition = models.ForeignKey(Competitions, on_delete=models.CASCADE, related_name='sections')
-    section_name = models.CharField(max_length=100)  # Name of the section
-    etudiants = models.ManyToManyField('Etudiant', related_name='sections')  # Many-to-many relationship with Etudiants
+    competition = models.ForeignKey('Competitions', on_delete=models.CASCADE, related_name='sections')
+    section_name = models.CharField(max_length=100)  
+    etudiants = models.ManyToManyField('Etudiant', related_name='sections')  
+    points = models.PositiveIntegerField(default=0)  
 
     def __str__(self):
-        return f"{self.competition.name} - {self.section_name}"
+        return f"{self.competition.name} - {self.section_name} - Points: {self.points}"

@@ -1,5 +1,11 @@
 {% block content %}
 <div class="container">
+    {% if error_message %}
+    <div class="alert alert-danger" role="alert">
+        {{ error_message }}
+    </div>
+{% endif %}
+
     <h2>Add Section to {{ competition.name }}</h2>
     <form action="{% url 'add_section' competition.id %}" method="post">
         {% csrf_token %}
@@ -18,4 +24,6 @@
         <button type="submit" class="btn btn-primary">Add Section</button>
     </form>
 </div>
+<a href="{% url 'competition_sections' competition.id %}">        <button type="submit" class="btn btn-primary">Back list competition</button>
+</a>
 {% endblock %}

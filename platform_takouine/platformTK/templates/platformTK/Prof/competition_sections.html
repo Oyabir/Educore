@@ -19,9 +19,17 @@
                             {{ student.prenom }} {{ student.nom }}{% if not forloop.last %}, {% endif %}
                         {% endfor %}
                     </td>
+                    <td>
+                        <form method="post" action="{% url 'update_section_points' section.id %}">
+                            {% csrf_token %}
+                            <input type="number" name="points" value="{{ section.points }}" min="0" class="form-control" required>
+                            <button type="submit" class="btn btn-primary mt-2">Update Points</button>
+                        </form>
+                    </td>
                 </tr>
             {% endfor %}
         </tbody>
+        
     </table>
 </div>
 {% endblock %}

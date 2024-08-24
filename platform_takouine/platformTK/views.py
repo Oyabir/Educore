@@ -94,11 +94,12 @@ def add_competition(request):
             try:
                 number_of_sections = int(number_of_sections)
                 # Save the new competition to the database
-                Competitions.objects.create(
+                competition = Competitions.objects.create(
                     name=name,
                     number_of_sections=number_of_sections
                 )
-                return redirect('competitions_list')  # Redirect to a page listing competitions
+                # Redirect to the add_section view with the new competition's ID
+                return redirect('add_section', competition_id=competition.id)
             except ValueError:
                 # Handle invalid number_of_sections
                 pass
@@ -108,29 +109,43 @@ def add_competition(request):
 
 
 
+
 def add_section(request, competition_id):
     competition = get_object_or_404(Competitions, id=competition_id)
     students = Etudiant.objects.all()
+
+    # Get the current number of sections for this competition
+    current_sections_count = competition.sections.count()
 
     if request.method == 'POST':
         section_name = request.POST.get('section_name')
         selected_students = request.POST.getlist('students')  # Get the list of selected students
 
-        if section_name:
-            # Create the new section for the competition
-            section = Sections.objects.create(
-                competition=competition,
-                section_name=section_name
-            )
+        # Check if the current number of sections is less than the allowed number of sections
+        if current_sections_count < competition.number_of_sections:
+            if section_name:
+                # Create the new section for the competition
+                section = Sections.objects.create(
+                    competition=competition,
+                    section_name=section_name
+                )
 
-            # Add selected students to the section
-            section.etudiants.set(selected_students)
-            section.save()
+                # Add selected students to the section
+                section.etudiants.set(selected_students)
+                section.save()
 
-            return redirect('competitions_list')  # Redirect back to the competition list
+                # Redirect back to the same page to add more sections if needed
+                return redirect('add_section', competition_id=competition.id)
+        else:
+            # Display an error message if the limit is reached
+            error_message = "You cannot add more sections than the allowed number."
+            return render(request, 'platformTK/Prof/add_section.html', {
+                'competition': competition,
+                'students': students,
+                'error_message': error_message
+            })
 
     return render(request, 'platformTK/Prof/add_section.html', {'competition': competition, 'students': students})
-
 
 
 
@@ -140,6 +155,27 @@ def competition_sections(request, competition_id):
     competition = get_object_or_404(Competitions, id=competition_id)
     sections = competition.sections.all()  # Get all sections related to the competition
     return render(request, 'platformTK/Prof/competition_sections.html', {'competition': competition, 'sections': sections})
+
+
+
+
+
+
+def update_section_points(request, section_id):
+    section = get_object_or_404(Sections, id=section_id)
+    if request.method == 'POST':
+        points = request.POST.get('points')
+        try:
+            section.points = int(points)
+            section.save()
+            return redirect('competition_sections', competition_id=section.competition.id)
+        except ValueError:
+            # Handle invalid points input
+            pass
+
+    return redirect('competition_sections', competition_id=section.competition.id)
+
+
 
 
 

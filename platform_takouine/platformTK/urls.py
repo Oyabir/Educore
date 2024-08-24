@@ -12,10 +12,12 @@ urlpatterns = [
     path('homeProf/', views.homeProf, name='homeProf'),
     path('Groupes/', views.Groupes, name='Groupes'),
     
+    
     path('competitions_list/', views.competitions_list, name='competitions_list'),
     path('add_competition/', views.add_competition, name='add_competition'),
     path('add-section/<int:competition_id>/', views.add_section, name='add_section'),
     path('competitions/<int:competition_id>/sections/', views.competition_sections, name='competition_sections'),
+    path('sections/<int:section_id>/update_points/', views.update_section_points, name='update_section_points'),
 
 
     
