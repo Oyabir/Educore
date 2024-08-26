@@ -79,47 +79,61 @@ def Groupes(requset):
 
 def competitions_list(request):
     competitions = Competitions.objects.all()
-    context = {"competitions": competitions}
+    groups = Groups.objects.all() 
+    context = {"competitions": competitions,'groups':groups}
     return render(request, "platformTK/Prof/Competitions.html", context)
 
 
 
+
 def add_competition(request):
+    groups = Groups.objects.all()  # Fetch all available groups
+    
     if request.method == 'POST':
         name = request.POST.get('name')
         number_of_sections = request.POST.get('number_of_sections')
+        selected_group = request.POST.get('group')  # Get selected group
 
         # Validate input
-        if name and number_of_sections:
+        if name and number_of_sections and selected_group:
             try:
                 number_of_sections = int(number_of_sections)
+                selected_group = Groups.objects.get(id=selected_group)  # Fetch the selected group
+                
                 # Save the new competition to the database
                 competition = Competitions.objects.create(
                     name=name,
-                    number_of_sections=number_of_sections
+                    number_of_sections=number_of_sections,
+                    group=selected_group  # Associate the selected group
                 )
+                
                 # Redirect to the add_section view with the new competition's ID
                 return redirect('add_section', competition_id=competition.id)
-            except ValueError:
-                # Handle invalid number_of_sections
+            except (ValueError, Groups.DoesNotExist):
+                # Handle invalid number_of_sections or invalid group
                 pass
 
-    return redirect('competitions_list')  # Redirect to a page listing competitions if GET request
+    return render(request, 'platformTK/Prof/add_competition.html', {'groups': groups})  # Render a form to add a competition
 
 
 
-
+from django.urls import reverse
 
 def add_section(request, competition_id):
     competition = get_object_or_404(Competitions, id=competition_id)
-    students = Etudiant.objects.all()
+    
+    # Filter students to include only those in the competition's group
+    students = competition.group.etudiants.all()
 
     # Get the current number of sections for this competition
     current_sections_count = competition.sections.count()
 
     if request.method == 'POST':
         section_name = request.POST.get('section_name')
-        selected_students = request.POST.getlist('students')  # Get the list of selected students
+        selected_students_str = request.POST.get('students')  # Get the string of selected students
+
+        # Clean the string to remove any trailing comma and split into a list of IDs
+        selected_students = list(map(int, selected_students_str.strip(',').split(',')))
 
         # Check if the current number of sections is less than the allowed number of sections
         if current_sections_count < competition.number_of_sections:
@@ -137,23 +151,25 @@ def add_section(request, competition_id):
                 # Redirect back to the same page to add more sections if needed
                 return redirect('add_section', competition_id=competition.id)
         else:
-            # Display an error message if the limit is reached
-            error_message = "You cannot add more sections than the allowed number."
+            # Build the competition_sections URL
+            competition_sections_url = reverse('competition_sections', args=[competition.id])
+
+            # Display an error message with a link to the competition sections page
+            error_message = f"You cannot add more sections than the allowed number. <a href='{competition_sections_url}'>Go to Competition Sections</a>"
             return render(request, 'platformTK/Prof/add_section.html', {
                 'competition': competition,
                 'students': students,
                 'error_message': error_message
             })
 
-    return render(request, 'platformTK/Prof/add_section.html', {'competition': competition, 'students': students})
-
+    return render(request, 'platformTK/Prof/add_section.html', {'competition': competition, 'students': students,'current_sections_count':current_sections_count,})
 
 
 
 
 def competition_sections(request, competition_id):
     competition = get_object_or_404(Competitions, id=competition_id)
-    sections = competition.sections.all()  # Get all sections related to the competition
+    sections = competition.sections.all().order_by('-points')  # Get all sections related to the competition
     return render(request, 'platformTK/Prof/competition_sections.html', {'competition': competition, 'sections': sections})
 
 
@@ -161,19 +177,49 @@ def competition_sections(request, competition_id):
 
 
 
-def update_section_points(request, section_id):
-    section = get_object_or_404(Sections, id=section_id)
-    if request.method == 'POST':
-        points = request.POST.get('points')
-        try:
-            section.points = int(points)
-            section.save()
-            return redirect('competition_sections', competition_id=section.competition.id)
-        except ValueError:
-            # Handle invalid points input
-            pass
 
-    return redirect('competition_sections', competition_id=section.competition.id)
+
+
+@csrf_exempt
+def increment_section_points(request, section_id):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        amount = data.get('amount', 0)
+        try:
+            section = Sections.objects.get(id=section_id)
+            # Ensure amount is an integer
+            amount = int(amount)
+            section.points += amount
+            section.save()
+            return JsonResponse({'success': True, 'new_points': section.points})
+        except Sections.DoesNotExist:
+            return JsonResponse({'error': 'Section not found'}, status=404)
+        except ValueError:
+            return JsonResponse({'error': 'Invalid amount'}, status=400)
+    return JsonResponse({'error': 'Invalid method'}, status=405)
+
+
+
+@csrf_exempt
+def decrement_section_points(request, section_id):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        amount = data.get('amount', 0)
+        try:
+            section = Sections.objects.get(id=section_id)
+            # Ensure amount is an integer
+            amount = int(amount)
+            section.points -= amount
+            section.save()
+            return JsonResponse({'success': True, 'new_points': section.points})
+        except Sections.DoesNotExist:
+            return JsonResponse({'error': 'Section not found'}, status=404)
+        except ValueError:
+            return JsonResponse({'error': 'Invalid amount'}, status=400)
+    return JsonResponse({'error': 'Invalid method'}, status=405)
+
+
+
 
 
 

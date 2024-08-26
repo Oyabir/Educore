@@ -95,9 +95,20 @@ class Groups(models.Model):
 
 
 
+# class Competitions(models.Model):
+#     name = models.CharField(max_length=100)
+#     number_of_sections = models.PositiveIntegerField()  # Number of sections for the competition
+#     groups = models.ManyToManyField('Groups', related_name='competitions', blank=True)  # Add ManyToManyField
+
+#     def __str__(self):
+#         return self.name
+
+
+
 class Competitions(models.Model):
     name = models.CharField(max_length=100)
     number_of_sections = models.PositiveIntegerField()  # Number of sections for the competition
+    group = models.ForeignKey('Groups', related_name='competitions', on_delete=models.CASCADE)  # Use ForeignKey for one group
 
     def __str__(self):
         return self.name

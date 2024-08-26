@@ -67,6 +67,15 @@
                             <label for="compParticipants" class="form-label">Number of Sections</label>
                             <input type="number" class="form-control" id="compParticipants" name="number_of_sections" placeholder="Enter number of sections" required>
                         </div>
+                        <div class="mb-3">
+                            <label for="group" class="form-label">Select Group</label>
+                            <select class="form-control" id="group" name="group" required>
+                                <option value="" disabled selected>Select a group</option>
+                                {% for group in groups %}
+                                    <option value="{{ group.id }}">{{ group.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
                         <button type="submit" class="btn btn-primary">Add Competition</button>
                     </form>
                 </div>

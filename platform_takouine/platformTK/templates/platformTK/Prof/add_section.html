@@ -1,8 +1,28 @@
+{% extends "platformTK/Prof/HomeBase.html" %}
+
+{% load static %}
+
 {% block content %}
-<div class="container">
+    {% include 'platformTK/Prof/navbar.html' %}
+    <div class="container">
+    {% if current_sections_count >= competition.number_of_sections %}
+    <div class="alert alert-success">
+        "Now you cannot add more sections than the allowed number. <a href="{% url 'competition_sections' competition.id %}">Go to Competition Sections</a>
+    </div>
+    <!-- Center the button using the .center-container class -->
+    <div class="center-container">
+        <a href="{% url 'competition_sections' competition.id %}">
+            <button type="button" class="btn btn-primary">Go to competition is finished</button>
+        </a>
+    </div>
+{% endif %}
+</div>
+
+{% if not current_sections_count >= competition.number_of_sections %}
+<div class="containeraa">
     {% if error_message %}
-    <div class="alert alert-danger" role="alert">
-        {{ error_message }}
+    <div class="alert alert-danger">
+        {{ error_message|safe }}
     </div>
 {% endif %}
 
@@ -13,17 +33,224 @@
             <label for="sectionName" class="form-label">Section Name</label>
             <input type="text" class="form-control" id="sectionName" name="section_name" placeholder="Enter section name" required>
         </div>
-        <div class="mb-3">
-            <label for="students" class="form-label">Select Students</label>
-            <select multiple class="form-control" id="students" name="students">
-                {% for student in students %}
-                    <option value="{{ student.id }}">{{ student.prenom }} {{ student.nom }}</option>
-                {% endfor %}
-            </select>
+      <!-- Student Search and List -->
+<div class="mb-3">
+    <label for="studentSearch" class="form-label">Search Students</label>
+    <div class="input-group">
+        <input type="text" class="form-control" id="studentSearch" placeholder="Search students..." oninput="filterList('student')">
+    </div>
+    <div class="card mt-3 p-2 scrollable-container" id="studentList">
+        {% for etudiant in students %}
+        <div data-id="{{ etudiant.id }}" class="student-item">
+            {{ etudiant.prenom }} {{ etudiant.nom }}   {% comment %}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {% endcomment %}
+            <button type="button" class="btn btn-danger btn-sm" onclick="addStudent({{ etudiant.id }}, '{{ etudiant.prenom }} {{ etudiant.nom }}')" style="background-color: #007bff;border-color: #007bff;">Add</button>
         </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Selected Students -->
+<div class="mt-2">
+    <label class="form-label">Selected Students</label>
+    <div id="selectedStudents" class="scrollable-list border rounded p-2"></div>
+    <input type="hidden" id="students" name="students">
+</div>
+<br>
+
         <button type="submit" class="btn btn-primary">Add Section</button>
     </form>
 </div>
-<a href="{% url 'competition_sections' competition.id %}">        <button type="submit" class="btn btn-primary">Back list competition</button>
-</a>
+
+{% endif %}
+
+
+<style>
+    /* Center the container and its content */
+.center-container {
+    display: flex;
+    justify-content: center; /* Center horizontally */
+    margin-top: 20px; /* Optional: adds space above the button */
+}
+
+.center-container button {
+    /* Optional: adjust button styles */
+    font-size: 16px; /* Change as needed */
+}
+
+</style>
+
+<script>
+    function filterList(type) {
+        var input, filter, items, i, txtValue;
+        if (type === 'student') {
+            input = document.getElementById('studentSearch');
+            items = document.querySelectorAll('#studentList .student-item');
+        }
+        
+        filter = input.value.toLowerCase();
+    
+        // Loop through all list items, and hide those who don't match the search query
+        for (i = 0; i < items.length; i++) {
+            txtValue = items[i].textContent || items[i].innerText;
+            if (txtValue.toLowerCase().indexOf(filter) > -1) {
+                items[i].style.display = "";
+            } else {
+                items[i].style.display = "none";
+            }
+        }
+    }
+    
+    function addStudent(id, name) {
+        var selectedStudents = document.getElementById('selectedStudents');
+        var input = document.getElementById('students');
+        var existingStudent = selectedStudents.querySelector(`[data-id='${id}']`);
+        
+        if (!existingStudent) {
+            var student = document.createElement('div');
+            student.setAttribute('data-id', id);
+            student.classList.add('d-flex', 'justify-content-between', 'align-items-center', 'mb-2');
+            student.innerHTML = name + 
+                ' <button type="button" class="btn btn-danger btn-sm" onclick="removeItem(this, \'student\', ' + id + ')">Remove</button>';
+            selectedStudents.appendChild(student);
+            input.value += id + ',';
+        }
+    }
+    
+    function removeItem(button, type, id) {
+        button.parentElement.remove();
+        var input = document.getElementById(type === 'student' ? 'students' : 'profs');
+        input.value = input.value.replace(id + ',', '');
+    }
+    
+</script>
+
+
+<style>
+    /* Global Styles */
+ {% comment %} body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #f8f9fa; /* Light grey background for the whole page */
+    color: #333;
+    margin: 0;
+    padding: 0;
+}  {% endcomment %}
+
+
+.containeraa {
+    background-color: #ffffff; /* White background for the form container */
+    border-radius: 8px;
+    padding: 30px;
+    margin: 50px auto;
+    max-width: 600px;
+    box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.1); /* Subtle shadow for form container */
+}
+
+/* Header Styles */
+h2 {
+    font-size: 28px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: #007bff; /* Blue color for the header */
+    text-align: center;
+}
+
+/* Form Styles */
+.form-label {
+    font-size: 16px;
+    font-weight: 500;
+    margin-bottom: 8px;
+    color: #555555;
+}
+
+.form-control {
+    border-radius: 5px;
+    border: 1px solid #ced4da;
+    padding: 10px 15px;
+    font-size: 16px;
+    transition: border-color 0.2s ease-in-out;
+}
+
+.form-control:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.25); /* Highlight input on focus */
+}
+
+.mb-3 {
+    margin-bottom: 20px;
+}
+
+select.form-control {
+    height: auto; /* Adjust height for multi-select */
+    padding: 10px;
+}
+
+/* Button Styles */
+.btn-primary {
+    background-color: #007bff;
+    border-color: #007bff;
+    font-size: 16px;
+    font-weight: 600;
+    padding: 10px 20px;
+    border-radius: 5px;
+    transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+    border-color: #004085;
+}
+
+.btn-primary:focus {
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); /* Add focus effect */
+}
+
+/* Alert Styles */
+.alert {
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 5px;
+    padding: 15px;
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+    .container {
+        padding: 20px;
+        margin: 20px;
+    }
+
+    h2 {
+        font-size: 24px;
+    }
+
+    .btn-primary {
+        width: 100%;
+    }
+}
+
+.scrollable-container {
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.student-item {
+    padding: 8px;
+    border-bottom: 1px solid #ddd;
+}
+
+.scrollable-list {
+    max-height: 150px;
+    overflow-y: auto;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.student-item:last-child {
+    border-bottom: none;
+}
+
+
+</style>
 {% endblock %}

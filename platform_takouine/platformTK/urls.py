@@ -17,8 +17,9 @@ urlpatterns = [
     path('add_competition/', views.add_competition, name='add_competition'),
     path('add-section/<int:competition_id>/', views.add_section, name='add_section'),
     path('competitions/<int:competition_id>/sections/', views.competition_sections, name='competition_sections'),
-    path('sections/<int:section_id>/update_points/', views.update_section_points, name='update_section_points'),
-
+    
+    path('increment_points/<int:section_id>/', views.increment_section_points, name='increment_section_points'),
+    path('decrement_points/<int:section_id>/', views.decrement_section_points, name='decrement_section_points'),
 
     
     path('Store/', views.Store, name='Store'),
