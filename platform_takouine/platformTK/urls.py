@@ -21,6 +21,11 @@ urlpatterns = [
     path('increment_points/<int:section_id>/', views.increment_section_points, name='increment_section_points'),
     path('decrement_points/<int:section_id>/', views.decrement_section_points, name='decrement_section_points'),
 
+    path('competition/<int:competition_id>/finish/', views.finish_competition, name='finish_competition'),
+    path('competition/<int:competition_id>/results/', views.competition_results, name='competition_results'),
+    
+    path('competition/<int:competition_id>/rank/', views.rank_competition, name='rank_competition'),
+
     
     path('Store/', views.Store, name='Store'),
     path('Profil/', views.Profil, name='Profil'),

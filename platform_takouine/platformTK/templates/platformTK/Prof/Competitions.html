@@ -34,7 +34,7 @@
                             <tr>
                                 <td>{{ forloop.counter }}</td>
                                 <td>{{competition.name}}</td>
-                                <td>2024-09-15</td>
+                                <td>2{{competition.date_created}}</td>
                                 <td>{{competition.number_of_sections}}</td>
                                 <td><a href="{% url 'add_section' competition.id %}">Show</a></td>
                                 <td><a href="{% url 'competition_sections' competition.id %}">View Sections</a></td>

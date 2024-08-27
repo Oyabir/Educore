@@ -12,6 +12,25 @@
         {{ error_message|safe }}
     </div>
     {% endif %}
+
+
+    {% if competition.is_finished %}
+    <div class="text-center">
+       <h1>This Competition is over .......</h1>
+       <img class="gold-medal" src="{% static "img/—Pngtree—close icon isolated on abstract_5233789.png" %}" alt="" style="width: 100px;">
+    </div>
+    
+    <div class="text-center">
+        <form action="{% url 'rank_competition' competition_id=competition.id %}" method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary">
+                Rank Competition
+            </button>
+        </form>
+    </div>
+{% endif %}
+
+
     <div class="container-xxl py-5">
         <div class="container">
             <div class="text-center mx-auto mb-5 wow fadeInUp" data-wow-delay="0.1s" style="max-width: 600px;">
@@ -42,9 +61,11 @@
                                 <div class="col-4">
                                     <div class="border-top border-3 border-primary pt-2">
                                         <h6 class="text-primary mb-1">Add:</h6>
+                                        {% if not competition.is_finished %}
                                         <small>
                                             <button type="button" class="bg-primary text-white rounded-pill py-2 px-3" data-bs-toggle="modal" data-bs-target="#addItemModal" data-section-id="{{ section.id }}">Add</button>
                                         </small>
+                                        {% endif %}
                                     </div>
                                 </div>
                                 <div class="col-4">
@@ -53,9 +74,11 @@
                                 <div class="col-4">
                                     <div class="border-top border-3 border-warning pt-2">
                                         <h6 class="text-warning mb-1">Minus:</h6>
+                                        {% if not competition.is_finished %}
                                         <small>
                                             <button type="button" class="bg-primary text-white rounded-pill py-2 px-3" data-bs-toggle="modal" data-bs-target="#minusItemModal" data-section-id="{{ section.id }}">Minus</button>
                                         </small>
+                                        {% endif %}
                                     </div>
                                 </div>
                             </div>
@@ -171,6 +194,17 @@
     </div>
     <audio id="losingSound" src="{% static 'verloren-89595.mp3' %}" preload="auto"></audio>
     
+    {% if not competition.is_finished %}
+    <div class="text-center">
+        <form action="{% url 'finish_competition' competition_id=competition.id %}" method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-primary">
+                Finish Competition
+            </button>
+        </form>
+    </div>
+    {% endif %}
+
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>

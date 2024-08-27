@@ -26,6 +26,7 @@ class ProfAdmin(admin.ModelAdmin):
 @admin.register(Competitions)
 class CompetitionsAdmin(admin.ModelAdmin):
     list_display = ('name', 'number_of_sections')
+    readonly_fields = ('date_created',)
 
 @admin.register(Sections)
 class SectionsAdmin(admin.ModelAdmin):

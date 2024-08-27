@@ -62,10 +62,19 @@ def homeEtudiant(requset):
 
 
 
-def homeProf(requset):
-    groups = Groups.objects.all()
-    competitions = Competitions.objects.all()
-    return render(requset,"platformTK/Prof/homeProf.html",{"groups": groups, "competitions": competitions})
+
+@login_required(login_url='login')
+@allowedUsers(allowedGroups=['Prof'])
+def homeProf(request):
+    try:
+        current_prof = prof.objects.get(user=request.user)
+        groups = Groups.objects.filter(profs=current_prof)
+        competitions = Competitions.objects.filter(prof=current_prof)
+    except prof.DoesNotExist:
+        groups = Groups.objects.none()
+        competitions = Competitions.objects.none()
+
+    return render(request, "platformTK/Prof/homeProf.html", {"groups": groups, "competitions": competitions})
 
 
 
@@ -77,18 +86,37 @@ def Groupes(requset):
 
 
 
+
+
+@login_required(login_url='login')
+@allowedUsers(allowedGroups=['Prof'])
 def competitions_list(request):
-    competitions = Competitions.objects.all()
-    groups = Groups.objects.all() 
-    context = {"competitions": competitions,'groups':groups}
+    try:
+        current_prof = prof.objects.get(user=request.user)
+        groups = Groups.objects.filter(profs=current_prof)
+        competitions = Competitions.objects.filter(prof=current_prof)
+        
+    except prof.DoesNotExist:
+        groups = Groups.objects.none()
+        competitions = Competitions.objects.none()
+
+    context = {"competitions": competitions, "groups": groups}
     return render(request, "platformTK/Prof/Competitions.html", context)
 
 
 
 
+
+@login_required(login_url='login')
+@allowedUsers(allowedGroups=['Prof'])
 def add_competition(request):
-    groups = Groups.objects.all()  # Fetch all available groups
-    
+    try:
+        current_prof = prof.objects.get(user=request.user)
+        groups = Groups.objects.filter(profs=current_prof)
+    except prof.DoesNotExist:
+        groups = Groups.objects.none()
+        current_prof = None  # Set to None if no prof is found
+
     if request.method == 'POST':
         name = request.POST.get('name')
         number_of_sections = request.POST.get('number_of_sections')
@@ -99,16 +127,18 @@ def add_competition(request):
             try:
                 number_of_sections = int(number_of_sections)
                 selected_group = Groups.objects.get(id=selected_group)  # Fetch the selected group
-                
-                # Save the new competition to the database
-                competition = Competitions.objects.create(
-                    name=name,
-                    number_of_sections=number_of_sections,
-                    group=selected_group  # Associate the selected group
-                )
-                
-                # Redirect to the add_section view with the new competition's ID
-                return redirect('add_section', competition_id=competition.id)
+
+                if current_prof:
+                    # Save the new competition to the database
+                    competition = Competitions.objects.create(
+                        name=name,
+                        number_of_sections=number_of_sections,
+                        group=selected_group,  # Associate the selected group
+                        prof=current_prof  # Associate the competition with the logged-in professor
+                    )
+
+                    # Redirect to the add_section view with the new competition's ID
+                    return redirect('add_section', competition_id=competition.id)
             except (ValueError, Groups.DoesNotExist):
                 # Handle invalid number_of_sections or invalid group
                 pass
@@ -117,13 +147,21 @@ def add_competition(request):
 
 
 
+
+
 from django.urls import reverse
 
 def add_section(request, competition_id):
     competition = get_object_or_404(Competitions, id=competition_id)
     
-    # Filter students to include only those in the competition's group
-    students = competition.group.etudiants.all()
+    # Get all students in the competition's group
+    all_students = competition.group.etudiants.all()
+
+    # Get students already assigned to any section in this competition
+    assigned_students = Etudiant.objects.filter(sections__competition=competition).distinct()
+
+    # Exclude assigned students from the list of available students
+    available_students = all_students.exclude(id__in=assigned_students.values_list('id', flat=True))
 
     # Get the current number of sections for this competition
     current_sections_count = competition.sections.count()
@@ -158,11 +196,16 @@ def add_section(request, competition_id):
             error_message = f"You cannot add more sections than the allowed number. <a href='{competition_sections_url}'>Go to Competition Sections</a>"
             return render(request, 'platformTK/Prof/add_section.html', {
                 'competition': competition,
-                'students': students,
-                'error_message': error_message
+                'students': available_students,
+                'error_message': error_message,
+                'current_sections_count': current_sections_count,
             })
 
-    return render(request, 'platformTK/Prof/add_section.html', {'competition': competition, 'students': students,'current_sections_count':current_sections_count,})
+    return render(request, 'platformTK/Prof/add_section.html', {
+        'competition': competition,
+        'students': available_students,  # Use the filtered list of available students
+        'current_sections_count': current_sections_count,
+    })
 
 
 
@@ -176,7 +219,54 @@ def competition_sections(request, competition_id):
 
 
 
+def finish_competition(request, competition_id):
+    competition = get_object_or_404(Competitions, id=competition_id)
 
+    # Check if the competition has already been finished
+    if competition.is_finished:
+        # Redirect to the results page without awarding points again
+        return redirect('competition_results', competition_id=competition.id)
+    
+    # Get sections ordered by points in descending order
+    top_sections = competition.sections.all().order_by('-points')[:3]  # Get top 3 sections
+    
+    # Points distribution for 1st, 2nd, and 3rd places
+    points_distribution = [10, 5, 1]
+    
+    # Award points to the etudiants in each of the top 3 sections
+    for index, section in enumerate(top_sections):
+        points_to_add = points_distribution[index]  # Points based on rank (1st, 2nd, 3rd)
+        for etudiant in section.etudiants.all():
+            etudiant.points = (etudiant.points or 0) + points_to_add  # Add points
+            etudiant.save()  # Save the updated points
+
+    # Mark the competition as finished
+    competition.is_finished = True
+    competition.save()
+
+    # Redirect to the results page after finishing the competition
+    return redirect('competition_results', competition_id=competition.id)
+
+
+
+
+
+def competition_results(request, competition_id):
+    competition = get_object_or_404(Competitions, id=competition_id)
+    sections = competition.sections.all().order_by('-points')  # Order sections by points descending
+
+    return render(request, 'platformTK/Prof/competition_results.html', {
+        'competition': competition,
+        'sections': sections,
+    })
+
+
+
+
+
+def rank_competition(request, competition_id):
+    competition = get_object_or_404(Competitions, id=competition_id)
+    return redirect('competition_results', competition_id=competition.id)
 
 
 

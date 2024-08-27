@@ -105,13 +105,19 @@ class Groups(models.Model):
 
 
 
+
 class Competitions(models.Model):
     name = models.CharField(max_length=100)
     number_of_sections = models.PositiveIntegerField()  # Number of sections for the competition
     group = models.ForeignKey('Groups', related_name='competitions', on_delete=models.CASCADE)  # Use ForeignKey for one group
+    date_created = models.DateField(auto_now_add=True, null=True, blank=True)
+    is_finished = models.BooleanField(default=False)  # New field to track if competition is finished
+    prof = models.ForeignKey('prof', related_name='competitions', on_delete=models.CASCADE)  # Link to the professor
 
     def __str__(self):
         return self.name
+
+
 
 
 
