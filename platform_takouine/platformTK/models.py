@@ -42,6 +42,7 @@ def generate_prof_code():
     return f"TK-P-{unique_id}"
 
 
+
 class prof(models.Model):
     user = models.OneToOneField(User, null=True, on_delete=models.CASCADE)
     prenom = models.CharField(max_length=50)
@@ -106,6 +107,7 @@ class Groups(models.Model):
 
 
 
+
 class Competitions(models.Model):
     name = models.CharField(max_length=100)
     number_of_sections = models.PositiveIntegerField()  # Number of sections for the competition
@@ -129,3 +131,42 @@ class Sections(models.Model):
 
     def __str__(self):
         return f"{self.competition.name} - {self.section_name} - Points: {self.points}"
+
+
+
+
+
+
+def generate_product_code():
+    unique_id = str(uuid.uuid4()).replace('-', '')[:8]  
+    return f"PRO-{unique_id}"
+
+
+
+class Product(models.Model):
+    CATEGORY_CHOICES = [
+        ('livre', 'livre'),
+        ('jeux', 'jeux'),
+        ('stylos', 'stylos'),
+        ('Autre', 'Autre'),
+    ]
+
+    name = models.CharField(max_length=100)
+    description = models.TextField()
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    stock = models.PositiveIntegerField()
+    image = models.ImageField(upload_to='products/', null=True, blank=True)
+    slug = models.SlugField(max_length=100, unique=True, blank=True, null=True)
+    date_added = models.DateTimeField(auto_now_add=True)
+    ProductCode = models.CharField(max_length=100, null=True, blank=True, default=generate_product_code)
+
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super(Product, self).save(*args, **kwargs)
+
+    def __str__(self):
+        return self.name
+

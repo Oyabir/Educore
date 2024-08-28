@@ -1,0 +1,193 @@
+{% extends "platformTK/SuperAdmin/HomeBase.html" %}
+
+{% load static %}
+
+{% block content %}
+{% include 'platformTK/SuperAdmin/navbar.html' %}
+
+<div class="container mt-5">
+    {% if messages %}
+	{% for message in messages %}
+	  {% if message.tags == 'error' %}
+		<div class="alert alert-danger" role="alert">
+		  {{ message }}
+		</div>
+	  {% endif %}
+	{% endfor %}
+	{% endif %}
+
+	{% if messages %}
+  {% for message in messages %}
+      {% if message.tags == 'success' %}
+        <div class="alert alert-success" role="alert">
+          {{ message }}
+        </div>
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+
+
+  <form method="POST" enctype="multipart/form-data" action="{% url 'upload_prof_from_file' %}">
+    {% csrf_token %}
+    <div class="mb-3">
+        <label for="file" class="form-label">Choose File:</label>
+        <input type="file" class="form-control" name="file" id="file" accept=".csv, .xlsx" required>
+    </div>
+    <div class="text-center">
+        <button type="submit" class="btn btn-primary">Upload and Add Professors</button>
+    </div>
+    </form>
+
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-center">prof</h2>
+        <button class="btn btn-primary" onclick="openModal()" style="background-color: #fe5d37;">Add prof</button>
+        {% if error %}
+        <p style="color: red;">{{ error }}</p>
+        {% endif %}
+
+    </div>
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Nom et prenom</th>
+                    <th>email</th>
+                    <th>avatar</th>
+                    <th>Code Etudiant</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for prof in profs %}
+                <tr>
+                    <td>{{ prof.user.username }}</td>
+                    <td>{{ prof.prenom }} {{ prof.nom }}</td>
+                    <td>{{ prof.email }}</td>
+                    <td>
+                        {% if prof.avatar %}
+                        <img src="{{ prof.avatar.url }}" style="width: 48px; height: 48px;" alt="Avatar">
+                    {% else %}
+                        No Avatar
+                    {% endif %}
+                    </td>
+                    <td>{{ prof.ProfCode }}</td>
+                    <td>
+                        <button class="btn btn-warning btn-sm">Edit</button>
+                        <button class="btn btn-danger btn-sm">Delete</button>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" class="text-center">No Etudiant found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div> 
+
+
+<!-- Modal -->
+<div id="groupModal" class="modal">
+    <div class="modal-content" style="margin-top: -56px;">
+        <div class="modal-header">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2>Add New Prof</h2>
+        </div>
+        <div class="modal-body">
+            <form method="POST" enctype="multipart/form-data" action="{% url 'prof_list' %}">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="username" class="form-label" >Username:</label>
+                    <input type="text" class="form-control" name="username" id="username" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="password" class="form-label" >Password:</label>
+                    <input type="password" class="form-control" name="password" id="password" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="prenom" class="form-label">First Name (Prénom):</label>
+                    <input type="text" class="form-control" name="prenom" id="prenom" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="nom" class="form-label">Last Name (Nom):</label>
+                    <input type="text" class="form-control" name="nom" id="nom" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="date_de_naissance" class="form-label" >Date of Birth (Date de Naissance):</label>
+                    <input type="date" class="form-control" name="date_de_naissance" id="date_de_naissance" required>
+                </div>
+
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email:</label>
+                    <input type="email" class="form-control" name="email" id="email" required>
+               </div>
+
+                <div class="mb-3">
+                    <label for="numéro_de_téléphone" class="form-label">Phone Number (Numéro de Téléphone):</label>
+                    <input type="text"  class="form-control" name="numéro_de_téléphone" id="numéro_de_téléphone">
+                </div>
+
+                <div class="mb-3">
+                    <label for="avatar" class="form-label">Avatar:</label>
+                    <input type="file"  class="form-control"name="avatar" id="avatar">
+                </div>
+
+                <div class="text-center">
+                <button type="submit" class="btn btn-primary" >Add Professor</button>
+            </div>
+            </form>
+            
+        </div>
+    </div>
+</div>
+
+
+<script>
+    function openModal() {
+        document.getElementById("groupModal").style.display = "block";
+    }
+
+    function closeModal() {
+        document.getElementById("groupModal").style.display = "none";
+    }
+
+    // Close modal when clicking outside of it
+    window.onclick = function(event) {
+        if (event.target == document.getElementById("groupModal")) {
+            closeModal();
+        }
+    }
+</script>
+
+
+
+
+<style>
+   
+</style>
+
+<script>
+    function openModal() {
+        document.getElementById("groupModal").style.display = "block";
+    }
+
+    function closeModal() {
+        document.getElementById("groupModal").style.display = "none";
+    }
+
+    // Close modal when clicking outside of it
+    window.onclick = function(event) {
+        if (event.target == document.getElementById("groupModal")) {
+            closeModal();
+        }
+    }
+</script>
+
+{% endblock %}

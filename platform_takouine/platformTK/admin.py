@@ -28,12 +28,12 @@ class CompetitionsAdmin(admin.ModelAdmin):
     list_display = ('name', 'number_of_sections')
     readonly_fields = ('date_created',)
 
+
+
 @admin.register(Sections)
 class SectionsAdmin(admin.ModelAdmin):
     list_display = ('competition', 'section_name')
-    filter_horizontal = ('etudiants',)  # Add this to manage the many-to-many relationship
-
-
+    filter_horizontal = ('etudiants',)  
 
 
 
@@ -41,3 +41,11 @@ class SectionsAdmin(admin.ModelAdmin):
 class GroupAdmin(admin.ModelAdmin):
     list_display = ('name',)
     filter_horizontal = ('etudiants', 'profs')
+
+
+
+
+@admin.register(Product)
+class ProductAdmin(admin.ModelAdmin):
+    list_display = ('name', 'category', 'price', 'stock', 'date_added')
+    search_fields = ('name', 'description')

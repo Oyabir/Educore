@@ -29,6 +29,7 @@ urlpatterns = [
     
     path('Store/', views.Store, name='Store'),
     path('Profil/', views.Profil, name='Profil'),
+    
     path('group_detail/<str:code_group>/', views.group_detail, name='group_detail'),
     path('Répartition_points/<str:code_group>/', views.Répartition_points, name='Répartition_points'),
     path('update_points/<int:student_id>/', views.update_points, name='update_points'),
@@ -43,6 +44,13 @@ urlpatterns = [
     path('add_student/', views.add_student, name='add_student'),
     path('add_etudiant/', views.add_etudiant, name='add_etudiant'),
     path('add_students_from_file/', views.add_students_from_file, name='add_students_from_file'),
+    
+    path('add_prof/', views.add_prof, name='add_prof'),
+    path('prof_list/', views.prof_list, name='prof_list'),
+    
+    path('upload_prof_from_file/', views.upload_prof_from_file, name='upload_prof_from_file'),
+
+
     # path('search-entities/', views.search_entities, name='search_entities'),
 
 

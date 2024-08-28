@@ -96,9 +96,9 @@
                             </div>
                             <div class="facility-text bg-primary">
                                 <h3 class="text-primary mb-3">Les meilleurs étudiants</h3>
-                                <p class="mb-0">Mohamed Guessoum</p>
-                                <p class="mb-0">Mohamed Guessoum</p>
-                                <p class="mb-0">Mohamed Guessoum</p>
+                                {% for student in top_students %}
+                                <p class="mb-0">{{ student.prenom }} {{ student.nom }}</p>
+                                {% endfor %}
                             </div>
                         </div>
                     </div>
@@ -111,9 +111,9 @@
                             </div>
                             <div class="facility-text bg-success">
                                 <h3 class="text-success mb-3">Les meilleurs groupes</h3>
-                                <p class="mb-0">Groupe GP44</p>
-                                <p class="mb-0">Groupe GP42</p>
-                                <p class="mb-0">Groupe GP11</p>
+                                {% for group in top_groups %}
+                                <p class="mb-0">{{ group.name }}</p>
+                                {% endfor %}
                             </div>
                         </div>
                     </div>
@@ -126,9 +126,9 @@
                             </div>
                             <div class="facility-text bg-warning">
                                 <h3 class="text-warning mb-3">Les meilleures compétitions</h3>
-                                <p class="mb-0">Compétitions GTu111</p>
-                                <p class="mb-0">Compétitions GTu111</p>
-                                <p class="mb-0">Compétitions GTu111</p>
+                                {% for competition in top_competitions %}
+                                <p class="mb-0">{{ competition.name }}</p>
+                                {% endfor %}
                             </div>
                         </div>
                     </div>

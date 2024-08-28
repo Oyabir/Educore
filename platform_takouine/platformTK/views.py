@@ -17,11 +17,6 @@ import json
 
 
 
-
-
-
-
-
 def home(requset):
     return render(requset,"platformTK/home.html")
 
@@ -63,26 +58,61 @@ def homeEtudiant(requset):
 
 
 
+
+
+from django.db.models import Sum
+
 @login_required(login_url='login')
 @allowedUsers(allowedGroups=['Prof'])
 def homeProf(request):
     try:
         current_prof = prof.objects.get(user=request.user)
+        
+        # Filter groups and competitions associated with the current professor
         groups = Groups.objects.filter(profs=current_prof)
         competitions = Competitions.objects.filter(prof=current_prof)
+        
+        # Get the top 3 groups based on their total points
+        top_groups = sorted(groups, key=lambda group: group.total_points(), reverse=True)[:3]
+        
+        # Aggregate points for each competition and sort them to get the top 3
+        competitions_with_points = competitions.annotate(total_points=Sum('sections__points'))
+        top_competitions = competitions_with_points.order_by('-total_points')[:3]
+        
+        top_students = Etudiant.objects.filter(groups__in=groups).distinct().order_by('-points')[:3]
     except prof.DoesNotExist:
         groups = Groups.objects.none()
         competitions = Competitions.objects.none()
+        top_students = Etudiant.objects.none()
+        top_groups = []
+        top_competitions = []
 
-    return render(request, "platformTK/Prof/homeProf.html", {"groups": groups, "competitions": competitions})
+    return render(request, "platformTK/Prof/homeProf.html", {
+        "groups": groups,
+        "competitions": competitions,
+        "top_students": top_students,
+        "top_groups": top_groups,
+        "top_competitions": top_competitions,
+    })
 
 
 
 
-def Groupes(requset):
-    groups = Groups.objects.all()
-    context = {"groups":groups}
-    return render(requset,"platformTK/Prof/Groupes.html",context)
+
+
+
+@login_required(login_url='login')
+@allowedUsers(allowedGroups=['Prof'])
+def Groupes(request):
+    try:
+        current_prof = prof.objects.get(user=request.user)
+        groups = Groups.objects.filter(profs=current_prof)
+    except prof.DoesNotExist:
+        groups = Groups.objects.none()
+
+    context = {"groups": groups}
+    return render(request, "platformTK/Prof/Groupes.html", context)
+
 
 
 
@@ -219,6 +249,7 @@ def competition_sections(request, competition_id):
 
 
 
+
 def finish_competition(request, competition_id):
     competition = get_object_or_404(Competitions, id=competition_id)
 
@@ -251,6 +282,7 @@ def finish_competition(request, competition_id):
 
 
 
+
 def competition_results(request, competition_id):
     competition = get_object_or_404(Competitions, id=competition_id)
     sections = competition.sections.all().order_by('-points')  # Order sections by points descending
@@ -263,10 +295,10 @@ def competition_results(request, competition_id):
 
 
 
-
 def rank_competition(request, competition_id):
     competition = get_object_or_404(Competitions, id=competition_id)
     return redirect('competition_results', competition_id=competition.id)
+
 
 
 
@@ -317,7 +349,8 @@ def decrement_section_points(request, section_id):
 
 
 def Store(requset):
-    return render(requset,"platformTK/Prof/Store.html")
+    products = Product.objects.all()
+    return render(requset,"platformTK/Prof/Store.html", {'products': products})
 
 
 
@@ -463,6 +496,7 @@ def group_list(request):
         'etudiants': etudiants,
         'profs': profs
     })
+
 
 
 def add_etudiant(request):
@@ -627,3 +661,193 @@ def add_students_from_file(request):
             return render(request, "platformTK/SuperAdmin/add_student.html")
 
     return render(request, "platformTK/SuperAdmin/add_student.html")
+
+
+
+
+
+
+
+
+@login_required(login_url='login')
+def prof_list(request):
+    if request.method == 'POST':
+        prenom = request.POST.get('prenom')
+        nom = request.POST.get('nom')
+        date_de_naissance = request.POST.get('date_de_naissance')
+        email = request.POST.get('email')
+        numéro_de_téléphone = request.POST.get('numéro_de_téléphone')
+        avatar = request.FILES.get('avatar')
+
+        # Creating a new User object
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        user = User.objects.create_user(username=username, password=password, email=email)
+
+        # Validate the inputs
+        if prenom and nom and date_de_naissance and email and user:
+            try:
+                # Create the prof instance
+                new_prof = prof.objects.create(
+                    user=user,
+                    prenom=prenom,
+                    nom=nom,
+                    date_de_naissance=date_de_naissance,
+                    email=email,
+                    numéro_de_téléphone=numéro_de_téléphone,
+                    avatar=avatar,
+                    slugProf=slugify(username)
+                )
+                
+                group = Group.objects.get(name="Prof")
+                user.groups.add(group)
+                
+                # Redirect to a success page or another view
+                return redirect('add_prof')
+            except Exception as e:
+                # Handle any errors that occur during the creation
+                print(f"Error creating prof: {e}")
+
+    return render(request, 'platformTK/SuperAdmin/add_prof.html')
+
+
+
+
+def add_prof(requset):
+    etudiants = Etudiant.objects.all()
+    profs = prof.objects.all()
+    groups = Groups.objects.all()
+    return render(requset,"platformTK/SuperAdmin/add_prof.html", {
+        'groups': groups,
+        'etudiants': etudiants,
+        'profs': profs
+    })
+    
+    
+    
+    
+    
+
+
+
+
+
+
+# Setup logger
+logger = logging.getLogger(__name__)
+
+@login_required(login_url='login')
+def upload_prof_from_file(request):
+    if request.method == 'POST':
+        file = request.FILES.get('file')
+
+        if not file:
+            messages.error(request, 'No file uploaded.')
+            return render(request, "platformTK/SuperAdmin/add_prof.html")
+
+        if file.name.endswith('.csv'):
+            try:
+                data = csv.reader(file.read().decode('utf-8').splitlines())
+                next(data)  # Skip the header row
+
+                for row in data:
+                    if len(row) < 6:
+                        continue  # Skip rows with insufficient data
+
+                    username, password, prenom, nom, date_de_naissance, email, *rest = row
+                    numéro_de_téléphone = rest[0] if rest else ""
+                    avatar = None  # Handling avatar from CSV is complex; assume it's not provided
+
+                    if not username or not password or not prenom or not nom or not date_de_naissance or not email:
+                        continue  # Skip rows with missing required fields
+
+                    try:
+                        user = User.objects.create_user(username=username, password=password, email=email)
+                        prof.objects.create(
+                            user=user,
+                            prenom=prenom,
+                            nom=nom,
+                            date_de_naissance=date_de_naissance,
+                            email=email,
+                            numéro_de_téléphone=numéro_de_téléphone,
+                            avatar=avatar
+                        )
+                        group = Group.objects.get(name="Prof")
+                        user.groups.add(group)
+                        
+                    except Exception as e:
+                        logger.error(f"Error processing row with username '{username}': {e}")
+                        messages.error(request, f"Error processing row with username '{username}': {e}")
+
+            except Exception as e:
+                logger.error(f"Error reading CSV file: {e}")
+                messages.error(request, 'An error occurred while reading the CSV file.')
+                return redirect('add_prof')
+
+            messages.success(request, 'Professors added successfully from the CSV file.')
+            return redirect('add_prof')
+
+        elif file.name.endswith('.xlsx'):
+            try:
+                df = pd.read_excel(file)
+
+                # Drop irrelevant or unnamed columns
+                df = df.loc[:, ~df.columns.str.contains('^Unnamed')]
+
+                for _, row in df.iterrows():
+                    username = row.get('username')
+                    password = row.get('password')
+                    prenom = row.get('prenom')
+                    nom = row.get('nom')
+                    date_de_naissance = row.get('date_de_naissance')
+                    email = row.get('email')
+                    numéro_de_téléphone = row.get('numéro_de-téléphone', '')
+                    avatar = None  # Handling avatar from Excel is complex; assume it's not provided
+
+                    if pd.isna(username) or pd.isna(password) or pd.isna(prenom) or pd.isna(nom) or pd.isna(date_de_naissance) or pd.isna(email):
+                        logger.warning(f"Skipping row due to missing data: {row.to_dict()}")
+                        continue
+
+                    try:
+                        user = User.objects.create_user(username=username, password=password, email=email)
+                        prof.objects.create(
+                            user=user,
+                            prenom=prenom,
+                            nom=nom,
+                            date_de_naissance=date_de_naissance,
+                            email=email,
+                            numéro_de_téléphone=numéro_de_téléphone,
+                            avatar=avatar
+                        )
+                        group = Group.objects.get(name="Prof")
+                        user.groups.add(group)
+                        
+                    except Exception as e:
+                        logger.error(f"Error processing row with username '{username}': {e}")
+                        messages.error(request, f"Error processing row with username '{username}': {e}")
+
+            except Exception as e:
+                logger.error(f"Error reading Excel file: {e}")
+                messages.error(request, 'An error occurred while reading the Excel file.')
+                return redirect('add_prof')
+
+            messages.success(request, 'Professors added successfully from the Excel file.')
+            return redirect('add_prof')
+
+        else:
+            messages.error(request, 'Unsupported file type. Please upload a CSV or Excel file.')
+            return render(request, "platformTK/SuperAdmin/add_prof.html")
+
+    return render(request, "platformTK/SuperAdmin/add_prof.html")
+
+
+
+
+
+
+
+
+
+
+
+
