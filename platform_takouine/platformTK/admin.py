@@ -6,7 +6,7 @@ from .models import *
 @admin.register(Etudiant)
 class EtudiantAdmin(admin.ModelAdmin):
     list_display = ('prenom', 'nom', 'email', 'numéro_de_téléphone', 'EtudiantCode', 'date_created', 'points')
-    fields = ('user', 'prenom', 'nom', 'date_de_naissance', 'email', 'numéro_de_téléphone', 'avatar', 'slugEtudiant', 'EtudiantCode')
+    fields = ('user', 'prenom', 'nom', 'date_de_naissance', 'email', 'numéro_de_téléphone', 'avatar', 'slugEtudiant', 'EtudiantCode','points')
     readonly_fields = ('date_created',)
     
     
@@ -49,3 +49,13 @@ class GroupAdmin(admin.ModelAdmin):
 class ProductAdmin(admin.ModelAdmin):
     list_display = ('name', 'category', 'price', 'stock', 'date_added')
     search_fields = ('name', 'description')
+    
+    
+    
+    
+@admin.register(Commande)
+class CommandeAdmin(admin.ModelAdmin):
+    list_display = ('etudiant', 'product', 'date_ordered', 'quantity', 'total_price', 'status')
+    search_fields = ('etudiant__user__username', 'product__name')
+    list_filter = ('status', 'date_ordered')
+    readonly_fields = ('date_ordered', 'total_price')

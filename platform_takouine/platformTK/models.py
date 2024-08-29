@@ -170,3 +170,24 @@ class Product(models.Model):
     def __str__(self):
         return self.name
 
+
+
+
+
+class Commande(models.Model):
+    STATUS_CHOICES = [
+        ('Pending', 'Pending'),
+        ('Completed', 'Completed'),
+        ('Cancelled', 'Cancelled'),
+    ]
+
+    etudiant = models.ForeignKey('Etudiant', on_delete=models.CASCADE)
+    product = models.ForeignKey('Product', on_delete=models.CASCADE)
+    date_ordered = models.DateTimeField(auto_now_add=True)
+    quantity = models.PositiveIntegerField(default=1)
+    total_price = models.DecimalField(max_digits=10, decimal_places=2)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='Pending')
+
+    def __str__(self):
+        return f"{self.etudiant.user.username} - {self.product.name} - {self.date_ordered} - {self.status}"
+

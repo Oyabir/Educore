@@ -1,0 +1,156 @@
+{% extends "platformTK/Etudiant/HomeBase.html" %}
+
+{% load static %}
+
+{% block content %}
+    {% include 'platformTK/Etudiant/navbar.html' %}
+    {% if messages %}
+    <div class="container">
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+
+    <div class="container-xxl py-5">
+
+        <div class="row justify-content-center">
+            <!-- Profile Card -->
+            <div class="col-lg-8 col-md-10 col-sm-12 mb-4">
+                <div class="profile-card card">
+                    <div class="card-body">
+                        <div class="text-center mb-4">
+                            <img src="{% if etudiant.avatar %}{{ etudiant.avatar.url }}{% else %}{% static 'img/786525_people_512x512.png' %}{% endif %}" alt="Profile Picture" class="profile-picture img-fluid rounded-circle">
+                        </div>
+                        <h2 class="card-title text-center">Etudiant Profile</h2>
+                        <form id="profile-form" method="post" enctype="multipart/form-data" action="{% url 'update_profile' %}">
+                            {% csrf_token %}
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="firstName" class="form-label">Prenom</label>
+                                    <input type="text" class="form-control" id="firstName" name="prenom" value="{{ etudiant.prenom }}">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="lastName" class="form-label">Nom</label>
+                                    <input type="text" class="form-control" id="lastName" name="nom" value="{{ etudiant.nom }}">
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="email" class="form-label">Email</label>
+                                <input type="email" class="form-control" id="email" name="email" value="{{ etudiant.email }}">
+                            </div>
+                            <div class="mb-3">
+                                <label for="phone" class="form-label">Numéro de téléphone</label>
+                                <input type="text" class="form-control" id="phone" name="numéro_de_téléphone" value="{{ etudiant.numéro_de_téléphone }}">
+                            </div>
+                            <div class="mb-3">
+                                <label for="avatar" class="form-label">Avatar</label>
+                                <input class="form-control" type="file" name="avatar" id="avatar">
+                            </div>
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary">Update Profile</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{% static 'scripts.js' %}"></script>
+    <style>
+        /* General Body Styling */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            color: #212529;
+            margin: 0;
+            padding: 0;
+        }
+        
+        /* Profile Card Styling */
+        .profile-card {
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            margin: 20px auto;
+            max-width: 800px;
+            border: 1px solid #ced4da;
+        }
+       
+        /* Profile Picture Styling */
+        .profile-picture {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 6px solid #fe5d37;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Card Title Styling */
+        .card-title {
+            color: #fe5d37;
+            border-bottom: 2px solid #fe5d37;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
+            font-size: 2rem;
+            font-weight: 600;
+        }
+        
+        /* Form Input and Textarea Styling */
+        .form-control {
+            border-radius: 8px;
+            border: 1px solid #ced4da;
+            padding: 12px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .form-control:focus {
+            border-color: #00796b;
+            box-shadow: 0 0 0 0.2rem rgba(0, 121, 107, 0.25);
+            outline: none;
+        }
+        
+        /* Textarea Styling */
+        textarea.form-control {
+            height: auto;
+            resize: vertical;
+        }
+        
+        /* Button Styling */
+        {% comment %} .btn-primary {
+            background-color: #00796b;
+            border-color: #00796b;
+            border-radius: 8px;
+            padding: 12px 24px;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            background-color: #004d40;
+            border-color: #004d40;
+        } {% endcomment %}
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .profile-picture {
+                width: 120px;
+                height: 120px;
+            }
+        
+            .profile-card {
+                padding: 20px;
+                margin: 10px auto;
+            }
+        }
+    </style>
+{% endblock %}

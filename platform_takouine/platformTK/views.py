@@ -52,8 +52,137 @@ def userLogout(request):
 
 
 
-def homeEtudiant(requset):
-    return render(requset,"platformTK/Etudiant/homeEtudiant.html")
+
+@login_required
+def homeEtudiant(request):
+    etudiant = get_object_or_404(Etudiant, user=request.user)
+    context = {
+        'etudiant': etudiant,
+    }
+
+    return render(request, "platformTK/Etudiant/homeEtudiant.html", context)
+
+
+
+
+
+
+@login_required
+def Store(request):
+    products = Product.objects.all()
+    etudiant = get_object_or_404(Etudiant, user=request.user)
+    context = {
+        'etudiant': etudiant,
+        'products': products,
+    }
+    return render(request, "platformTK/Etudiant/Store.html", context)
+
+
+
+
+@login_required
+def profile(request):
+    etudiant = get_object_or_404(Etudiant, user=request.user)
+    context = {
+        'etudiant': etudiant,
+    }
+    return render(request, "platformTK/Etudiant/profile.html", context)
+
+
+
+
+
+
+@login_required
+def update_profile(request):
+    etudiant = get_object_or_404(Etudiant, user=request.user)
+    
+    if request.method == 'POST':
+        etudiant.prenom = request.POST.get('prenom')
+        etudiant.nom = request.POST.get('nom')
+        etudiant.email = request.POST.get('email')
+        etudiant.numéro_de_téléphone = request.POST.get('numéro_de_téléphone')
+        
+        if 'avatar' in request.FILES:
+            etudiant.avatar = request.FILES['avatar']
+        
+        try:
+            etudiant.save()
+            messages.success(request, 'Profile updated successfully.')
+        except Exception as e:
+            messages.error(request, f'Error updating profile: {e}')
+        
+        return redirect('profile')  # Redirect to the profile page or another page of your choice
+
+    return render(request, 'platformTK/Etudiant/profile.html', {'etudiant': etudiant})
+
+
+
+
+
+@login_required
+def purchase_product(request, slug):
+    product = get_object_or_404(Product, slug=slug)
+    etudiant = get_object_or_404(Etudiant, user=request.user)
+
+    if etudiant.points >= product.price:
+        # Deduct points
+        etudiant.points -= int(product.price)
+        etudiant.save()
+
+        # Log the purchase in the Commande table with status 'Pending'
+        Commande.objects.create(
+            etudiant=etudiant,
+            product=product,
+            total_price=product.price,
+            status='Pending'
+        )
+
+        messages.success(request, f'You have successfully purchased {product.name}!')
+    else:
+        messages.error(request, 'You do not have enough points to purchase this product.')
+
+    return redirect('Store')  # Redirect to the store or another page
+
+
+
+
+@login_required
+def list_commandes(request):
+    etudiant = get_object_or_404(Etudiant, user=request.user)
+    commandes = Commande.objects.filter(etudiant=etudiant)
+
+    context = {
+        'commandes': commandes,
+        'etudiant': etudiant,
+        'page_title': 'My Orders',
+    }
+
+    return render(request, "platformTK/Etudiant/list_commandes.html", context)
+
+
+
+
+
+
+@login_required(login_url='login')
+@allowedUsers(allowedGroups=['Etudiants'])
+def my_competitions(request):
+    try:
+        # Fetch the current Etudiant instance
+        etudiant = Etudiant.objects.get(user=request.user)
+        
+        # Get all Sections where this Etudiant is involved
+        sections = Sections.objects.filter(etudiants=etudiant)
+        
+        # Get all Competitions associated with these Sections
+        competitions = Competitions.objects.filter(sections__in=sections).distinct()
+        
+    except Etudiant.DoesNotExist:
+        competitions = Competitions.objects.none()
+
+    context = {"competitions": competitions,"etudiant":etudiant}
+    return render(request, "platformTK/Etudiant/my_competitions.html", context)
 
 
 
@@ -344,11 +473,7 @@ def decrement_section_points(request, section_id):
 
 
 
-
-
-
-
-def Store(requset):
+def StoreProf(requset):
     products = Product.objects.all()
     return render(requset,"platformTK/Prof/Store.html", {'products': products})
 
@@ -357,6 +482,8 @@ def Store(requset):
 
 def Profil(requset):
     return render(requset,"platformTK/Prof/Profil.html")
+
+
 
 
 

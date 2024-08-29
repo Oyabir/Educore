@@ -27,7 +27,7 @@ urlpatterns = [
     path('competition/<int:competition_id>/rank/', views.rank_competition, name='rank_competition'),
 
     
-    path('Store/', views.Store, name='Store'),
+    path('StoreProf/', views.StoreProf, name='StoreProf'),
     path('Profil/', views.Profil, name='Profil'),
     
     path('group_detail/<str:code_group>/', views.group_detail, name='group_detail'),
@@ -55,7 +55,12 @@ urlpatterns = [
 
 
     path('homeEtudiant/', views.homeEtudiant, name='homeEtudiant'),
-
+    path('Store/', views.Store, name='Store'),
+    path('purchase/<slug:slug>/', views.purchase_product, name='purchase_product'),
+    path('commandes/', views.list_commandes, name='list_commandes'),
+    path('profile/', views.profile, name='profile'),
+    path('update-profile/', views.update_profile, name='update_profile'),
+    path('my_competitions/', views.my_competitions, name='my_competitions'),
 
 
 

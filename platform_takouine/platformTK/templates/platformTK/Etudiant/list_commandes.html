@@ -1,0 +1,55 @@
+{% extends "platformTK/Etudiant/HomeBase.html" %}
+
+{% block content %}
+{% include 'platformTK/Etudiant/navbar.html' %}
+
+<div class="container-xxl py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h1 class="mb-3">{{ page_title }}</h1>
+            <p class="lead">Here is the list of your orders, {{ etudiant.prenom }}.</p>
+        </div>
+
+        {% if commandes %}
+            <div class="table-responsive">
+                <table class="table table-striped table-bordered">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>#</th>
+                            <th>Product</th>
+                            <th>Status</th>
+                            <th>Total Price</th>
+                            <th>Date Ordered</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for commande in commandes %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ commande.product.name }}</td>
+                            <td>
+                                {% if commande.status == 'Pending' %}
+                                    <span class="badge bg-warning text-dark">Pending</span>
+                                {% elif commande.status == 'Completed' %}
+                                    <span class="badge bg-success text-white">Completed</span>
+                                {% elif commande.status == 'Cancelled' %}
+                                    <span class="badge bg-danger text-white">Cancelled</span>
+                                {% else %}
+                                    <span class="badge bg-secondary text-white">Unknown</span>
+                                {% endif %}
+                            </td>
+                            <td>${{ commande.total_price }}</td>
+                            <td>{{ commande.date_ordered|date:"M d, Y" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="alert alert-info" role="alert">
+                No orders found.
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

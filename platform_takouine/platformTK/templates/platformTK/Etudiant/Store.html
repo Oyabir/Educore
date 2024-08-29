@@ -1,0 +1,127 @@
+{% extends "platformTK/Etudiant/HomeBase.html" %}
+
+{% load static %}
+
+{% block content %}
+{% include 'platformTK/Etudiant/navbar.html' %}
+
+    <!-- Classes Start -->
+        <div class="container-xxl py-5">
+            <div class="container">
+                {% if messages %}
+{% for message in messages %}
+  {% if message.tags == 'error' %}
+    <div class="alert alert-danger" role="alert">
+      {{ message }}
+    </div>
+  {% endif %}
+{% endfor %}
+{% endif %}
+
+{% if messages %}
+{% for message in messages %}
+  {% if message.tags == 'success' %}
+    <div class="alert alert-success" role="alert">
+      {{ message }}
+    </div>
+  {% endif %}
+{% endfor %}
+{% endif %}
+                <div class="text-center mx-auto mb-5 wow fadeInUp" data-wow-delay="0.1s" style="max-width: 600px;">
+                    <h1 class="mb-3">List of Products</h1>
+                    {% comment %} <p>Eirmod sed ipsum dolor sit rebum labore magna erat. Tempor ut dolore lorem kasd vero ipsum sit eirmod sit. Ipsum diam justo sed rebum vero dolor duo.</p> {% endcomment %}
+                </div>
+
+                <div class="row g-4">
+                    {% for product in products %}
+                    <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
+                        <div class="classes-item">
+                            <div class="bg-light rounded-circle w-75 mx-auto p-3">
+                                <img class="img-fluid rounded-circle" src="img/classes-1.jpg" alt="">
+                            </div>
+                            <div class="bg-light rounded p-4 pt-5 mt-n5">
+                                <a class="d-block text-center h3 mt-3 mb-4" href="">{{product.name}}</a>
+                                <div class="d-flex align-items-center justify-content-between mb-4">
+                                    <div class="d-flex align-items-center">
+                                        <img class="rounded-circle flex-shrink-0" src="{{ product.image.url }}" alt="" style="width: 45px; height: 45px;">
+                                        <div class="ms-3">
+                                            <h6 class="text-primary mb-1">{{product.name}}</h6>
+                                            <small>{{product.category}}</small>
+                                        </div>
+                                    </div>
+                                    <span class="bg-primary text-white rounded-pill py-2 px-3" href="">${{product.price}}</span>
+                                </div>
+                                <div class="row g-1" >
+                                    <div class="col-4">
+                                        <p style="width: 259px;">{{product.description}}</p>
+                                    </div>
+                                </div>
+
+                                <div class="row g-1">
+                                    <div class="col-4">
+                                        {% comment %} <div class="border-top border-3 border-primary pt-2">
+                                            <h6 class="text-primary mb-1">Age:</h6>
+                                            <span class="bg-primary text-white rounded-pill py-2 px-3" href="">Achate</span>
+                                        </div> {% endcomment %}
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="">
+                                            {% comment %} <h6 class="text-primary mb-1">Acheter:</h6>
+                                            <br> {% endcomment %}
+                                            <a class="bg-primary text-white rounded-pill py-2 px-3" href="#" 
+                                            onclick="openConfirmModal('{{ product.name }}', '{{ product.price }}', '{% url 'purchase_product' product.slug %}')">
+                                            Acheter
+                                        </a>
+                                        </div> 
+                                    </div>
+                                    <div class="col-4">
+                                        {% comment %} <div class="border-top border-3 border-warning pt-2">
+                                            <h6 class="text-warning mb-1">Capacity:</h6>
+                                            <small>30 Kids</small>
+                                        </div> {% endcomment %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        <!-- Classes End -->
+        <!-- Confirmation Modal -->
+<div class="modal fade" id="confirmPurchaseModal" tabindex="-1" aria-labelledby="confirmPurchaseModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmPurchaseModalLabel">Confirm Purchase</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to purchase <span id="product-name"></span> for $<span id="product-price"></span>?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <a id="confirmPurchaseLink" class="btn btn-primary">Confirm Purchase</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    function openConfirmModal(productName, productPrice, purchaseUrl) {
+        // Set the product details in the modal
+        document.getElementById('product-name').innerText = productName;
+        document.getElementById('product-price').innerText = productPrice;
+        document.getElementById('confirmPurchaseLink').setAttribute('href', purchaseUrl);
+    
+        // Show the modal
+        var confirmModal = new bootstrap.Modal(document.getElementById('confirmPurchaseModal'));
+        confirmModal.show();
+    }
+    </script>
+
+    
+  
+{% endblock  %}
