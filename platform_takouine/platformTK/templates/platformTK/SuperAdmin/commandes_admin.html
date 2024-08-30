@@ -1,0 +1,71 @@
+{% extends "platformTK/SuperAdmin/HomeBase.html" %}
+
+{% load static %}
+
+{% block content %}
+{% include 'platformTK/SuperAdmin/navbar.html' %}
+
+<div class="container mt-5">
+    {% if messages %}
+        {% for message in messages %}
+            {% if message.tags == 'error' %}
+                <div class="alert alert-danger" role="alert">
+                    {{ message }}
+                </div>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+
+    {% if messages %}
+        {% for message in messages %}
+            {% if message.tags == 'success' %}
+                <div class="alert alert-success" role="alert">
+                    {{ message }}
+                </div>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
+
+    <div class="container py-5">
+        <h1 class="mb-4">Order List</h1>
+
+        <!-- Orders Table -->
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Order ID</th>
+                    <th>Etudiant</th>
+                    <th>Product</th>
+                    {% comment %} <th>Quantity</th> {% endcomment %}
+                    <th>Total Price</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for commande in commandes %}
+                <tr>
+                    <td>{{ commande.id }}</td>
+                    <td>{{ commande.etudiant.prenom }} {{ commande.etudiant.nom }}</td>
+                    <td>{{ commande.product }}</td>
+                    {% comment %} <td>{{ commande.quantity }}</td> {% endcomment %}
+                    <td>${{ commande.total_price }}</td>
+                    <td>
+                        {% if commande.status == 'Pending' %}
+                        <span class="badge bg-warning text-dark">Pending</span>
+                        {% elif commande.status == 'Completed' %}
+                        <span class="badge bg-success text-white">Completed</span>
+                        {% elif commande.status == 'Cancelled' %}
+                        <span class="badge bg-danger text-white">Cancelled</span>
+                        {% else %}
+                        <span class="badge bg-secondary text-white">Unknown</span>
+                        {% endif %}
+                    </td> {% comment %} <td>{{ commande.get_status_display }}</td>{% endcomment %}
+                    <td>{{ commande.date_ordered|date:"M d, Y" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+    
+{% endblock %}

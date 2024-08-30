@@ -1,0 +1,56 @@
+{% extends "platformTK/Etudiant/HomeBase.html" %}
+{% load static %}
+
+{% block content %}
+{% include 'platformTK/Etudiant/navbar.html' %}
+
+<div class="container-xxl py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h1 class="mb-3">My Groups</h1>
+            <p class="lead">Here are the groups you are part of, {{ etudiant.prenom }}.</p>
+        </div>
+
+        <div class="row justify-content-center">
+            {% if group_data %}
+            <!-- Groups Table -->
+            <div class="col-lg-12 mb-4">
+                <div class="table-wrapper">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Group Name</th>
+                                    <th>Description</th>
+                                    <th>Your Points</th>
+                                    <th>Your Rank</th>
+                                    <th>Total Students</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for data in group_data %}
+                                <tr>
+                                    <td>{{ forloop.counter }}</td>
+                                    <td>{{ data.group.name }}</td>
+                                    <td>{{ data.group.description }}</td>
+                                    <td>{{ data.points }}</td>
+                                    <td>{{ data.rank }}/{{ data.total_students }}</td>
+                                    <td>{{ data.total_students }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="alert alert-info" role="alert">
+                You are not part of any groups.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}

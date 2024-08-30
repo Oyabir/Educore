@@ -22,6 +22,7 @@ def home(requset):
 
 
 
+
 @notLoggedUsers
 def login_view(request):
     if request.method == 'POST':
@@ -52,12 +53,55 @@ def userLogout(request):
 
 
 
-
-@login_required
+@login_required(login_url='login')
+@allowedUsers(allowedGroups=['Etudiants'])
 def homeEtudiant(request):
     etudiant = get_object_or_404(Etudiant, user=request.user)
+    
+    sections = Sections.objects.filter(etudiants=etudiant)
+    
+    competitions = Competitions.objects.filter(sections__in=sections).distinct()
+    
+    # Prepare the competition data
+    competition_section_data = []
+    for competition in competitions:
+        for section in sections.filter(competition=competition):
+            # Calculate rank within the competition
+            section_rank = Sections.objects.filter(
+                competition=competition, 
+                points__gt=section.points
+            ).count() + 1
+
+            competition_section_data.append({
+                'competition': competition,
+                'section': section,
+                'points': section.points,
+                'rank': section_rank,
+            })
+    
+    # Fetch all groups that the student is a part of
+    groups = etudiant.groups.all()
+    
+    # Prepare the group data
+    group_data = []
+    for group in groups:
+        # Get all students in the group ordered by points (descending)
+        etudiants_in_group = group.etudiants.order_by('-points')
+        
+        # Calculate rank within the group
+        rank = list(etudiants_in_group).index(etudiant) + 1
+        
+        group_data.append({
+            'group': group,
+            'points': etudiant.points,
+            'rank': rank,
+            'total_students': etudiants_in_group.count()
+        })
+
     context = {
         'etudiant': etudiant,
+        'competition_section_data': competition_section_data,
+        'group_data': group_data,
     }
 
     return render(request, "platformTK/Etudiant/homeEtudiant.html", context)
@@ -67,7 +111,9 @@ def homeEtudiant(request):
 
 
 
-@login_required
+
+@login_required(login_url='login')
+@allowedUsers(allowedGroups=['Etudiants'])
 def Store(request):
     products = Product.objects.all()
     etudiant = get_object_or_404(Etudiant, user=request.user)
@@ -80,7 +126,8 @@ def Store(request):
 
 
 
-@login_required
+@login_required(login_url='login')
+@allowedUsers(allowedGroups=['Etudiants'])
 def profile(request):
     etudiant = get_object_or_404(Etudiant, user=request.user)
     context = {
@@ -93,7 +140,8 @@ def profile(request):
 
 
 
-@login_required
+@login_required(login_url='login')
+@allowedUsers(allowedGroups=['Etudiants'])
 def update_profile(request):
     etudiant = get_object_or_404(Etudiant, user=request.user)
     
@@ -120,7 +168,8 @@ def update_profile(request):
 
 
 
-@login_required
+@login_required(login_url='login')
+@allowedUsers(allowedGroups=['Etudiants'])
 def purchase_product(request, slug):
     product = get_object_or_404(Product, slug=slug)
     etudiant = get_object_or_404(Etudiant, user=request.user)
@@ -147,7 +196,8 @@ def purchase_product(request, slug):
 
 
 
-@login_required
+@login_required(login_url='login')
+@allowedUsers(allowedGroups=['Etudiants'])
 def list_commandes(request):
     etudiant = get_object_or_404(Etudiant, user=request.user)
     commandes = Commande.objects.filter(etudiant=etudiant)
@@ -178,11 +228,71 @@ def my_competitions(request):
         # Get all Competitions associated with these Sections
         competitions = Competitions.objects.filter(sections__in=sections).distinct()
         
-    except Etudiant.DoesNotExist:
-        competitions = Competitions.objects.none()
+        # Create a list to store competition, section data, points, and rank
+        competition_section_data = []
+        for competition in competitions:
+            for section in sections.filter(competition=competition):
+                # Calculate rank for the section within its competition
+                section_rank = Sections.objects.filter(
+                    competition=competition, 
+                    points__gt=section.points
+                ).count() + 1
 
-    context = {"competitions": competitions,"etudiant":etudiant}
+                competition_section_data.append({
+                    'competition': competition,
+                    'section': section,
+                    'points': section.points,
+                    'rank': section_rank,
+                })
+        
+    except Etudiant.DoesNotExist:
+        competition_section_data = []
+
+    context = {
+        "competition_section_data": competition_section_data,
+        "etudiant": etudiant
+    }
     return render(request, "platformTK/Etudiant/my_competitions.html", context)
+
+
+
+
+
+@login_required(login_url='login')
+@allowedUsers(allowedGroups=['Etudiants'])
+def my_groups(request):
+    etudiant = request.user.etudiant 
+    
+    # Get all groups that the student is a part of
+    groups = etudiant.groups.all()
+    
+    group_data = []
+    for group in groups:
+        # Get all students in the group ordered by points (descending)
+        etudiants_in_group = group.etudiants.order_by('-points')
+        
+        # Calculate rank based on points
+        rank = list(etudiants_in_group).index(etudiant) + 1
+        
+        group_data.append({
+            'group': group,
+            'points': etudiant.points,
+            'rank': rank,
+            'total_students': etudiants_in_group.count()
+        })
+    
+    context = {
+        'group_data': group_data,
+        'etudiant':etudiant
+    }
+    
+    return render(request, 'platformTK/Etudiant/my_groupes.html', context)
+
+
+
+
+
+
 
 
 
@@ -972,9 +1082,96 @@ def upload_prof_from_file(request):
 
 
 
+@login_required(login_url='login')
+def store_admin(request):
+    products = Product.objects.all()
+    categories = Product.CATEGORY_CHOICES
+    context = {
+        'categories': categories,
+        'products': products,
+    }
+    return render(request, "platformTK/SuperAdmin/store_admin.html", context)
 
 
 
+
+
+@login_required(login_url='login')
+
+def add_product(request):
+    # Extract form data
+    name = request.POST.get('name')
+    description = request.POST.get('description')
+    category = request.POST.get('category')
+    price = request.POST.get('price')
+    stock = request.POST.get('stock')
+    image = request.FILES.get('image')
+
+    # Validate and create a new Product instance
+    if name and description and category and price and stock:
+        product = Product(
+            name=name,
+            description=description,
+            category=category,
+            price=price,
+            stock=stock,
+            image=image
+        )
+        product.save()
+        messages.success(request, 'Product added successfully!')
+    else:
+        messages.error(request, 'Please fill out all required fields.')
+
+    # Redirect to the store admin page
+    return redirect('store_admin')
+
+
+
+
+@login_required(login_url='login')
+def update_product(request, product_code):
+    product = get_object_or_404(Product, ProductCode=product_code)
+
+    if request.method == 'POST':
+        product.name = request.POST['name']
+        product.description = request.POST['description']
+        product.category = request.POST['category']
+        product.price = request.POST['price']
+        product.stock = request.POST['stock']
+
+        if 'image' in request.FILES:
+            product.image = request.FILES['image']
+
+        product.save()
+        messages.success(request, 'Product updated successfully.')
+        return redirect('store_admin')
+
+    context = {
+        'product': product,
+    }
+    return render(request, 'platformTK/SuperAdmin/update_product.html', context)
+
+
+
+
+@login_required(login_url='login')
+def delete_product(request, product_code):
+    product = get_object_or_404(Product, ProductCode=product_code)
+    product.delete()
+    messages.success(request, 'Product deleted successfully.')
+    return redirect('store_admin')
+
+
+
+
+
+@login_required(login_url='login')
+def commandes_admin(request):
+    commandes = Commande.objects.all()
+    context = {
+        'commandes': commandes,
+    }
+    return render(request, "platformTK/SuperAdmin/commandes_admin.html", context)
 
 
 

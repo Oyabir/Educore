@@ -49,6 +49,15 @@ urlpatterns = [
     path('prof_list/', views.prof_list, name='prof_list'),
     
     path('upload_prof_from_file/', views.upload_prof_from_file, name='upload_prof_from_file'),
+    
+    path('store_admin/', views.store_admin, name='store_admin'),
+    path('add_product/', views.add_product, name='add_product'),
+    path('store_admin/update/<str:product_code>/', views.update_product, name='update_product'),
+    path('store_admin/delete/<str:product_code>/', views.delete_product, name='delete_product'),
+    
+    path('commandes_admin/', views.commandes_admin, name='commandes_admin'),
+
+
 
 
     # path('search-entities/', views.search_entities, name='search_entities'),
@@ -61,6 +70,7 @@ urlpatterns = [
     path('profile/', views.profile, name='profile'),
     path('update-profile/', views.update_profile, name='update_profile'),
     path('my_competitions/', views.my_competitions, name='my_competitions'),
+    path('my_groups/', views.my_groups, name='my_groups'),
 
 
 

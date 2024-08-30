@@ -34,8 +34,8 @@
                         <a href="404.html" class="dropdown-item">404 Error</a>
                     </div>
                 </div> {% endcomment %}
-                <a href="" class="nav-item nav-link">Store</a>
-                <a href="" class="nav-item nav-link">Profil</a>
+                <a href="{% url "store_admin" %}" class="nav-item nav-link">Store</a>
+                <a href="{% url "commandes_admin" %}" class="nav-item nav-link">Commandes</a>
                 <a href="{% url 'userLogout' %}" class="nav-item nav-link">Déconnexion</a>
 
 
