@@ -59,3 +59,13 @@ class CommandeAdmin(admin.ModelAdmin):
     search_fields = ('etudiant__user__username', 'product__name')
     list_filter = ('status', 'date_ordered')
     readonly_fields = ('date_ordered', 'total_price')
+    
+
+
+
+
+@admin.register(Membership)
+class MembershipAdmin(admin.ModelAdmin):
+    list_display = ('etudiant', 'group', 'pointsG')
+    search_fields = ('etudiant__prenom', 'etudiant__nom', 'group__name')
+    

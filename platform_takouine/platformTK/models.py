@@ -191,3 +191,15 @@ class Commande(models.Model):
     def __str__(self):
         return f"{self.etudiant.user.username} - {self.product.name} - {self.date_ordered} - {self.status}"
 
+
+
+
+
+
+class Membership(models.Model):
+    etudiant = models.ForeignKey(Etudiant, on_delete=models.CASCADE)
+    group = models.ForeignKey(Groups, on_delete=models.CASCADE)
+    pointsG = models.IntegerField(default=0)
+
+    def __str__(self):
+        return f"{self.etudiant} in {self.group}"

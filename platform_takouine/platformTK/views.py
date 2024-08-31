@@ -261,38 +261,35 @@ def my_competitions(request):
 @login_required(login_url='login')
 @allowedUsers(allowedGroups=['Etudiants'])
 def my_groups(request):
-    etudiant = request.user.etudiant 
+    etudiant = request.user.etudiant
     
     # Get all groups that the student is a part of
-    groups = etudiant.groups.all()
+    memberships = Membership.objects.filter(etudiant=etudiant).select_related('group')
     
     group_data = []
-    for group in groups:
-        # Get all students in the group ordered by points (descending)
-        etudiants_in_group = group.etudiants.order_by('-points')
+    for membership in memberships:
+        group = membership.group
+        etudiant_pointsG = membership.pointsG
         
-        # Calculate rank based on points
-        rank = list(etudiants_in_group).index(etudiant) + 1
+        # Get all memberships in the group, ordered by pointsG (descending)
+        memberships_in_group = Membership.objects.filter(group=group).order_by('-pointsG')
+        
+        # Calculate the rank of the student in this specific group
+        rank = list(memberships_in_group).index(membership) + 1
         
         group_data.append({
             'group': group,
-            'points': etudiant.points,
+            'points': etudiant_pointsG,
             'rank': rank,
-            'total_students': etudiants_in_group.count()
+            'total_students': group.etudiants.count()  # Get the total number of students from the group
         })
     
     context = {
         'group_data': group_data,
-        'etudiant':etudiant
+        'etudiant': etudiant
     }
     
     return render(request, 'platformTK/Etudiant/my_groupes.html', context)
-
-
-
-
-
-
 
 
 
@@ -1165,7 +1162,7 @@ def delete_product(request, product_code):
 
 
 
-@login_required(login_url='login')
+@login_required(login_url='login')  
 def commandes_admin(request):
     commandes = Commande.objects.all()
     context = {
