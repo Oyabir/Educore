@@ -80,24 +80,29 @@ def homeEtudiant(request):
             })
     
     # Fetch all groups that the student is a part of
-    groups = etudiant.groups.all()
+    etudiant = request.user.etudiant
     
-    # Prepare the group data
+    # Get all groups that the student is a part of
+    memberships = Membership.objects.filter(etudiant=etudiant).select_related('group')
+    
     group_data = []
-    for group in groups:
-        # Get all students in the group ordered by points (descending)
-        etudiants_in_group = group.etudiants.order_by('-points')
+    for membership in memberships:
+        group = membership.group
+        etudiant_pointsG = membership.pointsG
         
-        # Calculate rank within the group
-        rank = list(etudiants_in_group).index(etudiant) + 1
+        # Get all memberships in the group, ordered by pointsG (descending)
+        memberships_in_group = Membership.objects.filter(group=group).order_by('-pointsG')
+        
+        # Calculate the rank of the student in this specific group
+        rank = list(memberships_in_group).index(membership) + 1
         
         group_data.append({
             'group': group,
-            'points': etudiant.points,
+            'points': etudiant_pointsG,
             'rank': rank,
-            'total_students': etudiants_in_group.count()
+            'total_students': group.etudiants.count()  # Get the total number of students from the group
         })
-
+    
     context = {
         'etudiant': etudiant,
         'competition_section_data': competition_section_data,
@@ -592,42 +597,101 @@ def Profil(requset):
 
 
 
-
-
+from django.db.models import Sum, OuterRef, Subquery
 
 def group_detail(request, code_group):
-    # Retrieve the group using the unique code_group
     group = get_object_or_404(Groups, code_group=code_group)
-    # Get all students associated with this group
-    students = group.etudiants.all()
+    
+    # Subquery to get pointsG for memberships related to the specific group
+    memberships_subquery = Membership.objects.filter(
+        group=group,
+        etudiant=OuterRef('pk')
+    ).values('etudiant').annotate(
+        total_points=Sum('pointsG')
+    ).values('total_points')
+    
+    # Annotate each student with the total pointsG from the subquery
+    students = group.etudiants.annotate(
+        pointsG=Subquery(memberships_subquery, output_field=models.IntegerField())
+    ).order_by('-pointsG')  # Order by pointsG in descending order
+    
     return render(request, "platformTK/Prof/group_detail.html", {"group": group, "students": students})
 
 
 
 
-
 def Répartition_points(request, code_group):
-    # Retrieve the group using the unique code_group
     group = get_object_or_404(Groups, code_group=code_group)
-    # Get all students associated with this group
-    students = group.etudiants.all().order_by('-points')
-    return render(request, "platformTK/Prof/Répartition_points.html", {"group": group, "students": students})
+    students = group.etudiants.all()
+    memberships = Membership.objects.filter(group=group)
+    memberships_dict = {membership.etudiant.id: membership.pointsG for membership in memberships}
+
+    # Add pointsG to each student and sort
+    for student in students:
+        student.pointsG = memberships_dict.get(student.id, 0)
+
+    students = sorted(students, key=lambda s: s.pointsG, reverse=True)
+
+    return render(request, "platformTK/Prof/Répartition_points.html", {
+        "group": group,
+        "students": students,
+        "memberships_dict": memberships_dict
+    })
+
+
+
+
+#Another way for do this
+
+# from django.db.models import OuterRef, Subquery
+
+# def Répartition_points(request, code_group):
+#     group = get_object_or_404(Groups, code_group=code_group)
+    
+#     # Subquery to get pointsG for each student
+#     pointsG_subquery = Membership.objects.filter(
+#         etudiant=OuterRef('pk'),
+#         group=group
+#     ).values('pointsG')[:1]
+
+#     students = group.etudiants.annotate(
+#         pointsG=Subquery(pointsG_subquery)
+#     ).order_by('-pointsG')
+
+#     memberships = Membership.objects.filter(group=group)
+#     memberships_dict = {membership.etudiant.id: membership.pointsG for membership in memberships}
+    
+#     # Debugging: Print memberships_dict to console
+#     print("Memberships Dict:", memberships_dict)
+
+#     return render(request, "platformTK/Prof/Répartition_points.html", {
+#         "group": group,
+#         "students": students,
+#         "memberships_dict": memberships_dict
+#     })
 
 
 
 
 
 @csrf_exempt  
-def update_points(request, student_id):
+def update_points(request, student_id, group_id):
     if request.method == 'POST':
         import json
         data = json.loads(request.body)
         amount = data.get('amount')
-        
+
         try:
             student = Etudiant.objects.get(id=student_id)
             student.points += int(amount)
             student.save()
+
+            # Update pointsG in Membership for the specific group
+            memberships = Membership.objects.filter(etudiant=student, group_id=group_id)
+            for membership in memberships:
+                membership.pointsG += int(amount)
+                membership.save()
+
             return JsonResponse({'success': True})
         except Etudiant.DoesNotExist:
             return JsonResponse({'success': False, 'error': 'Student not found'})
@@ -635,10 +699,8 @@ def update_points(request, student_id):
 
 
 
-
-
 @csrf_exempt  
-def subtract_points(request, student_id):
+def subtract_points(request, student_id, group_id):
     if request.method == 'POST':
         import json
         data = json.loads(request.body)
@@ -649,12 +711,20 @@ def subtract_points(request, student_id):
             if student.points >= amount:
                 student.points -= amount  
                 student.save()
+
+                # Subtract pointsG in Membership for the specific group
+                memberships = Membership.objects.filter(etudiant=student, group_id=group_id)
+                for membership in memberships:
+                    membership.pointsG -= amount
+                    membership.save()
+
                 return JsonResponse({'success': True})
             else:
                 return JsonResponse({'success': False, 'error': 'Insufficient points'})
         except Etudiant.DoesNotExist:
             return JsonResponse({'success': False, 'error': 'Student not found'})
     return JsonResponse({'success': False, 'error': 'Invalid request method'})
+
 
 
 
@@ -690,6 +760,8 @@ def add_student(requset):
 
 
 
+
+
 def group_list(request):
     if request.method == 'POST':
         group_name = request.POST.get('group_name')
@@ -700,12 +772,6 @@ def group_list(request):
         # Convert the comma-separated strings into lists of integers
         student_ids = [int(id) for id in student_ids_str.split(',') if id.isdigit()]
         prof_ids = [int(id) for id in prof_ids_str.split(',') if id.isdigit()]
-
-        # Debugging output to verify received data
-        print("Group Name:", group_name)
-        print("Description:", description)
-        print("Selected Students IDs:", student_ids)
-        print("Selected Professors IDs:", prof_ids)
 
         # Create and save the new group
         group = Groups(name=group_name, description=description)
@@ -719,6 +785,10 @@ def group_list(request):
         group.profs.set(profs)
         group.save()
 
+        # Create Membership records for each student added to the group, with pointsG initialized to 0
+        for student in students:
+            Membership.objects.create(etudiant=student, group=group, pointsG=0)
+
         return redirect('add_groupe')  # Ensure 'add_groupe' is defined in your URL patterns
 
     etudiants = Etudiant.objects.all()
@@ -730,6 +800,7 @@ def group_list(request):
         'etudiants': etudiants,
         'profs': profs
     })
+
 
 
 

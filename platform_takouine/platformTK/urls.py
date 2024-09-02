@@ -32,8 +32,9 @@ urlpatterns = [
     
     path('group_detail/<str:code_group>/', views.group_detail, name='group_detail'),
     path('Répartition_points/<str:code_group>/', views.Répartition_points, name='Répartition_points'),
-    path('update_points/<int:student_id>/', views.update_points, name='update_points'),
-    path('subtract_points/<int:student_id>/', views.subtract_points, name='subtract_points'),
+    
+    path('update_points/<int:student_id>/<int:group_id>/', views.update_points, name='update_points'),
+    path('subtract_points/<int:student_id>/<int:group_id>/', views.subtract_points, name='subtract_points'),
 
 
     

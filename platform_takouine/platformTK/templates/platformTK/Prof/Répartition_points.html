@@ -13,59 +13,69 @@
                     {% comment %} <p>Eirmod sed ipsum dolor sit rebum labore magna erat. Tempor ut dolore lorem kasd vero ipsum sit eirmod sit. Ipsum diam justo sed rebum vero dolor duo.</p> {% endcomment %}
                 </div>
                 <div class="row g-4">
+                    {% load custom_filters %}
+
                     {% for student in students %}
-                    <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
-                        <div class="classes-item">
-                            <div class="bg-light rounded-circle w-75 mx-auto p-3">
-                                <img class="img-fluid rounded-circle" src="img/classes-1.jpg" alt="">
-                            </div>
-                            <div class="bg-light rounded p-4 pt-5 mt-n5">
-                                <a class="d-block text-center h3 mt-3 mb-4" href="">{{student.prenom}} {{student.nom}}</a>
-                                <div class="d-flex align-items-center justify-content-between mb-4">
-                                    <div class="d-flex align-items-center">
-                                        {% comment %} <img class="rounded-circle flex-shrink-0" src="{% static 'img/user.jpg' %}" alt="" style="width: 70px;height: 70px;margin-left: 36px;"> {% endcomment %}
-                                        {% if student.avatar %}
-                                        <img class="rounded-circle flex-shrink-0" src="{{ student.avatar.url }}" alt="" style="width: 55px;height: 55px;">
-                                        {% else %}
-                                        <img class="rounded-circle flex-shrink-0" src="{% static 'img/user.jpg' %}" alt="" style="width: 55px;height: 55px;">
-                                        {% endif %}
-                                        <div class="ms-3">
-                                            <h6 class="text-primary mb-1">{{student.prenom}} {{student.nom}}</h6>
-                                            <small>{{group.name}}</small>
-                                        </div> 
-                                    </div>
-                                    <span class="bg-primary text-white rounded-pill py-2 px-3" href="">${{student.points}}</span>
+                        <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
+                            <div class="classes-item">
+                                <div class="bg-light rounded-circle w-75 mx-auto p-3">
+                                    <img class="img-fluid rounded-circle" src="img/classes-1.jpg" alt="">
                                 </div>
+                                <div class="bg-light rounded p-4 pt-5 mt-n5">
+                                    <a class="d-block text-center h3 mt-3 mb-4" href="">{{ student.prenom }} {{ student.nom }}</a>
+                                    <div class="d-flex align-items-center justify-content-between mb-4">
+                                        <div class="d-flex align-items-center">
+                                            {% if student.avatar %}
+                                            <img class="rounded-circle flex-shrink-0" src="{{ student.avatar.url }}" alt="" style="width: 55px;height: 55px;">
+                                            {% else %}
+                                            <img class="rounded-circle flex-shrink-0" src="{% static 'img/user.jpg' %}" alt="" style="width: 55px;height: 55px;">
+                                            {% endif %}
+                                            <div class="ms-3">
+                                                <h6 class="text-primary mb-1">{{ student.prenom }} {{ student.nom }}</h6>
+                                                <small>{{ group.name }}</small>
+                                            </div> 
+                                        </div>
+                                        <span class="bg-primary text-white rounded-pill py-2 px-3">
+                                            ${{ memberships_dict|get_item:student.id }}
+                                        </span>
+                                    </div>
                                 <div class="row g-1">
                                     <div class="col-4">
                                         <div class="border-top border-3 border-primary pt-2">
                                             <h6 class="text-primary mb-1">Add:</h6>
-                                            <small> 
-                                                <button type="button" class="bg-primary text-white rounded-pill py-2 px-3" data-bs-toggle="modal" data-bs-target="#addItemModal" data-student-id="{{ student.id }}">Add</button>
+                                            <small>
+                                                <button type="button" 
+                                                        class="bg-primary text-white rounded-pill py-2 px-3" 
+                                                        data-bs-toggle="modal" 
+                                                        data-bs-target="#addItemModal" 
+                                                        data-student-id="{{ student.id }}" 
+                                                        data-group-id="{{ group.id }}">Add</button>
                                             </small>
-                                            {% comment %} <small><span class="bg-primary text-white rounded-pill py-2 px-3" href="">Add</span></small> {% endcomment %}
+                                
                                         </div>
                                     </div>
                                     <div class="col-4">
-                                        {% comment %} <div class="border-top border-3 border-success pt-2">
-                                            <h6 class="text-success mb-1">Time:</h6>
-                                            <small>9-10 AM</small>
-                                        </div> {% endcomment %}
+                                       
                                     </div>
                                     <div class="col-4">
                                         <div class="border-top border-3 border-warning pt-2">
                                             <h6 class="text-warning mb-1">Minus:</h6>
                                             <small>
-                                                <!-- Add data-student-id here -->
-                                                <button type="button" class="bg-primary text-white rounded-pill py-2 px-3" data-bs-toggle="modal" data-bs-target="#minusItemModal" data-student-id="{{ student.id }}">Minus</button>
-                                            </small>                                       
+                                                <button type="button" 
+                                                        class="bg-primary text-white rounded-pill py-2 px-3" 
+                                                        data-bs-toggle="modal" 
+                                                        data-bs-target="#minusItemModal" 
+                                                        data-student-id="{{ student.id }}" 
+                                                        data-group-id="{{ group.id }}">Minus</button>
+                                            </small>                                    
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    {% endfor %}
+                {% endfor %}
+                
 
                     <style>
                         .win-animation {
@@ -394,20 +404,22 @@
 <audio id="losingSound" src="{% static 'verloren-89595.mp3' %}" preload="auto"></audio>
 
 <script>
-    let selectedStudentId = null; // Variable to store the selected student ID
-
-    // Attach click event listeners to both "Add" and "Minus" buttons
+    let selectedStudentId = null;
+    let selectedGroupId = null; // Variable to store the selected group ID
+    
     document.querySelectorAll('[data-bs-target="#addItemModal"], [data-bs-target="#minusItemModal"]').forEach(button => {
         button.addEventListener('click', function () {
             selectedStudentId = this.getAttribute('data-student-id');
-            console.log('Selected Student ID:', selectedStudentId); // Debug log
+            selectedGroupId = this.getAttribute('data-group-id');
+            console.log('Selected Student ID:', selectedStudentId);
+            console.log('Selected Group ID:', selectedGroupId);
         });
     });
     
     // Function to trigger the winning animation
     function triggerAnimation() {
         var selectedAmount = document.getElementById('dropdownAmount').value;
-        console.log('Selected Amount (Add):', selectedAmount); // Debug log
+        console.log('Selected Amount (Add):', selectedAmount);
         if (selectedAmount && selectedAmount !== 'Select an amount') {
             bootstrap.Modal.getInstance(document.getElementById('addItemModal')).hide();
             document.getElementById('winAnimation').classList.remove('d-none');
@@ -417,8 +429,8 @@
                 location.reload();
             }, 6000);
     
-            if (selectedStudentId) {
-                fetch(`/update_points/${selectedStudentId}/`, {
+            if (selectedStudentId && selectedGroupId) {
+                fetch(`/update_points/${selectedStudentId}/${selectedGroupId}/`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -434,7 +446,7 @@
                     console.error('Error (Add):', error);
                 });
             } else {
-                alert('No student selected.');
+                alert('No student or group selected.');
             }
         } else {
             alert('Please select a valid amount.');
@@ -444,21 +456,22 @@
     // Function to trigger the loss animation
     function triggerLossAnimation() {
         var selectedAmount = document.getElementById('dropdownMinusAmount').value;
-        console.log('Selected Amount (Minus):', selectedAmount); // Debug log
+        console.log('Selected Amount (Minus):', selectedAmount);
     
         if (selectedAmount && selectedAmount !== 'Select an amount') {
             var amount = parseInt(selectedAmount); 
-            console.log('Parsed Amount:', amount); // Debug log
-            console.log('Selected Student ID (Minus):', selectedStudentId); // Debug log
+            console.log('Parsed Amount:', amount);
+            console.log('Selected Student ID (Minus):', selectedStudentId);
+            console.log('Selected Group ID (Minus):', selectedGroupId);
     
-            if (selectedStudentId) {
-                fetch(`/subtract_points/${selectedStudentId}/`, {
+            if (selectedStudentId && selectedGroupId) {
+                fetch(`/subtract_points/${selectedStudentId}/${selectedGroupId}/`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
                     },
-                    body: JSON.stringify({ amount: amount }) 
+                    body: JSON.stringify({ amount: amount })
                 })
                 .then(response => response.json())
                 .then(data => {
@@ -480,13 +493,12 @@
                     console.error('Error (Minus):', error);
                 });
             } else {
-                alert('No student selected.');
+                alert('No student or group selected.');
             }
         } else {
             alert('Please select a valid amount.');
         }
     }
-    
     
     
 </script>

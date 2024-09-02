@@ -72,6 +72,8 @@ def generate_group_code():
 
 
 
+
+
 class Groups(models.Model):
     name = models.CharField(max_length=100)
     description = models.CharField(max_length=300)
@@ -89,8 +91,8 @@ class Groups(models.Model):
         return self.name
 
     def total_points(self):
-        return self.etudiants.aggregate(total_points=models.Sum('points'))['total_points'] or 0
-
+        # Sum pointsG from Membership model for this group
+        return Membership.objects.filter(group=self).aggregate(total_points=models.Sum('pointsG'))['total_points'] or 0
 
 
 
