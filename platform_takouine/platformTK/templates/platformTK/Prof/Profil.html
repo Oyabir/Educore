@@ -4,6 +4,16 @@
 
 {% block content %}
     {% include 'platformTK/Prof/navbar.html' %}
+    {% if messages %}
+    <div class="container">
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    </div>
+    {% endif %}
 
     <div class="container-xxl py-5">
         <div class="row justify-content-center">
@@ -12,31 +22,32 @@
                 <div class="profile-card card">
                     <div class="card-body">
                         <div class="text-center mb-4">
-                            <img src="default-avatar.png" alt="Profile Picture" class="profile-picture img-fluid rounded-circle">
+                            <img src="{% if Prof.avatar %}{{ Prof.avatar.url }}{% else %}{% static 'img/786525_people_512x512.png' %}{% endif %}" alt="Profile Picture" class="profile-picture img-fluid rounded-circle">
                         </div>
                         <h2 class="card-title text-center">User Profile</h2>
-                        <form id="profile-form">
+                        <form id="profile-form" method="POST" enctype="multipart/form-data" action="{% url 'update_profil_prof' %}">
+                            {% csrf_token %}
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label for="firstName" class="form-label">First Name</label>
-                                    <input type="text" class="form-control" id="firstName" value="John">
+                                    <input type="text" class="form-control" id="firstName" name="firstName" value="{{Prof.prenom}}">
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label for="lastName" class="form-label">Last Name</label>
-                                    <input type="text" class="form-control" id="lastName" value="Doe">
+                                    <input type="text" class="form-control" id="lastName" name="lastName" value="{{Prof.nom}}">
                                 </div>
                             </div>
                             <div class="mb-3">
                                 <label for="email" class="form-label">Email</label>
-                                <input type="email" class="form-control" id="email" value="john.doe@example.com">
+                                <input type="email" class="form-control" id="email" name="email" value="{{Prof.email}}">
                             </div>
                             <div class="mb-3">
                                 <label for="phone" class="form-label">Phone Number</label>
-                                <input type="text" class="form-control" id="phone" value="123-456-7890">
+                                <input type="text" class="form-control" id="phone" name="phone" value="{{Prof.numéro_de_téléphone}}">
                             </div>
                             <div class="mb-3">
-                                <label for="bio" class="form-label">Bio</label>
-                                <textarea class="form-control" id="bio" rows="4">This is a short bio about me.</textarea>
+                                <label for="avatar" class="form-label">Avatar</label>
+                                <input class="form-control" type="file" name="avatar" id="avatar">
                             </div>
                             <div class="d-grid">
                                 <button type="submit" class="btn btn-primary">Update Profile</button>
@@ -70,21 +81,21 @@
             max-width: 800px;
             border: 1px solid #ced4da;
         }
-        
+       
         /* Profile Picture Styling */
         .profile-picture {
             width: 150px;
             height: 150px;
             border-radius: 50%;
             object-fit: cover;
-            border: 6px solid #00796b;
+            border: 6px solid #fe5d37;
             box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
         }
         
         /* Card Title Styling */
         .card-title {
-            color: #00796b;
-            border-bottom: 2px solid #00796b;
+            color: #fe5d37;
+            border-bottom: 2px solid #fe5d37;
             padding-bottom: 15px;
             margin-bottom: 25px;
             font-size: 2rem;
@@ -113,7 +124,7 @@
         }
         
         /* Button Styling */
-        .btn-primary {
+        {% comment %} .btn-primary {
             background-color: #00796b;
             border-color: #00796b;
             border-radius: 8px;
@@ -126,7 +137,7 @@
         .btn-primary:hover {
             background-color: #004d40;
             border-color: #004d40;
-        }
+        } {% endcomment %}
         
         /* Responsive Design */
         @media (max-width: 768px) {
@@ -140,15 +151,8 @@
                 margin: 10px auto;
             }
         }
-        
 
     </style>
 
-    <script>
-        document.getElementById('profile-form').addEventListener('submit', function(event) {
-            event.preventDefault();
-            alert('Profile updated successfully!');
-        });
-        
-    </script>
+    
 {% endblock  %}

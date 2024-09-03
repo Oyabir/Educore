@@ -6,6 +6,26 @@
 {% include 'platformTK/SuperAdmin/navbar.html' %}
 
 <div class="container mt-5">
+    {% if messages %}
+	{% for message in messages %}
+	  {% if message.tags == 'error' %}
+		<div class="alert alert-danger" role="alert">
+		  {{ message }}
+		</div>
+	  {% endif %}
+	{% endfor %}
+	{% endif %}
+
+	{% if messages %}
+  {% for message in messages %}
+      {% if message.tags == 'success' %}
+        <div class="alert alert-success" role="alert">
+          {{ message }}
+        </div>
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="text-center">Groups</h2>
         <button class="btn btn-primary" onclick="openModal()" style="background-color: #fe5d37;">Add New Group</button>
@@ -45,7 +65,7 @@
 
 
 <!-- Modal -->
-<div id="groupModal" class="modal" >
+<div id="groupModal" class="modal">
     <div class="modal-content" style="margin-top: -56px;">
         <div class="modal-header">
             <span class="close" onclick="closeModal()">&times;</span>
@@ -54,6 +74,7 @@
         <div class="modal-body">
             <form method="post" action="{% url 'group_list' %}">
                 {% csrf_token %}
+                
                 <!-- Group Name and Description -->
                 <div class="mb-3">
                     <label for="groupName" class="form-label">Group Name</label>
@@ -64,52 +85,56 @@
                     <textarea class="form-control" id="description" name="description" rows="1" required></textarea>
                 </div>
 
-                <!-- Student Search and List -->
-                <div class="mb-3">
-                    <label for="studentSearch" class="form-label">Search Students</label>
-                    <div class="input-group">
-                        <input type="text" class="form-control" id="studentSearch" placeholder="Search students..." oninput="filterList('student')">
-                    </div>
-                    <div class="card mt-3 p-2 scrollable-container" id="studentList">
-                        {% for etudiant in etudiants %}
-                        <div data-id="{{ etudiant.id }}" class="student-item">
-                            {{ etudiant.prenom }} {{ etudiant.nom }}
-                            <button type="button" class="btn btn-sm btn-primary" onclick="addStudent({{ etudiant.id }}, '{{ etudiant.prenom }} {{ etudiant.nom }}')">Add</button>
+                <!-- Students Section -->
+                <div class="students-container d-flex">
+                    <!-- Student Search and List -->
+                    <div class="mb-3 flex-grow-1 mr-2">
+                        <label for="studentSearch" class="form-label">Search Students</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="studentSearch" placeholder="Search students..." oninput="filterList('student')">
                         </div>
-                        {% endfor %}
-                    </div>
-                </div>
-                
-
-                <!-- Selected Students -->
-                <div class="mt-2">
-                    <label class="form-label">Selected Students</label>
-                    <div id="selectedStudents" class="scrollable-list"></div>
-                    <input type="hidden" id="students" name="students">
-                </div>
-
-                <!-- Professor Search and List -->
-                <div class="mb-3">
-                    <label for="profSearch" class="form-label">Search Professors</label>
-                    <div class="input-group">
-                        <input type="text" class="form-control" id="profSearch" placeholder="Search professors..." oninput="filterList('prof')">
-                    </div>
-                    <div class="card mt-3 p-2 scrollable-container" id="profList">
-                        {% for prof in profs %}
-                        <div data-id="{{ prof.id }}" class="prof-item">
-                            {{ prof.prenom }} {{ prof.nom }}
-                            <button type="button" class="btn btn-sm btn-primary" onclick="addProf({{ prof.id }}, '{{ prof.prenom }} {{ prof.nom }}')">Add</button>
+                        <div class="card mt-3 p-2 scrollable-container" id="studentList">
+                            {% for etudiant in etudiants %}
+                            <div data-id="{{ etudiant.id }}" class="student-item">
+                                {{ etudiant.prenom }} {{ etudiant.nom }}
+                                <button type="button" class="btn btn-sm btn-primary" onclick="addStudent({{ etudiant.id }}, '{{ etudiant.prenom }} {{ etudiant.nom }}')">Add</button>
+                            </div>
+                            {% endfor %}
                         </div>
-                        {% endfor %}
+                    </div>
+
+                    <!-- Selected Students -->
+                    <div class="mt-2 flex-grow-1">
+                        <label class="form-label">Selected Students</label>
+                        <div id="selectedStudents" class="scrollable-list"></div>
+                        <input type="hidden" id="students" name="students">
                     </div>
                 </div>
-                
 
-                <!-- Selected Professors -->
-                <div class="mt-2">
-                    <label class="form-label">Selected Professors</label>
-                    <div id="selectedProfs" class="scrollable-list"></div>
-                    <input type="hidden" id="profs" name="profs">
+                <!-- Professors Section -->
+                <div class="professors-container d-flex mt-3">
+                    <!-- Professor Search and List -->
+                    <div class="mb-3 flex-grow-1 mr-2">
+                        <label for="profSearch" class="form-label">Search Professors</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="profSearch" placeholder="Search professors..." oninput="filterList('prof')">
+                        </div>
+                        <div class="card mt-3 p-2 scrollable-container" id="profList">
+                            {% for prof in profs %}
+                            <div data-id="{{ prof.id }}" class="prof-item">
+                                {{ prof.prenom }} {{ prof.nom }}
+                                <button type="button" class="btn btn-sm btn-primary" onclick="addProf({{ prof.id }}, '{{ prof.prenom }} {{ prof.nom }}')">Add</button>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Selected Professors -->
+                    <div class="mt-2 flex-grow-1">
+                        <label class="form-label">Selected Professors</label>
+                        <div id="selectedProfs" class="card p-2 scrollable-container" style="max-height:223px"></div>
+                        <input type="hidden" id="profs" name="profs">
+                    </div>
                 </div>
 
                 <!-- Submit Button -->
@@ -121,23 +146,61 @@
     </div>
 </div>
 
+
 <!-- CSS for Scrollable Containers -->
 <style>
+    /* CSS for Full Width Modal */
+    .modal {
+        display: none; /* Hidden by default */
+        position: fixed; /* Stay in place */
+        {% comment %} z-index: 1; /* Sit on top */ {% endcomment %}
+        left: 0;
+        top: 0;
+        width: 100%; /* Full width */
+        height: 100%; /* Full height */
+        overflow: auto; /* Enable scroll if needed */
+        background-color: rgba(0,0,0,0.4); /* Black background with opacity */
+    }
+    
+    .modal-content {
+        background-color: #fefefe;
+        margin: 15% auto; /* 15% from the top and centered */
+        padding: 20px;
+        border: 1px solid #888;
+        width: 100%; /* Width of modal content */
+        max-width: 1000px; /* Max width */
+        border-radius: 5px;
+    }
+    
+    .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+    }
+    
+    .close:hover,
+    .close:focus {
+        color: black;
+        text-decoration: none;
+        cursor: pointer;
+    }
+    
     .scrollable-container {
         max-height: 178px; /* Adjust the height as needed */
         overflow-y: auto;
         border: 1px solid #ddd;
         border-radius: 4px;
     }
-
+    
     .scrollable-list {
-        max-height: 150px; /* Adjust the height as needed */
+        max-height: 223px; /* Adjust the height as needed */
         overflow-y: auto;
         border: 1px solid #ddd;
         border-radius: 4px;
         padding: 8px;
     }
-
+    
     .scrollable-container div,
     .scrollable-list div {
         padding: 4px 8px;
@@ -146,11 +209,26 @@
         justify-content: space-between;
         align-items: center;
     }
-
+    
     .scrollable-container div:last-child,
     .scrollable-list div:last-child {
         border-bottom: none;
     }
+    
+    /* Flexbox Styling for Side-by-Side Layout */
+    .students-container, .professors-container {
+        display: flex;
+    }
+    
+    .flex-grow-1 {
+        flex: 1;
+    }
+    
+    .mr-2 {
+        margin-right: 16px; /* Adjust spacing as needed */
+    }
+    
+    
 </style>
 
 

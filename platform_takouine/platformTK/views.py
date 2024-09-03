@@ -591,9 +591,61 @@ def StoreProf(requset):
 
 
 
-
+@login_required(login_url='login')
+@allowedUsers(allowedGroups=['Prof'])
 def Profil(requset):
-    return render(requset,"platformTK/Prof/Profil.html")
+    Prof = get_object_or_404(prof, user=requset.user)
+    context = {
+        'Prof': Prof,
+    }
+    return render(requset,"platformTK/Prof/Profil.html",context)
+
+
+
+
+
+@login_required(login_url='login')
+@allowedUsers(allowedGroups=['Prof'])
+def update_profil_prof(request):
+    prof_instance = get_object_or_404(prof, user=request.user)
+
+    if request.method == 'POST':
+        # Extract form data
+        prenom = request.POST.get('firstName')
+        nom = request.POST.get('lastName')
+        email = request.POST.get('email')
+        numéro_de_téléphone = request.POST.get('phone')
+        avatar = request.FILES.get('avatar')
+
+        # Validate and update the prof instance
+        if prenom and nom and email:
+            prof_instance.prenom = prenom
+            prof_instance.nom = nom
+            prof_instance.email = email
+            prof_instance.numéro_de_téléphone = numéro_de_téléphone
+
+            if avatar:
+                prof_instance.avatar = avatar
+            
+            try:
+                prof_instance.save()
+                messages.success(request, 'Profile updated successfully!')
+            except Exception as e:
+                messages.error(request, f'Error updating profile: {e}')
+        else:
+            messages.error(request, 'Please fill in all required fields.')
+
+        return redirect('Profil')  # Redirect back to the profile page after updating
+
+    context = {
+        'Prof': prof_instance,
+    }
+    return render(request, "platformTK/Prof/Profil.html", context)
+
+
+
+
+
 
 
 
@@ -805,6 +857,8 @@ def group_list(request):
 
 
 def add_etudiant(request):
+    groups = Groups.objects.all()
+
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
@@ -814,17 +868,17 @@ def add_etudiant(request):
         email = request.POST.get('email')
         numéro_de_téléphone = request.POST.get('numéro_de_téléphone')
         avatar = request.FILES.get('avatar')
+        group_id = request.POST.get('group')
+
+        # print("Group ID:", group_id)  # Debugging line
 
         if not username or not password or not prenom or not nom or not date_de_naissance or not email:
-            # Handle missing fields (return an error message or redirect to a form with errors)
-            return render(request, "platformTK/SuperAdmin/add_student.html", {'error': 'Please fill in all required fields.'})
+            return render(request, "platformTK/SuperAdmin/add_student.html", {'error': 'Please fill in all required fields.', 'groups': groups})
 
         try:
-            # Create User
             user = User.objects.create_user(username=username, password=password)
 
-            # Create Etudiant
-            Etudiant.objects.create(
+            etudiant = Etudiant.objects.create(
                 user=user,
                 prenom=prenom,
                 nom=nom,
@@ -833,20 +887,21 @@ def add_etudiant(request):
                 numéro_de_téléphone=numéro_de_téléphone,
                 avatar=avatar
             )
-            
+
+            if group_id:
+                group = Groups.objects.get(id=group_id)
+                group.etudiants.add(etudiant)
+                
             group = Group.objects.get(name="Etudiants")
             user.groups.add(group)
 
-
-            return redirect('add_student')  # Ensure 'add_student' is a valid URL name
+            messages.success(request, 'Etudiant added successfully!')
+            return redirect('add_student')
 
         except Exception as e:
-            # Handle any exceptions (return an error message or log the error)
-            return render(request, "platformTK/SuperAdmin/add_student.html", {'error': str(e)})
+            return render(request, "platformTK/SuperAdmin/add_student.html", {'error': str(e), 'groups': groups})
 
-    return render(request, "platformTK/SuperAdmin/add_student.html")
-
-
+    return render(request, "platformTK/SuperAdmin/add_student.html", {'groups': groups})
 
 
 
@@ -971,53 +1026,6 @@ def add_students_from_file(request):
 
 
 
-
-
-
-@login_required(login_url='login')
-def prof_list(request):
-    if request.method == 'POST':
-        prenom = request.POST.get('prenom')
-        nom = request.POST.get('nom')
-        date_de_naissance = request.POST.get('date_de_naissance')
-        email = request.POST.get('email')
-        numéro_de_téléphone = request.POST.get('numéro_de_téléphone')
-        avatar = request.FILES.get('avatar')
-
-        # Creating a new User object
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-        user = User.objects.create_user(username=username, password=password, email=email)
-
-        # Validate the inputs
-        if prenom and nom and date_de_naissance and email and user:
-            try:
-                # Create the prof instance
-                new_prof = prof.objects.create(
-                    user=user,
-                    prenom=prenom,
-                    nom=nom,
-                    date_de_naissance=date_de_naissance,
-                    email=email,
-                    numéro_de_téléphone=numéro_de_téléphone,
-                    avatar=avatar,
-                    slugProf=slugify(username)
-                )
-                
-                group = Group.objects.get(name="Prof")
-                user.groups.add(group)
-                
-                # Redirect to a success page or another view
-                return redirect('add_prof')
-            except Exception as e:
-                # Handle any errors that occur during the creation
-                print(f"Error creating prof: {e}")
-
-    return render(request, 'platformTK/SuperAdmin/add_prof.html')
-
-
-
-
 def add_prof(requset):
     etudiants = Etudiant.objects.all()
     profs = prof.objects.all()
@@ -1025,7 +1033,7 @@ def add_prof(requset):
     return render(requset,"platformTK/SuperAdmin/add_prof.html", {
         'groups': groups,
         'etudiants': etudiants,
-        'profs': profs
+        'profs': profs,
     })
     
     
@@ -1034,6 +1042,85 @@ def add_prof(requset):
     
 
 
+
+
+@login_required(login_url='login')
+def prof_list(request):
+    groups = Groups.objects.all()
+    profs = prof.objects.all()
+
+    if request.method == 'POST':
+        prenom = request.POST.get('prenom')
+        nom = request.POST.get('nom')
+        date_de_naissance = request.POST.get('date_de_naissance')
+        email = request.POST.get('email')
+        numéro_de_téléphone = request.POST.get('numéro_de_téléphone')
+        avatar = request.FILES.get('avatar')
+        group_id = request.POST.get('group')
+
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+
+        # Validate the inputs
+        if not (prenom and nom and date_de_naissance and email and username and password):
+            return render(request, 'platformTK/SuperAdmin/add_prof.html', {
+                'error': 'Please fill in all required fields.',
+                'groups': groups,
+            })
+
+        # Check if the username already exists
+        if User.objects.filter(username=username).exists():
+            return render(request, 'platformTK/SuperAdmin/add_prof.html', {
+                'error': 'Username already exists.',
+                'groups': groups,
+            })
+
+        try:
+            # Create the user object
+            # user = User.objects.create_user(username=username, password=password, email=email)
+            user = User.objects.create_user(username=username, password=password)
+
+            # Create the prof instance
+            new_prof = prof.objects.create(
+                user=user,
+                prenom=prenom,
+                nom=nom,
+                date_de_naissance=date_de_naissance,
+                email=email,
+                numéro_de_téléphone=numéro_de_téléphone,
+                avatar=avatar,
+                slugProf=slugify(username)
+            )
+
+            # Add professor to the selected group if group_id is provided
+            if group_id:
+                try:
+                    group = Groups.objects.get(id=group_id)
+                    group.profs.add(new_prof)
+                except Groups.DoesNotExist:
+                    return render(request, 'platformTK/SuperAdmin/add_prof.html', {
+                        'error': f'Group with ID {group_id} does not exist.',
+                        'groups': groups,
+                    })
+
+            # Add user to default "Prof" group
+            prof_group = Group.objects.get(name="Prof")
+            user.groups.add(prof_group)
+
+            # Redirect to a success page or another view
+            messages.success(request, 'Prof added successfully!')
+            return redirect('add_prof')
+        except Exception as e:
+            # Handle any errors that occur during the creation
+            return render(request, 'platformTK/SuperAdmin/add_prof.html', {
+                'error': f'Error creating professor: {e}',
+                'groups': groups,
+            })
+
+    return render(request, 'platformTK/SuperAdmin/add_prof.html', {
+        'groups': groups,
+        'profs': profs,
+    })
 
 
 

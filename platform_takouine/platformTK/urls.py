@@ -27,6 +27,9 @@ urlpatterns = [
     path('competition/<int:competition_id>/rank/', views.rank_competition, name='rank_competition'),
 
     
+    path('update_profil_prof/', views.update_profil_prof, name='update_profil_prof'),
+
+    
     path('StoreProf/', views.StoreProf, name='StoreProf'),
     path('Profil/', views.Profil, name='Profil'),
     
