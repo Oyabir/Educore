@@ -2,8 +2,13 @@
 
 {% load static %}
 
+
+
 {% block content %}
     {% include 'platformTK/Prof/navbar.html' %}
+
+    <link href="{% static 'css/add_section.css' %}" rel="stylesheet">
+
     <div class="container">
     {% if current_sections_count >= competition.number_of_sections %}
     <div class="alert alert-success">
@@ -19,65 +24,61 @@
 </div>
 
 {% if not current_sections_count >= competition.number_of_sections %}
-<div class="containeraa">
+<div class="container">
     {% if error_message %}
     <div class="alert alert-danger">
         {{ error_message|safe }}
     </div>
 {% endif %}
 
-    <h2>Add Section to {{ competition.name }}</h2>
-    <form action="{% url 'add_section' competition.id %}" method="post">
-        {% csrf_token %}
-        <div class="mb-3">
-            <label for="sectionName" class="form-label">Section Name</label>
-            <input type="text" class="form-control" id="sectionName" name="section_name" placeholder="Enter section name" required>
-        </div>
-      <!-- Student Search and List -->
-<div class="mb-3">
-    <label for="studentSearch" class="form-label">Search Students</label>
-    <div class="input-group">
-        <input type="text" class="form-control" id="studentSearch" placeholder="Search students..." oninput="filterList('student')">
+<h2>Add Section to {{ competition.name }}</h2>
+<form action="{% url 'add_section' competition.id %}" method="post">
+    {% csrf_token %}
+    <div class="mb-3">
+        <label for="sectionName" class="form-label">Section Name</label>
+        <input type="text" class="form-control" id="sectionName" name="section_name" placeholder="Enter section name" required>
     </div>
-    <div class="card mt-3 p-2 scrollable-container" id="studentList">
-        {% for etudiant in students %}
-        <div data-id="{{ etudiant.id }}" class="student-item">
-            {{ etudiant.prenom }} {{ etudiant.nom }}   {% comment %}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; {% endcomment %}
-            <button type="button" class="btn btn-danger btn-sm" onclick="addStudent({{ etudiant.id }}, '{{ etudiant.prenom }} {{ etudiant.nom }}')" style="background-color: #007bff;border-color: #007bff;">Add</button>
+
+    <!-- Row for Student List and Selected Students -->
+    <div class="row">
+        <!-- Student Search and List -->
+        <div class="col-md-6 mb-3">
+            <label for="studentSearch" class="form-label">Search Students</label>
+            <div class="input-group">
+                <input type="text" class="form-control" id="studentSearch" placeholder="Search students..." oninput="filterList('student')">
+            </div>
+            <div class="card mt-3 p-2 scrollable-container" id="studentList">
+                {% for etudiant in students %}
+                <div data-id="{{ etudiant.id }}" class="student-item">
+                    {{ etudiant.prenom }} {{ etudiant.nom }}
+                    <button type="button" class="btn btn-danger btn-sm" onclick="addStudent({{ etudiant.id }}, '{{ etudiant.prenom }} {{ etudiant.nom }}')" style="background-color: #007bff;border-color: #007bff;">Add</button>
+                </div>
+                {% endfor %}
+            </div>
         </div>
-        {% endfor %}
+
+        <!-- Selected Students -->
+        <div class="col-md-6 mt-2 mb-3">
+            <label class="form-label">Selected Students</label>
+            <div id="selectedStudents" class="scrollable-list border rounded p-2"></div>
+            <input type="hidden" id="students" name="students">
+        </div>
     </div>
-</div>
 
-<!-- Selected Students -->
-<div class="mt-2">
-    <label class="form-label">Selected Students</label>
-    <div id="selectedStudents" class="scrollable-list border rounded p-2"></div>
-    <input type="hidden" id="students" name="students">
-</div>
-<br>
-
-        <button type="submit" class="btn btn-primary">Add Section</button>
-    </form>
+    <button type="submit" class="btn btn-primary">Add Section</button>
+</form>
 </div>
 
 {% endif %}
 
 
 <style>
-    /* Center the container and its content */
-.center-container {
-    display: flex;
-    justify-content: center; /* Center horizontally */
-    margin-top: 20px; /* Optional: adds space above the button */
-}
-
-.center-container button {
-    /* Optional: adjust button styles */
-    font-size: 16px; /* Change as needed */
-}
-
+  
 </style>
+
+
+
+
 
 <script>
     function filterList(type) {
@@ -125,132 +126,4 @@
 </script>
 
 
-<style>
-    /* Global Styles */
- {% comment %} body {
-    font-family: 'Roboto', sans-serif;
-    background-color: #f8f9fa; /* Light grey background for the whole page */
-    color: #333;
-    margin: 0;
-    padding: 0;
-}  {% endcomment %}
-
-
-.containeraa {
-    background-color: #ffffff; /* White background for the form container */
-    border-radius: 8px;
-    padding: 30px;
-    margin: 50px auto;
-    max-width: 600px;
-    box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.1); /* Subtle shadow for form container */
-}
-
-/* Header Styles */
-h2 {
-    font-size: 28px;
-    font-weight: 600;
-    margin-bottom: 20px;
-    color: #007bff; /* Blue color for the header */
-    text-align: center;
-}
-
-/* Form Styles */
-.form-label {
-    font-size: 16px;
-    font-weight: 500;
-    margin-bottom: 8px;
-    color: #555555;
-}
-
-.form-control {
-    border-radius: 5px;
-    border: 1px solid #ced4da;
-    padding: 10px 15px;
-    font-size: 16px;
-    transition: border-color 0.2s ease-in-out;
-}
-
-.form-control:focus {
-    border-color: #007bff;
-    box-shadow: 0 0 5px rgba(0, 123, 255, 0.25); /* Highlight input on focus */
-}
-
-.mb-3 {
-    margin-bottom: 20px;
-}
-
-select.form-control {
-    height: auto; /* Adjust height for multi-select */
-    padding: 10px;
-}
-
-/* Button Styles */
-.btn-primary {
-    background-color: #007bff;
-    border-color: #007bff;
-    font-size: 16px;
-    font-weight: 600;
-    padding: 10px 20px;
-    border-radius: 5px;
-    transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
-}
-
-.btn-primary:hover {
-    background-color: #0056b3;
-    border-color: #004085;
-}
-
-.btn-primary:focus {
-    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5); /* Add focus effect */
-}
-
-/* Alert Styles */
-.alert {
-    font-size: 14px;
-    font-weight: 500;
-    border-radius: 5px;
-    padding: 15px;
-}
-
-/* Responsive Styles */
-@media (max-width: 768px) {
-    .container {
-        padding: 20px;
-        margin: 20px;
-    }
-
-    h2 {
-        font-size: 24px;
-    }
-
-    .btn-primary {
-        width: 100%;
-    }
-}
-
-.scrollable-container {
-    max-height: 200px;
-    overflow-y: auto;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-}
-
-.student-item {
-    padding: 8px;
-    border-bottom: 1px solid #ddd;
-}
-
-.scrollable-list {
-    max-height: 150px;
-    overflow-y: auto;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-}
-
-.student-item:last-child {
-    border-bottom: none;
-}
-
-
-</style>
 {% endblock %}

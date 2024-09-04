@@ -89,11 +89,20 @@ class Groups(models.Model):
 
     def __str__(self):
         return self.name
+    
+    
+    @property
+    def student_names(self):
+        return ', '.join(f'{student.prenom} {student.nom}' for student in self.etudiants.all())
+
+    @property
+    def professor_names(self):
+        return ', '.join(f'{professeur.prenom} {professeur.nom}' for professeur in self.profs.all())
+
 
     def total_points(self):
         # Sum pointsG from Membership model for this group
         return Membership.objects.filter(group=self).aggregate(total_points=models.Sum('pointsG'))['total_points'] or 0
-
 
 
 

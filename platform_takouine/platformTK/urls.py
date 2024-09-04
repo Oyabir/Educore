@@ -61,6 +61,7 @@ urlpatterns = [
     
     path('commandes_admin/', views.commandes_admin, name='commandes_admin'),
 
+    path('edit_group/<int:group_id>/', views.update_group, name='update_group'),
 
 
 

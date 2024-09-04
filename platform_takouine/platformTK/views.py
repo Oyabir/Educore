@@ -856,6 +856,63 @@ def group_list(request):
 
 
 
+
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+from .models import Groups, Etudiant, prof  # Assuming your model class is actually named `prof`
+
+def update_group(request, group_id):
+    if request.method == 'POST':
+        group = get_object_or_404(Groups, id=group_id)
+        
+        group_name = request.POST.get('group_name')
+        description = request.POST.get('description')
+        student_ids_str = request.POST.get('students', '')
+        prof_ids_str = request.POST.get('profs', '')
+        removed_student_ids_str = request.POST.get('removed_students', '')
+        removed_prof_ids_str = request.POST.get('removed_profs', '')
+
+        student_ids = [int(id.strip()) for id in student_ids_str.split(',') if id.strip().isdigit()]
+        prof_ids = [int(id.strip()) for id in prof_ids_str.split(',') if id.strip().isdigit()]
+        removed_student_ids = [int(id.strip()) for id in removed_student_ids_str.split(',') if id.strip().isdigit()]
+        removed_prof_ids = [int(id.strip()) for id in removed_prof_ids_str.split(',') if id.strip().isdigit()]
+
+        # Update group details
+        group.name = group_name
+        group.description = description
+
+        # Add new students without removing the existing ones
+        if student_ids:
+            new_students = Etudiant.objects.filter(id__in=student_ids)
+            group.etudiants.add(*new_students)
+
+        # Remove students that were removed in the frontend
+        if removed_student_ids:
+            removed_students = Etudiant.objects.filter(id__in=removed_student_ids)
+            group.etudiants.remove(*removed_students)
+
+        # Add new professors without removing the existing ones
+        if prof_ids:
+            new_profs = prof.objects.filter(id__in=prof_ids)
+            group.profs.add(*new_profs)
+
+        # Remove professors that were removed in the frontend
+        if removed_prof_ids:
+            removed_profs = prof.objects.filter(id__in=removed_prof_ids)
+            group.profs.remove(*removed_profs)
+
+        # Save the updated group
+        group.save()
+        
+        # Return JSON response
+        return JsonResponse({'success': True})
+    
+    return JsonResponse({'success': False}, status=400)
+
+
+
+
+
 def add_etudiant(request):
     groups = Groups.objects.all()
 
