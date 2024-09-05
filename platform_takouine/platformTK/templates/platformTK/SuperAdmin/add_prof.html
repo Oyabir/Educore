@@ -47,46 +47,124 @@
         {% endif %}
 
     </div>
-    <div class="table-responsive">
-        <table class="table table-striped table-hover">
-            <thead>
-                <tr>
-                    <th>Username</th>
-                    <th>Nom et prenom</th>
-                    <th>email</th>
-                    <th>avatar</th>
-                    <th>Code Etudiant</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for prof in profs %}
-                <tr>
-                    <td>{{ prof.user.username }}</td>
-                    <td>{{ prof.prenom }} {{ prof.nom }}</td>
-                    <td>{{ prof.email }}</td>
-                    <td>
-                        {% if prof.avatar %}
+    <!-- Table displaying professors -->
+<div class="table-responsive">
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr>
+                <th>Username</th>
+                <th>Nom et prenom</th>
+                <th>Email</th>
+                <th>Avatar</th>
+                <th>Code Professeur</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for prof in profs %}
+            <tr>
+                <td>{{ prof.user.username }}</td>
+                <td>{{ prof.prenom }} {{ prof.nom }}</td>
+                <td>{{ prof.email }}</td>
+                <td>
+                    {% if prof.avatar %}
                         <img src="{{ prof.avatar.url }}" style="width: 48px; height: 48px;" alt="Avatar">
                     {% else %}
                         No Avatar
                     {% endif %}
-                    </td>
-                    <td>{{ prof.ProfCode }}</td>
-                    <td>
-                        <button class="btn btn-warning btn-sm">Edit</button>
-                        <button class="btn btn-danger btn-sm">Delete</button>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="4" class="text-center">No Etudiant found.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+                </td>
+                <td>{{ prof.ProfCode }}</td>
+                <td>
+                    <!-- Trigger Edit Modal -->
+                    <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#editModal{{ prof.id }}">Edit</button>
+                    <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal{{ prof.id }}">Delete</button>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="text-center">No Professor found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+
+
+<!-- Edit Modals (Move this outside the table) -->
+{% for prof in profs %}
+<div class="modal fade" id="editModal{{ prof.id }}" tabindex="-1" aria-labelledby="editModalLabel{{ prof.id }}" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content" style="margin-top: -56px;">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editModalLabel{{ prof.id }}">Edit Professor</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="{% url 'update_prof' prof.id %}" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="prenom{{ prof.id }}" class="form-label">Prénom:</label>
+                        <input type="text" class="form-control" id="prenom{{ prof.id }}" name="prenom" value="{{ prof.prenom }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="nom{{ prof.id }}" class="form-label">Nom:</label>
+                        <input type="text" class="form-control" id="nom{{ prof.id }}" name="nom" value="{{ prof.nom }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="email{{ prof.id }}" class="form-label">Email:</label>
+                        <input type="email" class="form-control" id="email{{ prof.id }}" name="email" value="{{ prof.email }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="date_de_naissance{{ prof.id }}" class="form-label">Date de Naissance:</label>
+                        <input type="date" class="form-control" id="date_de_naissance{{ prof.id }}" name="date_de_naissance" value="{{ prof.date_de_naissance|date:'Y-m-d' }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="numéro_de_téléphone{{ prof.id }}" class="form-label">Numéro de Téléphone:</label>
+                        <input type="text" class="form-control" id="numéro_de_téléphone{{ prof.id }}" name="numéro_de_téléphone" value="{{ prof.numéro_de_téléphone }}">
+                    </div>
+                    <div class="mb-3">
+                        <label for="avatar{{ prof.id }}" class="form-label">Avatar:</label>
+                        <input type="file" class="form-control" id="avatar{{ prof.id }}" name="avatar">
+                        {% if prof.avatar %}
+                            <img src="{{ prof.avatar.url }}" style="width: 100px; height: 100px;" alt="Avatar">
+                        {% endif %}
+                    </div>
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-primary">Save changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
-</div> 
+</div>
+{% endfor %}
+
+
+
+<style>
+    /* Ensure modal takes full width and center-aligned */
+.modal-dialog.modal-lg {
+    max-width: 90%; /* or any width you prefer */
+    margin: 1.75rem auto; /* Center the modal horizontally */
+}
+
+.modal-content {
+    border-radius: 0.3rem; /* Optional: rounded corners */
+}
+
+.modal-header {
+    border-bottom: 1px solid #dee2e6;
+    padding: 1rem;
+}
+
+.modal-body {
+    padding: 1rem;
+}
+
+
+
+</style>
 
 
 <!-- Modal -->

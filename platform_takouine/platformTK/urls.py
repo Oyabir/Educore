@@ -61,7 +61,14 @@ urlpatterns = [
     
     path('commandes_admin/', views.commandes_admin, name='commandes_admin'),
 
-    path('edit_group/<int:group_id>/', views.update_group, name='update_group'),
+    path('update_group/<int:group_id>/', views.update_group, name='update_group'),
+
+
+    path('update_etudiant/', views.update_etudiant, name='update_etudiant'),
+    path('delete_etudiant/<int:etudiant_id>/', views.delete_etudiant, name='delete_etudiant'),
+    
+    path('update_prof/<int:prof_id>/', views.update_prof, name='update_prof'),
+
 
 
 

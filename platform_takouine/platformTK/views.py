@@ -964,6 +964,56 @@ def add_etudiant(request):
 
 
 
+def update_etudiant(request):
+    if request.method == 'POST':
+        etudiant_id = request.POST.get('id')
+        if not etudiant_id:
+            return redirect('add_student')  # Redirect if no ID is provided
+        
+        etudiant = get_object_or_404(Etudiant, id=etudiant_id)
+
+        # Update fields
+        etudiant.prenom = request.POST.get('prenom', etudiant.prenom)
+        etudiant.nom = request.POST.get('nom', etudiant.nom)
+        etudiant.date_de_naissance = request.POST.get('date_de_naissance', etudiant.date_de_naissance)
+        etudiant.email = request.POST.get('email', etudiant.email)
+        etudiant.numéro_de_téléphone = request.POST.get('numéro_de_téléphone', etudiant.numéro_de_téléphone)
+
+        # Handle file upload
+        if 'avatar' in request.FILES:
+            etudiant.avatar = request.FILES['avatar']
+        if 'remove_avatar' in request.POST:
+            etudiant.avatar = None
+
+        # Handle group assignment (for ManyToManyField)
+        group_ids = request.POST.getlist('group')  # Can select multiple groups
+        if group_ids:
+            groups = Groups.objects.filter(id__in=group_ids)
+            etudiant.groups.set(groups)  # Update many-to-many relationship
+        else:
+            etudiant.groups.clear()  # If no groups are selected, clear the groups
+
+        etudiant.save()
+        return redirect('add_student')  # Redirect to the list of students or relevant page
+
+    return redirect('add_student')  # Redirect in case of GET request or failure
+
+
+
+
+def delete_etudiant(request, etudiant_id):
+    etudiant = get_object_or_404(Etudiant, id=etudiant_id)
+
+    if request.method == 'POST':
+        etudiant.delete()
+        messages.success(request, 'Etudiant deleted successfully!')
+        return redirect('add_student')  # Redirect after deletion
+
+    return redirect('add_student')  # Redirect if not a POST request
+
+
+
+
 
 import csv
 import pandas as pd
@@ -1178,6 +1228,39 @@ def prof_list(request):
         'groups': groups,
         'profs': profs,
     })
+
+
+
+
+
+
+from django.shortcuts import get_object_or_404, redirect, render
+from .models import prof  # Ensure you import your Prof model
+
+
+def update_prof(request, prof_id):
+    print(f"Updating professor with ID: {prof_id}")  # Debug statement
+    prof = get_object_or_404(prof, id=prof_id)
+    print(f"Prof retrieved: {prof}")  # Debug statement
+    
+    if request.method == 'POST':
+        print("POST request received")  # Debug statement
+        # Update prof with POST data
+        prof.prenom = request.POST.get('prenom')
+        prof.nom = request.POST.get('nom')
+        prof.email = request.POST.get('email')
+        prof.date_de_naissance = request.POST.get('date_de_naissance')
+        prof.numéro_de_téléphone = request.POST.get('numéro_de_téléphone')
+        
+        if 'avatar' in request.FILES:
+            prof.avatar = request.FILES['avatar']
+        
+        prof.save()
+        print("Professor updated successfully")  # Debug statement
+        return redirect('prof_list')
+    
+    print("Rendering form")  # Debug statement
+    return render(request, 'platformTK/SuperAdmin/add_prof.html', {'prof': prof})
 
 
 

@@ -7,45 +7,41 @@
 
 <div class="container mt-5">
     {% if messages %}
-	{% for message in messages %}
-	  {% if message.tags == 'error' %}
-		<div class="alert alert-danger" role="alert">
-		  {{ message }}
-		</div>
-	  {% endif %}
-	{% endfor %}
-	{% endif %}
+        {% for message in messages %}
+            {% if message.tags == 'error' %}
+                <div class="alert alert-danger" role="alert">
+                    {{ message }}
+                </div>
+            {% endif %}
+        {% endfor %}
+        {% for message in messages %}
+            {% if message.tags == 'success' %}
+                <div class="alert alert-success" role="alert">
+                    {{ message }}
+                </div>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
 
-	{% if messages %}
-  {% for message in messages %}
-      {% if message.tags == 'success' %}
-        <div class="alert alert-success" role="alert">
-          {{ message }}
+    <form action="{% url 'add_students_from_file' %}" method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="file" class="form-label">Choose File:</label>
+            <input type="file" class="form-control" id="file" name="file" accept=".csv, .xlsx" required>
         </div>
-      {% endif %}
-    {% endfor %}
-  {% endif %}
-	
+        <div class="text-center">
+            <button class="btn btn-primary" type="submit">Upload Students</button>
+        </div>
+    </form>
 
-  <form action="{% url 'add_students_from_file' %}" method="POST" enctype="multipart/form-data">
-    {% csrf_token %}
-    <div class="mb-3">
-        <label for="file" class="form-label">Choose a CSV or Excel file:</label>
-        <input type="file" class="form-control" id="file" name="file" accept=".csv, .xlsx" required>
-    </div>
-    <div class="text-center">
-        <button class="btn btn-primary" type="submit">Upload Students</button>
-    </div>
-</form>
-  
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="text-center">Etudiants</h2>
         <button class="btn btn-primary" onclick="openModal()" style="background-color: #fe5d37;">Add Etudiant</button>
         {% if error %}
-        <p style="color: red;">{{ error }}</p>
-    {% endif %}
-   
+            <p style="color: red;">{{ error }}</p>
+        {% endif %}
     </div>
+
     <div class="table-responsive">
         <table class="table table-striped table-hover">
             <thead>
@@ -66,26 +62,161 @@
                     <td>{{ etudiant.email }}</td>
                     <td>
                         {% if etudiant.avatar %}
-                        <img src="{{ etudiant.avatar.url }}" style="width: 48px; height: 48px;" alt="Avatar">
-                    {% else %}
-                        No Avatar
-                    {% endif %}
+                            <img src="{{ etudiant.avatar.url }}" style="width: 48px; height: 48px;" alt="Avatar">
+                        {% else %}
+                            No Avatar
+                        {% endif %}
                     </td>
                     <td>{{ etudiant.EtudiantCode }}</td>
                     <td>
-                        <button class="btn btn-warning btn-sm">Edit</button>
-                        <button class="btn btn-danger btn-sm">Delete</button>
+                        <button class="btn btn-warning btn-sm" onclick="openEditModal(
+                            '{{ etudiant.id }}',
+                            '{{ etudiant.user.username }}',
+                            '{{ etudiant.prenom }}',
+                            '{{ etudiant.nom }}',
+                            '{{ etudiant.date_de_naissance|date:"Y-m-d" }}',
+                            '{{ etudiant.email }}',
+                            '{{ etudiant.numéro_de_téléphone }}',
+                            '{{ etudiant.avatar.url|default:"" }}',
+                            '{{ etudiant.group.id }}'
+                        )">Edit</button>
+                        <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal{{ etudiant.id }}">
+                            Delete
+                        </button>
                     </td>
                 </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="4" class="text-center">No Etudiant found.</td>
-                </tr>
+            
+                <!-- Delete Confirmation Modal for each etudiant -->
+                <div class="modal fade" id="deleteModal{{ etudiant.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ etudiant.id }}" aria-hidden="true">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="deleteModalLabel{{ etudiant.id }}">Confirm Deletion</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                Are you sure you want to delete the student <strong>{{ etudiant.prenom }} {{ etudiant.nom }}</strong>?
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            
+                                <!-- Form to handle the deletion -->
+                                <form action="{% url 'delete_etudiant' etudiant.id %}" method="POST">
+                                    {% csrf_token %}
+                                    <button class="btn btn-danger" type="submit">Delete</button>
+                                </form>
+            
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 {% endfor %}
             </tbody>
-        </table>
+            
+
+<!-- Edit Etudiant Modal -->
+<div id="editModal" class="modal">
+    <div class="modal-content" style="margin-top: -56px;">
+        <div class="modal-header">
+            <span class="close" onclick="closeEditModal()">&times;</span>
+            <h2>Edit Etudiant</h2>
+        </div>
+        <div class="modal-body">
+            <form id="editForm" action="{% url 'update_etudiant' %}" method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="hidden" id="edit_id" name="id">
+                
+                <div class="mb-3">
+                    <label for="edit_prenom" class="form-label">First Name</label>
+                    <input type="text" class="form-control" id="edit_prenom" name="prenom" required>
+                </div>
+                <div class="mb-3">
+                    <label for="edit_nom" class="form-label">Last Name</label>
+                    <input type="text" class="form-control" id="edit_nom" name="nom" required>
+                </div>
+                <div class="mb-3">
+                    <label for="edit_date_de_naissance" class="form-label">Date of Birth</label>
+                    <input type="date" class="form-control" id="edit_date_de_naissance" name="date_de_naissance" required>
+                </div>
+                <div class="mb-3">
+                    <label for="edit_email" class="form-label">Email</label>
+                    <input type="email" class="form-control" id="edit_email" name="email" required>
+                </div>
+                <div class="mb-3">
+                    <label for="edit_numéro_de_téléphone" class="form-label">Phone Number</label>
+                    <input type="text" class="form-control" id="edit_numéro_de_téléphone" name="numéro_de_téléphone">
+                </div>
+                <div class="mb-3">
+                    <label for="edit_avatar" class="form-label">Avatar</label>
+                    <input type="file" class="form-control" id="edit_avatar" name="avatar">
+                    <div id="current_avatar" class="mt-2">
+                        <!-- Avatar preview will be set here -->
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label for="edit_group" class="form-label">Group</label>
+                    {% comment %} <p>
+                        {% for group in etudiant.groups.all %}
+                            {{ group.name }}{% if not forloop.last %}, {% endif %}
+                        {% empty %}
+                            No groups assigned.
+                        {% endfor %}
+                    </p> {% endcomment %}
+                    
+                    <select id="edit_group" name="group" class="form-control" multiple>
+                        {% for group in groups %}
+                            <option value="{{ group.id }}" 
+                                {% if group in etudiant.groups.all %}selected{% endif %}>
+                                {{ group.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    
+                    
+                </div>
+                <div class="text-center">
+                    <button type="submit" class="btn btn-primary">Update Etudiant</button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
+
+<script>
+    function openEditModal(id, username, prenom, nom, date_de_naissance, email, numéro_de_téléphone, avatar_url, group_id) {
+        document.getElementById("edit_id").value = id;
+        document.getElementById("edit_prenom").value = prenom;
+        document.getElementById("edit_nom").value = nom;
+    
+        // Ensure the date is in YYYY-MM-DD format
+        let formattedDate = date_de_naissance ? new Date(date_de_naissance).toISOString().split('T')[0] : '';
+        document.getElementById("edit_date_de_naissance").value = formattedDate;
+    
+        document.getElementById("edit_email").value = email;
+        document.getElementById("edit_numéro_de_téléphone").value = numéro_de_téléphone;
+    
+        // Handle avatar preview
+        let avatarPreview = document.getElementById("current_avatar");
+        if (avatar_url) {
+            avatarPreview.innerHTML = `<img src="${avatar_url}" style="width: 100px; height: 100px;" alt="Current Avatar">`;
+        } else {
+            avatarPreview.innerHTML = 'No Avatar';
+        }
+    
+        // Set selected group
+        let groupSelect = document.getElementById("edit_group");
+        groupSelect.value = group_id;
+    
+        document.getElementById("editModal").style.display = "block";
+    }
+
+    function closeEditModal() {
+        document.getElementById("editModal").style.display = "none";
+    }
+</script>
+
+
+
 
 
 <!-- Modal -->
