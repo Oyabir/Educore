@@ -25,6 +25,7 @@
             {% endif %}
         {% endfor %}
     {% endif %}
+   
 
     <div class="container py-5">
         <h1 class="mb-4">Order List</h1>
@@ -39,7 +40,9 @@
                     {% comment %} <th>Quantity</th> {% endcomment %}
                     <th>Total Price</th>
                     <th>Status</th>
-                    <th>Date</th>
+                    <th>Code commande</th>
+                    {% comment %} <th>Date</th> {% endcomment %}
+                    <th>Action</th>
                 </tr>
             </thead>
             <tbody>
@@ -61,11 +64,62 @@
                         <span class="badge bg-secondary text-white">Unknown</span>
                         {% endif %}
                     </td> {% comment %} <td>{{ commande.get_status_display }}</td>{% endcomment %}
-                    <td>{{ commande.date_ordered|date:"M d, Y" }}</td>
+                    <td>{{ commande.commande_code }}</td>
+                    {% comment %} <td>{{ commande.date_ordered|date:"M d, Y" }}</td> {% endcomment %}
+                    <td>
+                        {% if commande.status == 'Completed' %}
+                        <button class="btn btn-primary btn-sm" >Status Completed</button>
+                        {% elif commande.status == 'Cancelled' %}
+                        <button class="btn btn-primary btn-sm" >Status Cancelled</button>
+                        {% else %}
+                           <button class="btn btn-primary btn-sm" onclick="openStatusModal('{{ commande.id }}', '{{ commande.status }}')">Change Status</button>
+                        {% endif %}
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
+
+    <!-- Status Change Modal -->
+<div id="statusModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <span class="close" onclick="closeStatusModal()">&times;</span>
+            <h2>Change Commande Status</h2>
+        </div>
+        <div class="modal-body">
+            <form id="statusForm" action="{% url 'update_commande_status' %}" method="POST">
+                {% csrf_token %}
+                <input type="hidden" id="commande_id" name="commande_id">
+
+                <div class="mb-3">
+                    <label for="status" class="form-label">Status</label>
+                    <select id="status" name="status" class="form-control">
+                        <option value="Pending">Pending</option>
+                        <option value="Completed">Completed</option>
+                        <option value="Cancelled">Cancelled</option>
+                    </select>
+                </div>
+
+                <div class="text-center">
+                    <button type="submit" class="btn btn-primary">Update Status</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openStatusModal(id, currentStatus) {
+        document.getElementById("commande_id").value = id;
+        document.getElementById("status").value = currentStatus;
+        document.getElementById("statusModal").style.display = "block";
+    }
+
+    function closeStatusModal() {
+        document.getElementById("statusModal").style.display = "none";
+    }
+</script>
 
     
 {% endblock %}

@@ -69,3 +69,12 @@ class MembershipAdmin(admin.ModelAdmin):
     list_display = ('etudiant', 'group', 'pointsG')
     search_fields = ('etudiant__prenom', 'etudiant__nom', 'group__name')
     
+
+
+    
+
+@admin.register(Category)
+class CategoryAdmin(admin.ModelAdmin):
+    list_display = ('name',)  
+    search_fields = ('name',)  
+    ordering = ('name',)    

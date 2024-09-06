@@ -145,6 +145,12 @@ class Sections(models.Model):
 
 
 
+class Category(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+
+    def __str__(self):
+        return self.name
+
 
 
 
@@ -155,16 +161,9 @@ def generate_product_code():
 
 
 class Product(models.Model):
-    CATEGORY_CHOICES = [
-        ('livre', 'livre'),
-        ('jeux', 'jeux'),
-        ('stylos', 'stylos'),
-        ('Autre', 'Autre'),
-    ]
-
     name = models.CharField(max_length=100)
     description = models.TextField()
-    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES)
+    category = models.ForeignKey('Category', on_delete=models.CASCADE)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     stock = models.PositiveIntegerField()
     image = models.ImageField(upload_to='products/', null=True, blank=True)
@@ -185,6 +184,16 @@ class Product(models.Model):
 
 
 
+
+from django.core.exceptions import ValidationError
+
+
+def generate_commande_code():
+    unique_id = str(uuid.uuid4()).replace('-', '')[:8]  # Generates a unique 8-character string
+    return f"CMD-{unique_id}"
+
+
+
 class Commande(models.Model):
     STATUS_CHOICES = [
         ('Pending', 'Pending'),
@@ -199,10 +208,21 @@ class Commande(models.Model):
     total_price = models.DecimalField(max_digits=10, decimal_places=2)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='Pending')
 
+    commande_code = models.CharField(max_length=100, null=True, blank=True, unique=True, default=generate_commande_code)
+
+    def save(self, *args, **kwargs):
+        # Ensure the command code is unique
+        if not self.commande_code:
+            self.commande_code = generate_commande_code()
+
+        # Ensure the code is unique
+        if Commande.objects.filter(commande_code=self.commande_code).exists():
+            self.commande_code = generate_commande_code()
+
+        super(Commande, self).save(*args, **kwargs)
+
     def __str__(self):
-        return f"{self.etudiant.user.username} - {self.product.name} - {self.date_ordered} - {self.status}"
-
-
+        return f"{self.commande_code} - {self.etudiant.user.username} - {self.product.name} - {self.status}"
 
 
 

@@ -77,8 +77,8 @@
                             '{{ etudiant.date_de_naissance|date:"Y-m-d" }}',
                             '{{ etudiant.email }}',
                             '{{ etudiant.numéro_de_téléphone }}',
-                            '{{ etudiant.avatar.url|default:"" }}',
-                            '{{ etudiant.group.id }}'
+                            {% if etudiant.avatar %}'{{ etudiant.avatar.url }}'{% else %}''{% endif %},
+                            [{% for group in etudiant.groups.all %} '{{ group.id }}', {% endfor %}]
                         )">Edit</button>
                         <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal{{ etudiant.id }}">
                             Delete
@@ -154,26 +154,16 @@
                     </div>
                 </div>
                 <div class="mb-3">
-                    <label for="edit_group" class="form-label">Group</label>
-                    {% comment %} <p>
-                        {% for group in etudiant.groups.all %}
-                            {{ group.name }}{% if not forloop.last %}, {% endif %}
-                        {% empty %}
-                            No groups assigned.
-                        {% endfor %}
-                    </p> {% endcomment %}
-                    
-                    <select id="edit_group" name="group" class="form-control" multiple>
+                    <label for="edit_group" class="form-label">Groups:</label>
+                    <select class="form-control" id="edit_group" name="groups" multiple>
                         {% for group in groups %}
-                            <option value="{{ group.id }}" 
-                                {% if group in etudiant.groups.all %}selected{% endif %}>
+                            <option value="{{ group.id }}">
                                 {{ group.name }}
                             </option>
                         {% endfor %}
                     </select>
-                    
-                    
                 </div>
+                
                 <div class="text-center">
                     <button type="submit" class="btn btn-primary">Update Etudiant</button>
                 </div>
@@ -183,18 +173,18 @@
 </div>
 
 <script>
-    function openEditModal(id, username, prenom, nom, date_de_naissance, email, numéro_de_téléphone, avatar_url, group_id) {
+    function openEditModal(id, username, prenom, nom, date_de_naissance, email, numéro_de_téléphone, avatar_url, group_ids) {
         document.getElementById("edit_id").value = id;
         document.getElementById("edit_prenom").value = prenom;
         document.getElementById("edit_nom").value = nom;
-    
+        
         // Ensure the date is in YYYY-MM-DD format
         let formattedDate = date_de_naissance ? new Date(date_de_naissance).toISOString().split('T')[0] : '';
         document.getElementById("edit_date_de_naissance").value = formattedDate;
-    
+        
         document.getElementById("edit_email").value = email;
         document.getElementById("edit_numéro_de_téléphone").value = numéro_de_téléphone;
-    
+        
         // Handle avatar preview
         let avatarPreview = document.getElementById("current_avatar");
         if (avatar_url) {
@@ -202,17 +192,32 @@
         } else {
             avatarPreview.innerHTML = 'No Avatar';
         }
-    
-        // Set selected group
+        
+        // Set selected groups for the etudiant
         let groupSelect = document.getElementById("edit_group");
-        groupSelect.value = group_id;
+        let groupOptions = groupSelect.options;
+    
+        // Clear all previous selections
+        for (let i = 0; i < groupOptions.length; i++) {
+            groupOptions[i].selected = false;
+        }
+    
+        // Mark the etudiant's groups as selected
+        group_ids.forEach(group_id => {
+            for (let i = 0; i < groupOptions.length; i++) {
+                if (groupOptions[i].value == group_id) {
+                    groupOptions[i].selected = true;
+                }
+            }
+        });
     
         document.getElementById("editModal").style.display = "block";
     }
-
+    
     function closeEditModal() {
         document.getElementById("editModal").style.display = "none";
     }
+    
 </script>
 
 

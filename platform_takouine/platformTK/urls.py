@@ -58,16 +58,24 @@ urlpatterns = [
     path('add_product/', views.add_product, name='add_product'),
     path('store_admin/update/<str:product_code>/', views.update_product, name='update_product'),
     path('store_admin/delete/<str:product_code>/', views.delete_product, name='delete_product'),
-    
     path('commandes_admin/', views.commandes_admin, name='commandes_admin'),
 
-    path('update_group/<int:group_id>/', views.update_group, name='update_group'),
+
+    path('edit-group/', views.edit_group, name='edit_group'),
 
 
-    path('update_etudiant/', views.update_etudiant, name='update_etudiant'),
+    path('update_etudiant/', views.update_etudiant,     name='update_etudiant'),
     path('delete_etudiant/<int:etudiant_id>/', views.delete_etudiant, name='delete_etudiant'),
     
     path('update_prof/<int:prof_id>/', views.update_prof, name='update_prof'),
+    path('delete_prof/<int:prof_id>/', views.delete_prof, name='delete_prof'),
+    
+    path('update_commande_status/', views.update_commande_status, name='update_commande_status'),
+    
+    path('add_category/', views.add_category, name='add_category'),
+
+
+    
 
 
 

@@ -854,60 +854,29 @@ def group_list(request):
     })
 
 
+# views.py
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib import messages
+from .models import Groups
 
-
-
-from django.http import JsonResponse
-from django.shortcuts import get_object_or_404
-from .models import Groups, Etudiant, prof  # Assuming your model class is actually named `prof`
-
-def update_group(request, group_id):
+def edit_group(request):
     if request.method == 'POST':
-        group = get_object_or_404(Groups, id=group_id)
-        
-        group_name = request.POST.get('group_name')
+        group_id = request.POST.get('group_id')
+        name = request.POST.get('name')
         description = request.POST.get('description')
-        student_ids_str = request.POST.get('students', '')
-        prof_ids_str = request.POST.get('profs', '')
-        removed_student_ids_str = request.POST.get('removed_students', '')
-        removed_prof_ids_str = request.POST.get('removed_profs', '')
-
-        student_ids = [int(id.strip()) for id in student_ids_str.split(',') if id.strip().isdigit()]
-        prof_ids = [int(id.strip()) for id in prof_ids_str.split(',') if id.strip().isdigit()]
-        removed_student_ids = [int(id.strip()) for id in removed_student_ids_str.split(',') if id.strip().isdigit()]
-        removed_prof_ids = [int(id.strip()) for id in removed_prof_ids_str.split(',') if id.strip().isdigit()]
-
-        # Update group details
-        group.name = group_name
-        group.description = description
-
-        # Add new students without removing the existing ones
-        if student_ids:
-            new_students = Etudiant.objects.filter(id__in=student_ids)
-            group.etudiants.add(*new_students)
-
-        # Remove students that were removed in the frontend
-        if removed_student_ids:
-            removed_students = Etudiant.objects.filter(id__in=removed_student_ids)
-            group.etudiants.remove(*removed_students)
-
-        # Add new professors without removing the existing ones
-        if prof_ids:
-            new_profs = prof.objects.filter(id__in=prof_ids)
-            group.profs.add(*new_profs)
-
-        # Remove professors that were removed in the frontend
-        if removed_prof_ids:
-            removed_profs = prof.objects.filter(id__in=removed_prof_ids)
-            group.profs.remove(*removed_profs)
-
-        # Save the updated group
-        group.save()
         
-        # Return JSON response
-        return JsonResponse({'success': True})
-    
-    return JsonResponse({'success': False}, status=400)
+        if group_id and name and description:
+            group = get_object_or_404(Groups, id=group_id)
+            group.name = name
+            group.description = description
+            group.save()
+            messages.success(request, 'Group updated successfully!')
+        else:
+            messages.error(request, 'Please provide all required fields.')
+        
+        return redirect('add_groupe')  # Change to your desired redirect URL
+
+    return redirect('add_groupe')  # Handle GET request or invalid form submission
 
 
 
@@ -982,16 +951,17 @@ def update_etudiant(request):
         # Handle file upload
         if 'avatar' in request.FILES:
             etudiant.avatar = request.FILES['avatar']
-        if 'remove_avatar' in request.POST:
-            etudiant.avatar = None
 
         # Handle group assignment (for ManyToManyField)
-        group_ids = request.POST.getlist('group')  # Can select multiple groups
-        if group_ids:
-            groups = Groups.objects.filter(id__in=group_ids)
-            etudiant.groups.set(groups)  # Update many-to-many relationship
-        else:
-            etudiant.groups.clear()  # If no groups are selected, clear the groups
+        group_ids = request.POST.getlist('groups')  # Can select multiple groups
+        selected_groups = Groups.objects.filter(id__in=group_ids) 
+        try:
+            # Save etudiant details and update groups
+            etudiant.save()
+            etudiant.groups.set(selected_groups)  # Update the many-to-many relationship with selected groups
+            messages.success(request, 'etudiant details and groups updated successfully.')
+        except Exception as e:
+            messages.error(request, f'Error updating etudiant: {str(e)}')
 
         etudiant.save()
         return redirect('add_student')  # Redirect to the list of students or relevant page
@@ -1234,33 +1204,59 @@ def prof_list(request):
 
 
 
-from django.shortcuts import get_object_or_404, redirect, render
-from .models import prof  # Ensure you import your Prof model
-
-
+@login_required
 def update_prof(request, prof_id):
-    print(f"Updating professor with ID: {prof_id}")  # Debug statement
-    prof = get_object_or_404(prof, id=prof_id)
-    print(f"Prof retrieved: {prof}")  # Debug statement
+    # Fetch the professor using the provided ID
+    professor = get_object_or_404(prof, id=prof_id)
     
     if request.method == 'POST':
-        print("POST request received")  # Debug statement
-        # Update prof with POST data
-        prof.prenom = request.POST.get('prenom')
-        prof.nom = request.POST.get('nom')
-        prof.email = request.POST.get('email')
-        prof.date_de_naissance = request.POST.get('date_de_naissance')
-        prof.numéro_de_téléphone = request.POST.get('numéro_de_téléphone')
+        # Update professor's basic info
+        professor.prenom = request.POST.get('prenom')
+        professor.nom = request.POST.get('nom')
+        professor.email = request.POST.get('email')
+        professor.date_de_naissance = request.POST.get('date_de_naissance')
+        professor.numéro_de_téléphone = request.POST.get('numéro_de_téléphone')
+
+        # Handle avatar update
+        if request.FILES.get('avatar'):
+            professor.avatar = request.FILES['avatar']
+
+        # Update the groups the professor belongs to
+        group_ids = request.POST.getlist('groups')  # Get selected group IDs from the form
+        selected_groups = Groups.objects.filter(id__in=group_ids)  # Fetch the groups from the database
+
+        try:
+            # Save professor details and update groups
+            professor.save()
+            professor.groups.set(selected_groups)  # Update the many-to-many relationship with selected groups
+            messages.success(request, 'Professor details and groups updated successfully.')
+        except Exception as e:
+            messages.error(request, f'Error updating professor: {str(e)}')
+
+        return redirect('add_prof')  # Redirect to the list of professors
+    else:
+        all_groups = Groups.objects.all()  # Get all available groups to display in the form
+        return render(request, 'platformTK/SuperAdmin/add_prof.html', {'professor': professor, 'all_groups': all_groups})
+
+
+
+
+@login_required
+def delete_prof(request, prof_id):
+    professor = get_object_or_404(prof, id=prof_id)
+
+    if request.method == 'POST':
+        try:
+            professor.delete()
+            messages.success(request, 'Professor deleted successfully.')
+        except Exception as e:
+            messages.error(request, f'Error deleting professor: {str(e)}')
         
-        if 'avatar' in request.FILES:
-            prof.avatar = request.FILES['avatar']
-        
-        prof.save()
-        print("Professor updated successfully")  # Debug statement
-        return redirect('prof_list')
-    
-    print("Rendering form")  # Debug statement
-    return render(request, 'platformTK/SuperAdmin/add_prof.html', {'prof': prof})
+        return redirect('prof_list')  # Redirect to the list of professors
+
+    return render(request, 'delete_prof.html', {'professor': professor})
+
+
 
 
 
@@ -1377,47 +1373,48 @@ def upload_prof_from_file(request):
 
 
 
+
 @login_required(login_url='login')
 def store_admin(request):
-    products = Product.objects.all()
-    categories = Product.CATEGORY_CHOICES
-    context = {
-        'categories': categories,
+    products = Product.objects.all()  # Fetch all products (or filter as needed)
+    categories = Category.objects.all()  # Fetch all categories
+    
+    return render(request,"platformTK/SuperAdmin/store_admin.html", {
         'products': products,
-    }
-    return render(request, "platformTK/SuperAdmin/store_admin.html", context)
-
+        'categories': categories
+    })
 
 
 
 
 @login_required(login_url='login')
-
 def add_product(request):
-    # Extract form data
-    name = request.POST.get('name')
-    description = request.POST.get('description')
-    category = request.POST.get('category')
-    price = request.POST.get('price')
-    stock = request.POST.get('stock')
-    image = request.FILES.get('image')
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        description = request.POST.get('description')
+        category_id = request.POST.get('category')
+        price = request.POST.get('price')
+        stock = request.POST.get('stock')
+        image = request.FILES.get('image')
 
-    # Validate and create a new Product instance
-    if name and description and category and price and stock:
-        product = Product(
-            name=name,
-            description=description,
-            category=category,
-            price=price,
-            stock=stock,
-            image=image
-        )
-        product.save()
-        messages.success(request, 'Product added successfully!')
-    else:
-        messages.error(request, 'Please fill out all required fields.')
+        if name and description and category_id and price and stock:
+            try:
+                category = Category.objects.get(id=category_id)
+                product = Product(
+                    name=name,
+                    description=description,
+                    category=category,
+                    price=price,
+                    stock=stock,
+                    image=image
+                )
+                product.save()
+                messages.success(request, 'Product added successfully!')
+            except Category.DoesNotExist:
+                messages.error(request, 'Selected category does not exist.')
+        else:
+            messages.error(request, 'Please fill out all required fields.')
 
-    # Redirect to the store admin page
     return redirect('store_admin')
 
 
@@ -1430,7 +1427,16 @@ def update_product(request, product_code):
     if request.method == 'POST':
         product.name = request.POST['name']
         product.description = request.POST['description']
-        product.category = request.POST['category']
+        
+        # Fetch the Category instance based on the category ID from the form
+        category_id = request.POST.get('category')
+        try:
+            category = Category.objects.get(id=category_id)
+            product.category = category
+        except Category.DoesNotExist:
+            messages.error(request, 'Selected category does not exist.')
+            return redirect('store_admin')  # Handle the error as appropriate
+
         product.price = request.POST['price']
         product.stock = request.POST['stock']
 
@@ -1443,6 +1449,7 @@ def update_product(request, product_code):
 
     context = {
         'product': product,
+        'categories': Category.objects.all(),  # Pass categories to the template
     }
     return render(request, 'platformTK/SuperAdmin/update_product.html', context)
 
@@ -1470,3 +1477,37 @@ def commandes_admin(request):
 
 
 
+
+
+def update_commande_status(request):
+    if request.method == 'POST':
+        commande_id = request.POST.get('commande_id')
+        new_status = request.POST.get('status')
+        
+        commande = get_object_or_404(Commande, id=commande_id)
+        commande.status = new_status
+        commande.save()
+
+        messages.success(request, 'Commande status updated successfully.')
+        return redirect('commandes_admin')  # Redirect to the page displaying commandes or relevant view
+
+    return redirect('commandes_admin')  # Redirect if the request is not POST
+
+
+
+
+
+@login_required(login_url='login')
+def add_category(request):
+    if request.method == 'POST':
+        category_name = request.POST.get('category_name')
+        if category_name:
+            if not Category.objects.filter(name=category_name).exists():
+                Category.objects.create(name=category_name)
+                messages.success(request, 'Category added successfully!')
+            else:
+                messages.error(request, 'Category already exists.')
+        else:
+            messages.error(request, 'Category name is required.')
+
+    return redirect('store_admin')  # Redirect to the store admin page

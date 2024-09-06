@@ -7,28 +7,22 @@
 
 <div class="container mt-5">
     {% if messages %}
-	{% for message in messages %}
-	  {% if message.tags == 'error' %}
-		<div class="alert alert-danger" role="alert">
-		  {{ message }}
-		</div>
-	  {% endif %}
-	{% endfor %}
-	{% endif %}
-
-	{% if messages %}
-  {% for message in messages %}
-      {% if message.tags == 'success' %}
-        <div class="alert alert-success" role="alert">
-          {{ message }}
-        </div>
-      {% endif %}
-    {% endfor %}
-  {% endif %}
+        {% for message in messages %}
+            {% if message.tags == 'error' %}
+                <div class="alert alert-danger" role="alert">
+                    {{ message }}
+                </div>
+            {% endif %}
+            {% if message.tags == 'success' %}
+                <div class="alert alert-success" role="alert">
+                    {{ message }}
+                </div>
+            {% endif %}
+        {% endfor %}
+    {% endif %}
 
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="text-center">Groups</h2>
-        <button class="btn btn-primary" onclick="openModal()" style="background-color: #fe5d37;">Add New Group</button>
     </div>
     <div class="table-responsive">
         <table class="table table-striped table-hover">
@@ -49,13 +43,23 @@
                     <td>{{ group.etudiants.count }}</td>
                     <td>{{ group.code_group }}</td>
                     <td>
-                        <button class="btn btn-warning btn-sm" onclick="openEditModal({{ group.id }}, '{{ group.name|escapejs }}', '{{ group.description|escapejs }}', '{{ group.student_names|escapejs }}', '{{ group.professor_names|escapejs }}')">Edit</button>
+                        <!-- Trigger for Edit Group Modal -->
+                        <a href="#editGroupModal" class="btn btn-warning btn-sm" 
+                           onclick="document.getElementById('editGroupModal').style.display='block'; 
+                                    document.getElementById('group_id').value='{{ group.id }}'; 
+                                    document.getElementById('name').value='{{ group.name }}'; 
+                                    document.getElementById('description').value='{{ group.description }}';">
+                            Edit
+                        </a>
+                        
+                        
+                        
                         <button class="btn btn-danger btn-sm">Delete</button>
                     </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="4" class="text-center">No groups found.</td>
+                    <td colspan="5" class="text-center">No groups found.</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -63,200 +67,28 @@
     </div>
 </div>
 
-
-
-
-
-<!-- Edit Modal -->
-<div id="editGroupModal" class="modal">
-    <div class="modal-content" style="margin-top: -56px;">
-        <div class="modal-header">
-            <span class="close" onclick="closeEditModal()">&times;</span>
-            <h2>Edit Group</h2>
-        </div>
-        <div class="modal-body">
-            <form id="editGroupForm">
-                {% csrf_token %}
-                <input type="hidden" id="editGroupId" name="group_id">
-
-                <div class="mb-3">
-                    <label for="editGroupName" class="form-label">Group Name</label>
-                    <input type="text" class="form-control" id="editGroupName" name="group_name" required>
-                </div>
-                <div class="mb-3">
-                    <label for="editDescription" class="form-label">Description</label>
-                    <textarea class="form-control" id="editDescription" name="description" rows="1" required></textarea>
-                </div>
-
-                <!-- Students Section -->
-                <div class="students-container d-flex">
-                    <div class="mb-3 flex-grow-1 mr-2">
-                        <label for="editStudentSearch" class="form-label">Search Students</label>
-                        <div class="input-group">
-                            <input type="text" class="form-control" id="editStudentSearch" placeholder="Search students..." oninput="filterList('editStudent')">
-                        </div>
-                        <div class="card mt-3 p-2 scrollable-container" id="editStudentList">
-                            {% for etudiant in etudiants %}
-                            <div data-id="{{ etudiant.id }}" class="student-item">
-                                {{ etudiant.prenom }} {{ etudiant.nom }}
-                                <button type="button" class="btn btn-sm btn-primary" onclick="addStudentToEdit({{ etudiant.id }}, '{{ etudiant.prenom }} {{ etudiant.nom }}')">Add</button>
-                            </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-
-                    <!-- Selected Students -->
-                    <div class="mt-2 flex-grow-1">
-                        <label class="form-label">Selected Students</label>
-                        <div id="editSelectedStudents" class="scrollable-list"></div>
-                        <input type="hidden" id="editStudents" name="students" value="">
-                        <input type="hidden" id="removedStudents" name="removed_students" value=""> <!-- New field for removed students -->
-                    </div>
-                </div>
-
-                <!-- Professors Section -->
-                <div class="professors-container d-flex mt-3">
-                    <div class="mb-3 flex-grow-1 mr-2">
-                        <label for="editProfSearch" class="form-label">Search Professors</label>
-                        <div class="input-group">
-                            <input type="text" class="form-control" id="editProfSearch" placeholder="Search professors..." oninput="filterList('editProf')">
-                        </div>
-                        <div class="card mt-3 p-2 scrollable-container" id="editProfList">
-                            {% for prof in profs %}
-                            <div data-id="{{ prof.id }}" class="prof-item">
-                                {{ prof.prenom }} {{ prof.nom }}
-                                <button type="button" class="btn btn-sm btn-primary" onclick="addProfToEdit({{ prof.id }}, '{{ prof.prenom }} {{ prof.nom }}')">Add</button>
-                            </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-
-                    <!-- Selected Professors -->
-                    <div class="mt-2 flex-grow-1">
-                        <label class="form-label">Selected Professors</label>
-                        <div id="editSelectedProfs" class="card p-2 scrollable-container" style="max-height:223px"></div>
-                        <input type="hidden" id="editProfs" name="profs" value="">
-                        <input type="hidden" id="removedProfs" name="removed_profs" value=""> <!-- New field for removed professors -->
-                    </div>
-                </div>
-
-                <!-- Submit Button -->
-                <div class="text-center mt-3">
-                    <button type="button" class="btn btn-primary" onclick="submitEditForm()">Update Group</button>
-                </div>
-            </form>
-        </div>
+<!-- Edit Group Modal -->
+<div id="editGroupModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;">
+    <div style="background:white; padding:20px; border-radius:5px; width:400px; max-width:90%;">
+        <h5>Edit Group</h5>
+        <form method="post" action="{% url 'edit_group' %}">
+            {% csrf_token %}
+            <input type="hidden" id="group_id" name="group_id">
+            <div class="mb-3">
+                <label for="name" class="form-label">Group Name</label>
+                <input type="text" class="form-control" id="name" name="name" required>
+            </div>
+            <div class="mb-3">
+                <label for="description" class="form-label">Description</label>
+                <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Save changes</button>
+            <button type="button" class="btn btn-secondary" onclick="document.getElementById('editGroupModal').style.display='none';">Close</button>
+        </form>
     </div>
 </div>
 
-<script>
-    function openEditModal(groupId, groupName, description, studentIds, professorIds) {
-        document.getElementById("editGroupId").value = groupId;
-        document.getElementById("editGroupName").value = groupName;
-        document.getElementById("editDescription").value = description;
-    
-        // Populate the selected students and professors
-        populateSelectedItems('editStudents', studentIds, 'editSelectedStudents');
-        populateSelectedItems('editProfs', professorIds, 'editSelectedProfs');
-    
-        // Show the modal
-        document.getElementById("editGroupModal").style.display = "block";
-    }
 
-    function closeEditModal() {
-        document.getElementById("editGroupModal").style.display = "none";
-    }
-    
-    function populateSelectedItems(inputId, ids, containerId) {
-        const container = document.getElementById(containerId);
-        const input = document.getElementById(inputId);
-    
-        container.innerHTML = '';
-        input.value = '';
-    
-        if (ids) {
-            ids.split(',').forEach(id => {
-                id = id.trim();
-                if (id) {
-                    const element = document.createElement('div');
-                    element.className = "d-flex justify-content-between align-items-center mb-2";
-                    element.innerHTML = `
-                        <span>${id}</span>
-                        <button type="button" class="btn btn-danger btn-sm" onclick="removeItem(this, '${inputId}', '${id}')">Remove</button>`;
-                    container.appendChild(element);
-                    input.value += id + ',';
-                }
-            });
-        }
-    }
-
-    function submitEditForm() {
-        const form = document.getElementById('editGroupForm');
-        const formData = new FormData(form);
-    
-        fetch("{% url 'update_group' 0 %}".replace('0', formData.get('group_id')), {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-CSRFToken': formData.get('csrfmiddlewaretoken')
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert('Group updated successfully.');
-                location.reload();  // Reload the page to see the updates
-            } else {
-                alert('An error occurred.');
-            }
-        });
-    }
-
-    function addStudentToEdit(id, name) {
-        const studentsInput = document.getElementById('editStudents');
-        const studentsContainer = document.getElementById('editSelectedStudents');
-        
-        if (!studentsInput.value.includes(id)) {
-            const element = document.createElement('div');
-            element.className = "d-flex justify-content-between align-items-center mb-2";
-            element.innerHTML = `
-                <span>${name}</span>
-                <button type="button" class="btn btn-danger btn-sm" onclick="removeItem(this, 'editStudents', '${id}', 'removedStudents')">Remove</button>`;
-            studentsContainer.appendChild(element);
-            studentsInput.value += id + ',';
-        }
-    }
-
-    function addProfToEdit(id, name) {
-        const profsInput = document.getElementById('editProfs');
-        const profsContainer = document.getElementById('editSelectedProfs');
-        
-        if (!profsInput.value.includes(id)) {
-            const element = document.createElement('div');
-            element.className = "d-flex justify-content-between align-items-center mb-2";
-            element.innerHTML = `
-                <span>${name}</span>
-                <button type="button" class="btn btn-danger btn-sm" onclick="removeItem(this, 'editProfs', '${id}', 'removedProfs')">Remove</button>`;
-            profsContainer.appendChild(element);
-            profsInput.value += id + ',';
-        }
-    }
-
-    function removeItem(element, inputId, id, removeInputId) {
-        // Remove the item from the displayed list
-        const container = element.parentElement;
-        container.remove();
-    
-        // Update the hidden input field by removing the ID
-        const input = document.getElementById(inputId);
-        const ids = input.value.split(',').filter(i => i.trim() !== id);
-        input.value = ids.join(',');
-    
-        // Add the removed ID to the removeInputId hidden field
-        const removeInput = document.getElementById(removeInputId);
-        removeInput.value += id + ',';
-    }
-</script>
 
 
 
