@@ -880,6 +880,22 @@ def edit_group(request):
     return redirect('add_groupe')  # Handle GET request or invalid form submission
 
 
+
+
+from django.shortcuts import get_object_or_404, redirect
+from django.contrib import messages
+
+def delete_group(request):
+    if request.method == 'POST':
+        group_id = request.POST.get('group_id')
+        group = get_object_or_404(Groups, id=group_id)
+        group.delete()
+        messages.success(request, 'Group deleted successfully.')
+    return redirect('add_groupe')
+
+
+
+
 from django.shortcuts import get_object_or_404, redirect, render
 from django.core.exceptions import ValidationError
 
@@ -903,6 +919,11 @@ def add_profs_etudiants(request, group_id):
         group.profs.add(*prof_ids)
         group.etudiants.add(*etudiant_ids)
 
+        # For each student added, create a Membership entry
+        for etudiant_id in etudiant_ids:
+            etudiant = Etudiant.objects.get(id=etudiant_id)
+            Membership.objects.get_or_create(etudiant=etudiant, group=group)
+
         # Redirect to the same view with the updated group_id
         return redirect('add_profs_etudiants', group_id=group.id)
 
@@ -911,6 +932,7 @@ def add_profs_etudiants(request, group_id):
         'professors': professors,
         'etudiants': etudiants,
     })
+
 
 
 
@@ -930,6 +952,10 @@ def delete_profs_etudiants(request, group_id):
         group.profs.remove(*prof_ids)
         group.etudiants.remove(*etudiant_ids)
 
+        # Delete Membership entries for the removed students (make sure to filter by both group and etudiant)
+        for etudiant_id in etudiant_ids:
+            Membership.objects.filter(etudiant_id=etudiant_id, group=group).delete()
+
         # Redirect back to the same page or another page as needed
         return redirect('delete_profs_etudiants', group_id=group.id)
 
@@ -942,6 +968,7 @@ def delete_profs_etudiants(request, group_id):
         'professors': professors,
         'etudiants': etudiants,
     })
+
 
 
 
