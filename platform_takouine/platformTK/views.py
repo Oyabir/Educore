@@ -791,6 +791,7 @@ def add_groupe(requset):
     etudiants = Etudiant.objects.all()
     profs = prof.objects.all()
     groups = Groups.objects.all()
+    
     return render(requset,"platformTK/SuperAdmin/add_groupe.html", {
         'groups': groups,
         'etudiants': etudiants,
@@ -856,7 +857,7 @@ def group_list(request):
 
 # views.py
 from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib import messages
+from django.contrib import messages 
 from .models import Groups
 
 def edit_group(request):
@@ -878,6 +879,69 @@ def edit_group(request):
 
     return redirect('add_groupe')  # Handle GET request or invalid form submission
 
+
+from django.shortcuts import get_object_or_404, redirect, render
+from django.core.exceptions import ValidationError
+
+def add_profs_etudiants(request, group_id):
+    group = get_object_or_404(Groups, id=group_id)
+
+    # Filter professors and students not already in the group
+    professors = prof.objects.exclude(id__in=group.profs.values_list('id', flat=True))
+    etudiants = Etudiant.objects.exclude(id__in=group.etudiants.values_list('id', flat=True))
+
+    if request.method == 'POST':
+        # Get selected IDs from POST request
+        selected_profs = request.POST.get('profs', '')
+        selected_etudiants = request.POST.get('etudiants', '')
+
+        # Convert selected IDs to lists
+        prof_ids = [int(prof_id) for prof_id in selected_profs.split(',') if prof_id.isdigit()]
+        etudiant_ids = [int(etudiant_id) for etudiant_id in selected_etudiants.split(',') if etudiant_id.isdigit()]
+
+        # Add valid professors and students to the group
+        group.profs.add(*prof_ids)
+        group.etudiants.add(*etudiant_ids)
+
+        # Redirect to the same view with the updated group_id
+        return redirect('add_profs_etudiants', group_id=group.id)
+
+    return render(request, 'platformTK/SuperAdmin/add_profs_etudiants.html', {
+        'group': group,
+        'professors': professors,
+        'etudiants': etudiants,
+    })
+
+
+
+def delete_profs_etudiants(request, group_id):
+    group = get_object_or_404(Groups, id=group_id)
+    
+    if request.method == 'POST':
+        # Get selected IDs from POST request
+        selected_profs = request.POST.getlist('profs')
+        selected_etudiants = request.POST.getlist('etudiants')
+
+        # Convert selected IDs to lists
+        prof_ids = [int(prof_id) for prof_id in selected_profs if prof_id.isdigit()]
+        etudiant_ids = [int(etudiant_id) for etudiant_id in selected_etudiants if etudiant_id.isdigit()]
+
+        # Remove professors and students from the group
+        group.profs.remove(*prof_ids)
+        group.etudiants.remove(*etudiant_ids)
+
+        # Redirect back to the same page or another page as needed
+        return redirect('delete_profs_etudiants', group_id=group.id)
+
+    # Fetch the professors and students currently in the group
+    professors = group.profs.all()
+    etudiants = group.etudiants.all()
+
+    return render(request, 'platformTK/SuperAdmin/delete_profs_etudiants.html', {
+        'group': group,
+        'professors': professors,
+        'etudiants': etudiants,
+    })
 
 
 

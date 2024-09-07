@@ -62,9 +62,12 @@ urlpatterns = [
 
 
     path('edit-group/', views.edit_group, name='edit_group'),
+    path('add-profs-etudiants/<int:group_id>/', views.add_profs_etudiants, name='add_profs_etudiants'),
+    path('delete-profs-etudiants/<int:group_id>/', views.delete_profs_etudiants, name='delete_profs_etudiants'),
 
 
-    path('update_etudiant/', views.update_etudiant,     name='update_etudiant'),
+
+    path('update_etudiant/', views.update_etudiant, name='update_etudiant'),
     path('delete_etudiant/<int:etudiant_id>/', views.delete_etudiant, name='delete_etudiant'),
     
     path('update_prof/<int:prof_id>/', views.update_prof, name='update_prof'),

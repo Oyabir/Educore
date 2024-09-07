@@ -1,0 +1,150 @@
+{% extends "platformTK/SuperAdmin/HomeBase.html" %}
+{% load static %}
+
+{% block content %}
+{% include 'platformTK/SuperAdmin/navbar.html' %}
+
+<div class="container mt-5">
+    <h2 class="text-center">Add Professors and Students to Group: {{ group.name }}</h2>
+
+    <form method="post" action="{% url 'add_profs_etudiants' group.id %}">
+        {% csrf_token %}
+        <input type="hidden" name="group_id" value="{{ group.id }}">
+
+        <div class="students-container">
+            <div class="professors-container flex-grow-1">
+                <h3>Professors</h3>
+                {% comment %} <div class="input-group mb-3">
+                    <input type="text" id="profSearch" class="form-control" placeholder="Search Professors" oninput="filterList('prof')">
+                </div> {% endcomment %}
+                <div class="scrollable-container" id="profList">
+                    {% for prof in professors %}
+                    <div data-id="{{ prof.id }}" class="list-group-item d-flex justify-content-between align-items-center prof-item">
+                        {{ prof.prenom }} {{ prof.nom }}
+                        <button type="button" class="btn btn-primary" onclick="addProf('{{ prof.id }}', '{{ prof.prenom }} {{ prof.nom }}')">Add</button>
+                    </div>
+                    {% empty %}
+                    <p>No professors available.</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <h3 class="mt-4">Selected</h3>
+            <div class="container">
+                <h4>Selected Professors</h4>
+                <div id="selectedProfs" class="list-group"></div>
+            </div>
+
+            <br>
+
+            <div class="students-container flex-grow-1 mr-2">
+                <h3>Students</h3>
+                {% comment %} <div class="input-group mb-3">
+                    <input type="text" id="studentSearch" class="form-control" placeholder="Search Students" oninput="filterList('student')">
+                </div> {% endcomment %}
+                <div class="scrollable-container" id="studentList">
+                    {% for etudiant in etudiants %}
+                    <div data-id="{{ etudiant.id }}" class="list-group-item d-flex justify-content-between align-items-center student-item">
+                        {{ etudiant.prenom }} {{ etudiant.nom }}
+                        <button type="button" class="btn btn-primary" onclick="addEtudiant('{{ etudiant.id }}', '{{ etudiant.prenom }} {{ etudiant.nom }}')">Add</button>
+                    </div>
+                    {% empty %}
+                    <p>No students available.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <h3 class="mt-4">Selected</h3>
+        <div class="container">
+            <h4 class="mt-4">Selected Students</h4>
+            <div id="selectedEtudiants" class="list-group"></div>
+        </div>
+
+        <button type="submit" class="btn btn-primary mt-4">Confirm Selection</button>
+    </form>
+</div>
+
+<script>
+    let selectedProfs = new Set();
+    let selectedEtudiants = new Set();
+
+    function addProf(profId, profName) {
+        console.log('Adding Professor:', profId, profName);
+        if (selectedProfs.has(profId)) {
+            selectedProfs.delete(profId);
+            removeFromSelected('selectedProfs', profId);
+        } else {
+            if (!document.getElementById(profId)) {
+                selectedProfs.add(profId);
+                addToSelected('selectedProfs', profId, profName);
+            }
+        }
+        console.log('Selected Professors:', Array.from(selectedProfs));
+    }
+
+    function addEtudiant(etudiantId, etudiantName) {
+        console.log('Adding Student:', etudiantId, etudiantName);
+        if (selectedEtudiants.has(etudiantId)) {
+            selectedEtudiants.delete(etudiantId);
+            removeFromSelected('selectedEtudiants', etudiantId);
+        } else {
+            if (!document.getElementById(etudiantId)) {
+                selectedEtudiants.add(etudiantId);
+                addToSelected('selectedEtudiants', etudiantId, etudiantName);
+            }
+        }
+        console.log('Selected Students:', Array.from(selectedEtudiants));
+    }
+
+    function addToSelected(containerId, id, name) {
+        let container = document.getElementById(containerId);
+        let item = document.createElement('div');
+        item.className = 'list-group-item d-flex justify-content-between align-items-center';
+        item.id = id;
+        item.innerHTML = `${name} <button type="button" class="btn btn-danger btn-sm" onclick="removeFromSelected('${containerId}', '${id}')">Remove</button>`;
+        container.appendChild(item);
+    }
+
+    function removeFromSelected(containerId, id) {
+        let container = document.getElementById(containerId);
+        let item = document.getElementById(id);
+        if (item) {
+            container.removeChild(item);
+        }
+    }
+
+
+    
+    document.querySelector('form').addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        let profsInput = document.createElement('input');
+        profsInput.type = 'hidden';
+        profsInput.name = 'profs';
+        profsInput.value = Array.from(selectedProfs).join(',');
+        this.appendChild(profsInput);
+
+        let etudiantsInput = document.createElement('input');
+        etudiantsInput.type = 'hidden';
+        etudiantsInput.name = 'etudiants';
+        etudiantsInput.value = Array.from(selectedEtudiants).join(',');
+        this.appendChild(etudiantsInput);
+
+        console.log('Form submission with Professors:', profsInput.value);
+        console.log('Form submission with Students:', etudiantsInput.value);
+
+        this.submit();
+    });
+</script>
+
+<style>
+    .scrollable-container {
+        max-height: 178px; /* Adjust the height as needed */
+        overflow-y: auto;
+        border: 1px solid #ddd;
+        border-radius: .25rem;
+    }
+</style>
+
+{% endblock %}

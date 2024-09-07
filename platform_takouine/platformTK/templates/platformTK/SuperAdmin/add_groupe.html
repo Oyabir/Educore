@@ -1,5 +1,4 @@
 {% extends "platformTK/SuperAdmin/HomeBase.html" %}
-
 {% load static %}
 
 {% block content %}
@@ -21,9 +20,12 @@
         {% endfor %}
     {% endif %}
 
+
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="text-center">Groups</h2>
+        <button class="btn btn-primary" onclick="openModal()" style="background-color: #fe5d37;">Add New Group</button>
     </div>
+
     <div class="table-responsive">
         <table class="table table-striped table-hover">
             <thead>
@@ -32,6 +34,7 @@
                     <th>Description</th>
                     <th>Members</th>
                     <th>Code Group</th>
+                    <th>Add and Delete</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -43,6 +46,14 @@
                     <td>{{ group.etudiants.count }}</td>
                     <td>{{ group.code_group }}</td>
                     <td>
+                        <a href="{% url 'add_profs_etudiants' group.id %}" class="btn btn-danger btn-sm">
+                            Add 
+                        </a>
+                        <a href="{% url 'delete_profs_etudiants' group.id %}" class="btn btn-danger btn-sm">
+                            Delete 
+                        </a>
+                    </td>
+                    <td>
                         <!-- Trigger for Edit Group Modal -->
                         <a href="#editGroupModal" class="btn btn-warning btn-sm" 
                            onclick="document.getElementById('editGroupModal').style.display='block'; 
@@ -53,9 +64,10 @@
                         </a>
                         
                         
-                        
+
                         <button class="btn btn-danger btn-sm">Delete</button>
                     </td>
+                   
                 </tr>
                 {% empty %}
                 <tr>
@@ -66,6 +78,8 @@
         </table>
     </div>
 </div>
+
+
 
 <!-- Edit Group Modal -->
 <div id="editGroupModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:1000; align-items:center; justify-content:center;">
@@ -87,8 +101,6 @@
         </form>
     </div>
 </div>
-
-
 
 
 
