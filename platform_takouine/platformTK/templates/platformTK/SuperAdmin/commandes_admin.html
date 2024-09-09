@@ -68,11 +68,11 @@
                     {% comment %} <td>{{ commande.date_ordered|date:"M d, Y" }}</td> {% endcomment %}
                     <td>
                         {% if commande.status == 'Completed' %}
-                        <button class="btn btn-primary btn-sm" >Status Completed</button>
+                        <button class="btn btn-primary btn-sm" style="background-color: #176b90;">Status Completed</button>
                         {% elif commande.status == 'Cancelled' %}
-                        <button class="btn btn-primary btn-sm" >Status Cancelled</button>
+                        <button class="btn btn-primary btn-sm" style="background-color: #176b90;" >Status Cancelled</button>
                         {% else %}
-                           <button class="btn btn-primary btn-sm" onclick="openStatusModal('{{ commande.id }}', '{{ commande.status }}')">Change Status</button>
+                           <button class="btn btn-primary btn-sm" style="background-color: #176b90;" onclick="openStatusModal('{{ commande.id }}', '{{ commande.status }}')">Change Status</button>
                         {% endif %}
                     </td>
                 </tr>
@@ -120,6 +120,17 @@
         document.getElementById("statusModal").style.display = "none";
     }
 </script>
+
+<style>
+    .modal-header {
+    background-color: #30bb96;
+}
+.btn-primary {
+    background-color: #176b90;
+    color: #ffffff;
+}
+</style>
+
 
     
 {% endblock %}

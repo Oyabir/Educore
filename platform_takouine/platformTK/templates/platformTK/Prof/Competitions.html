@@ -34,7 +34,7 @@
                             <tr>
                                 <td>{{ forloop.counter }}</td>
                                 <td>{{competition.name}}</td>
-                                <td>2{{competition.date_created}}</td>
+                                <td>{{competition.date_created}}</td>
                                 <td>{{competition.number_of_sections}}</td>
                                 <td><a href="{% url 'add_section' competition.id %}">Show</a></td>
                                 <td><a href="{% url 'competition_sections' competition.id %}">View Sections</a></td>
@@ -86,7 +86,28 @@
 
     <!-- Bootstrap JS Bundle (Includes Popper) -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-</body>
+
+
+    <style>
+        .btn-primary {
+            background-color: #176b90;
+            border-color: #fff5f3;
+        }
+
+        .btn-primary:hover {
+            background-color: #30bb96;
+            border-color: #fff5f3;
+        }
+
+        a {
+            color: #121212;
+            text-decoration: none;
+        }
+
+        a:hover {
+            color: #30bb96;
+        }
+    </style>
 
 
   

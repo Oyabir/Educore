@@ -77,6 +77,10 @@ urlpatterns = [
     path('update_commande_status/', views.update_commande_status, name='update_commande_status'),
     
     path('add_category/', views.add_category, name='add_category'),
+    path('categories/', views.list_categories, name='list_categories'),  
+    path('update-category/', views.update_category, name='update_category'),
+    path('delete-category/<int:category_id>/', views.delete_category, name='delete_category'),
+
 
 
     

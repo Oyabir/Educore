@@ -1587,6 +1587,12 @@ def update_commande_status(request):
 
 
 
+@login_required(login_url='login')
+def list_categories(request):
+    categories = Category.objects.all()
+    return render(request, 'platformTK/SuperAdmin/list_categories.html', {'categories': categories})
+
+
 
 @login_required(login_url='login')
 def add_category(request):
@@ -1602,3 +1608,30 @@ def add_category(request):
             messages.error(request, 'Category name is required.')
 
     return redirect('store_admin')  # Redirect to the store admin page
+
+
+
+@login_required(login_url='login')
+def update_category(request):
+    if request.method == 'POST' and request.is_ajax():
+        category_id = request.POST.get('category_id')
+        category_name = request.POST.get('category_name')
+
+        if category_id and category_name:
+            category = get_object_or_404(Category, id=category_id)
+            category.name = category_name
+            category.save()
+            return JsonResponse({'success': True, 'message': 'Category updated successfully!'})
+        else:
+            return JsonResponse({'success': False, 'message': 'Invalid data.'})
+    return JsonResponse({'success': False, 'message': 'Invalid request.'})
+
+
+
+@login_required(login_url='login')
+def delete_category(request, category_id):
+    category = get_object_or_404(Category, id=category_id)
+    category.delete()
+    messages.success(request, 'Category deleted successfully!')
+    return redirect('list_categories')
+

@@ -1,3 +1,4 @@
+{% load static  %}
 <div class="container-xxl bg-white p-0">
     <!-- Spinner Start -->
     {% comment %} <div id="spinner" class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
@@ -10,10 +11,11 @@
 
     <!-- Navbar Start -->
     <nav class="navbar navbar-expand-lg bg-white navbar-light sticky-top px-4 px-lg-5 py-lg-0">
-        <a href="index.html" class="navbar-brand">
-            <h1 class="m-0 text-primary"><i class="fa fa-book-reader me-3"></i>Plaform</h1>
+        <a href="" class="navbar-brand">
+            {% comment %} <h1 class="m-0 text-primary"><i class="fa fa-book-reader me-3"></i>Plaform</h1> {% endcomment %}
+            <img  src="{% static 'img/LOGOPRO.png' %}" alt="" style="width: 200px;height: 130px;margin-top: -25px;margin-left: -53px;"> 
         </a>
-        <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
+        <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" style="margin-top: -21px;">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarCollapse">
@@ -39,7 +41,17 @@
 
 
             </div>
-            <a href="" class="btn btn-primary rounded-pill px-3 d-none d-lg-block">{{etudiant.points}}$</i></a> {% comment %} <i class="fa fa-arrow-right ms-3"> {% endcomment %}
+            <a href="" class="btn btn-primary rounded-pill px-3 d-none d-lg-block" style="
+            background-color: #176b90;
+            border-color: #fff7f7;
+        ">{{etudiant.points}}$</i></a> {% comment %} <i class="fa fa-arrow-right ms-3"> {% endcomment %}
         </div>
     </nav>
     <!-- Navbar End -->
+
+
+    <style>
+        .navbar .navbar-nav .nav-link:hover, .navbar .navbar-nav .nav-link.active {
+            color: #30bb96;
+        }
+    </style>

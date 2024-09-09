@@ -30,13 +30,13 @@
             <input type="file" class="form-control" id="file" name="file" accept=".csv, .xlsx" required>
         </div>
         <div class="text-center">
-            <button class="btn btn-primary" type="submit">Upload Students</button>
+            <button class="btn btn-primary" type="submit" style="background-color: #176b90;">Upload Students</button>
         </div>
     </form>
 
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="text-center">Etudiants</h2>
-        <button class="btn btn-primary" onclick="openModal()" style="background-color: #fe5d37;">Add Etudiant</button>
+        <button class="btn btn-primary" onclick="openModal()" style="background-color: #176b90;">Add Etudiant</button>
         {% if error %}
             <p style="color: red;">{{ error }}</p>
         {% endif %}
@@ -368,5 +368,15 @@
         }
     }
 </script>
+
+<style>
+    .modal-header {
+    background-color: #30bb96;
+}
+.btn-primary {
+    background-color: #176b90;
+    color: #ffffff;
+}
+</style>
 
 {% endblock %}

@@ -10,6 +10,7 @@ def generate_etudiant_code():
     return f"TK-{unique_id}"
 
 
+
 class Etudiant(models.Model):
     user = models.OneToOneField(User, null=True, on_delete=models.CASCADE)
     prenom = models.CharField(max_length=50)
@@ -20,13 +21,29 @@ class Etudiant(models.Model):
     avatar = models.ImageField(null=True, blank=True)
     slugEtudiant = models.SlugField(blank=True, null=True)
     date_created = models.DateField(auto_now_add=True, null=True, blank=True)
-    points = models.IntegerField(default=0,blank=True, null=True) 
-    EtudiantCode = models.CharField(max_length=100, null=True, blank=True, default=generate_etudiant_code)
-
+    points = models.IntegerField(default=0, blank=True, null=True) 
+    EtudiantCode = models.CharField(max_length=100, unique=True, null=True, blank=True, default=generate_etudiant_code)
 
     def save(self, *args, **kwargs):
+        # Ensure slugEtudiant is set based on username if not provided
         if not self.slugEtudiant:
-            self.slugEtudiant = slugify(self.user.username) #slugify(self.user.username) 
+            self.slugEtudiant = slugify(self.user.username)
+
+        # Ensure a unique EtudiantCode is generated if it's not already set
+        if self._state.adding:  # This is a new instance
+            while True:
+                code = generate_etudiant_code()
+                if not Etudiant.objects.filter(EtudiantCode=code).exists():
+                    self.EtudiantCode = code
+                    break
+        else:  # This is an existing instance
+            if not self.EtudiantCode:
+                while True:
+                    code = generate_etudiant_code()
+                    if not Etudiant.objects.filter(EtudiantCode=code).exists():
+                        self.EtudiantCode = code
+                        break
+
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -122,10 +139,10 @@ class Groups(models.Model):
 class Competitions(models.Model):
     name = models.CharField(max_length=100)
     number_of_sections = models.PositiveIntegerField()  # Number of sections for the competition
-    group = models.ForeignKey('Groups', related_name='competitions', on_delete=models.CASCADE)  # Use ForeignKey for one group
+    group = models.ForeignKey('Groups', related_name='competitions', on_delete=models.SET_NULL, null=True, blank=True)  # Set null on delete
     date_created = models.DateField(auto_now_add=True, null=True, blank=True)
     is_finished = models.BooleanField(default=False)  # New field to track if competition is finished
-    prof = models.ForeignKey('prof', related_name='competitions', on_delete=models.CASCADE)  # Link to the professor
+    prof = models.ForeignKey('Prof', related_name='competitions', on_delete=models.SET_NULL, null=True, blank=True)  # Set null on delete
 
     def __str__(self):
         return self.name
@@ -134,20 +151,22 @@ class Competitions(models.Model):
 
 
 
+
 class Sections(models.Model):
-    competition = models.ForeignKey('Competitions', on_delete=models.CASCADE, related_name='sections')
+    competition = models.ForeignKey('Competitions', on_delete=models.SET_NULL, null=True, blank=True, related_name='sections')  # Set null on delete
     section_name = models.CharField(max_length=100)  
     etudiants = models.ManyToManyField('Etudiant', related_name='sections')  
     points = models.PositiveIntegerField(default=0)  
 
     def __str__(self):
-        return f"{self.competition.name} - {self.section_name} - Points: {self.points}"
+        return f"{self.competition.name if self.competition else 'No Competition'} - {self.section_name} - Points: {self.points}"
+
 
 
 
 class Category(models.Model):
     name = models.CharField(max_length=100, unique=True)
-
+    date_added = models.DateTimeField(auto_now_add=True)
     def __str__(self):
         return self.name
 
@@ -163,14 +182,13 @@ def generate_product_code():
 class Product(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField()
-    category = models.ForeignKey('Category', on_delete=models.CASCADE)
+    category = models.ForeignKey('Category', on_delete=models.SET_NULL, null=True, blank=True)  # Set null on delete
     price = models.DecimalField(max_digits=10, decimal_places=2)
     stock = models.PositiveIntegerField()
     image = models.ImageField(upload_to='products/', null=True, blank=True)
     slug = models.SlugField(max_length=100, unique=True, blank=True, null=True)
     date_added = models.DateTimeField(auto_now_add=True)
     ProductCode = models.CharField(max_length=100, null=True, blank=True, default=generate_product_code)
-
 
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -201,13 +219,12 @@ class Commande(models.Model):
         ('Cancelled', 'Cancelled'),
     ]
 
-    etudiant = models.ForeignKey('Etudiant', on_delete=models.CASCADE)
-    product = models.ForeignKey('Product', on_delete=models.CASCADE)
+    etudiant = models.ForeignKey('Etudiant', on_delete=models.SET_NULL, null=True, blank=True)  # Set null on delete
+    product = models.ForeignKey('Product', on_delete=models.SET_NULL, null=True, blank=True)  # Set null on delete
     date_ordered = models.DateTimeField(auto_now_add=True)
     quantity = models.PositiveIntegerField(default=1)
     total_price = models.DecimalField(max_digits=10, decimal_places=2)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='Pending')
-
     commande_code = models.CharField(max_length=100, null=True, blank=True, unique=True, default=generate_commande_code)
 
     def save(self, *args, **kwargs):
@@ -222,15 +239,17 @@ class Commande(models.Model):
         super(Commande, self).save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.commande_code} - {self.etudiant.user.username} - {self.product.name} - {self.status}"
+        return f"{self.commande_code} - {self.etudiant.user.username if self.etudiant else 'No Etudiant'} - {self.product.name if self.product else 'No Product'} - {self.status}"
+
 
 
 
 
 class Membership(models.Model):
-    etudiant = models.ForeignKey(Etudiant, on_delete=models.CASCADE)
-    group = models.ForeignKey(Groups, on_delete=models.CASCADE)
+    etudiant = models.ForeignKey(Etudiant, on_delete=models.SET_NULL, null=True, blank=True)  # Set null on delete
+    group = models.ForeignKey(Groups, on_delete=models.SET_NULL, null=True, blank=True)  # Set null on delete
     pointsG = models.IntegerField(default=0)
 
     def __str__(self):
-        return f"{self.etudiant} in {self.group}"
+        return f"{self.etudiant if self.etudiant else 'No Etudiant'} in {self.group if self.group else 'No Group'}"
+

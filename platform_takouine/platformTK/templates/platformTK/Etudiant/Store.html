@@ -45,11 +45,11 @@
                                     <div class="d-flex align-items-center">
                                         <img class="rounded-circle flex-shrink-0" src="{{ product.image.url }}" alt="" style="width: 45px; height: 45px;">
                                         <div class="ms-3">
-                                            <h6 class="text-primary mb-1">{{product.name}}</h6>
+                                            <h6 class="text-primary mb-1" style="color: #176b90 !important;">{{product.name}}</h6>
                                             <small>{{product.category}}</small>
                                         </div>
                                     </div>
-                                    <span class="bg-primary text-white rounded-pill py-2 px-3" href="">${{product.price}}</span>
+                                    <span class="bg-primary text-white rounded-pill py-2 px-3" href="" style="background-color: #176b90 !important;">${{product.price}}</span>
                                 </div>
                                 <div class="row g-1" >
                                     <div class="col-4">
@@ -68,7 +68,7 @@
                                         <div class="">
                                             {% comment %} <h6 class="text-primary mb-1">Acheter:</h6>
                                             <br> {% endcomment %}
-                                            <a class="bg-primary text-white rounded-pill py-2 px-3" href="#" 
+                                            <a class="bg-primary text-white rounded-pill py-2 px-3" style="background-color: #176b90 !important;" href="#" 
                                             onclick="openConfirmModal('{{ product.name }}', '{{ product.price }}', '{% url 'purchase_product' product.slug %}')">
                                             Acheter
                                         </a>
@@ -102,7 +102,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <a id="confirmPurchaseLink" class="btn btn-primary">Confirm Purchase</a>
+                <a id="confirmPurchaseLink" class="btn btn-primary" style="background-color: #176b90 !important;border-color: #ffffff;">Confirm Purchase</a>
             </div>
         </div>
     </div>

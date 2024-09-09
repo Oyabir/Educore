@@ -1,3 +1,5 @@
+{% load static  %}
+
 <div class="container-xxl bg-white p-0">
     <!-- Spinner Start -->
     {% comment %} <div id="spinner" class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
@@ -10,18 +12,19 @@
 
     <!-- Navbar Start -->
     <nav class="navbar navbar-expand-lg bg-white navbar-light sticky-top px-4 px-lg-5 py-lg-0">
-        <a href="index.html" class="navbar-brand">
-            <h1 class="m-0 text-primary"><i class="fa fa-book-reader me-3"></i>Plaform</h1>
+        <a href="" class="navbar-brand">
+            {% comment %} <h1 class="m-0 text-primary"><i class="fa fa-book-reader me-3"></i>Plaform</h1> {% endcomment %}
+            <img  src="{% static 'img/LOGOPRO.png' %}" alt="" style="width: 200px;height: 130px;margin-top: -25px;margin-left: -53px;"> 
         </a>
-        <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
+        <button type="button" class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" style="margin-top: -21px;">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarCollapse">
             <div class="navbar-nav mx-auto">
                 <a href="" class="nav-item nav-link active">Home</a>
-                <a href="{% url "add_groupe" %}" class="nav-item nav-link">Ajouter un groupe</a>
-                <a href="{% url "add_student" %}" class="nav-item nav-link">Ajouter un étudiant</a>
-                <a href="{% url "add_prof" %}" class="nav-item nav-link">Ajouter un prof</a>
+                <a href="{% url "add_groupe" %}" class="nav-item nav-link">Gestion de groupe</a>
+                <a href="{% url "add_student" %}" class="nav-item nav-link">Gestion de étudiant</a>
+                <a href="{% url "add_prof" %}" class="nav-item nav-link">Gestion de prof</a>
 
                 {% comment %} <div class="nav-item dropdown">
                     <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Pages</a>
@@ -44,3 +47,10 @@
         </div>
     </nav>
     <!-- Navbar End -->
+
+
+<style>
+    .navbar .navbar-nav .nav-link:hover, .navbar .navbar-nav .nav-link.active {
+        color: #30bb96;
+    }
+</style>

@@ -34,14 +34,14 @@
         <input type="file" class="form-control" name="file" id="file" accept=".csv, .xlsx" required>
     </div>
     <div class="text-center">
-        <button type="submit" class="btn btn-primary">Upload Professors</button>
+        <button type="submit" class="btn btn-primary" style="background-color: #176b90;">Upload Professors</button>
     </div>
     </form>
 
 
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="text-center">prof</h2>
-        <button class="btn btn-primary" onclick="openModal()" style="background-color: #fe5d37;">Add prof</button>
+        <button class="btn btn-primary" onclick="openModal()" style="background-color: #176b90;">Add prof</button>
         {% if error %}
         <p style="color: red;">{{ error }}</p>
         {% endif %}
@@ -331,12 +331,6 @@
 </script>
 
 
-
-
-<style>
-   
-</style>
-
 <script>
     function openModal() {
         document.getElementById("groupModal").style.display = "block";
@@ -353,5 +347,15 @@
         }
     }
 </script>
+
+<style>
+    .modal-header {
+    background-color: #30bb96;
+}
+.btn-primary {
+    background-color: #176b90;
+    color: #ffffff;
+}
+</style>
 
 {% endblock %}

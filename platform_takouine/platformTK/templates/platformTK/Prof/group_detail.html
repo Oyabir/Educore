@@ -15,7 +15,11 @@
                         <p><strong>Date:</strong>{{ group.date_created }}</p>
                         <p><strong>Lieu:</strong> Takouine Smart Center</p>
                         <p><strong>Participants:</strong> {{ group.etudiants.count }}</p>
-                        <a href="{% url 'Répartition_points' code_group=group.code_group %}" class="btn btn-primary rounded-pill py-sm-3 px-sm-5 me-3 animated slideInLeft">Répartition des points</a>
+                        <a href="{% url 'Répartition_points' code_group=group.code_group %}" class="btn btn-primary" style=" background-color: #176b90;
+                        border-color: #ffffff;">
+                            Répartition des points
+                        </a>
+                        
                         {% comment %} <a href="" class="btn btn-dark rounded-pill py-sm-3 px-sm-5 animated slideInRight">Recompation</a> {% endcomment %}
                     </div>
                 </div>
@@ -70,6 +74,10 @@ body {
     margin: 0;
     padding: 0;
 }
+
+
+   
+
 
 /* Card Styling */
 .card {

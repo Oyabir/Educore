@@ -31,17 +31,17 @@
                                             <img class="rounded-circle flex-shrink-0" src="{% static 'img/user.jpg' %}" alt="" style="width: 55px;height: 55px;">
                                             {% endif %}
                                             <div class="ms-3">
-                                                <h6 class="text-primary mb-1">{{ student.prenom }} {{ student.nom }}</h6>
+                                                <h6 class="text-primary mb-1" style="color: #30bb96 !important;">{{ student.prenom }} {{ student.nom }}</h6>
                                                 <small>{{ group.name }}</small>
                                             </div> 
                                         </div>
-                                        <span class="bg-primary text-white rounded-pill py-2 px-3">
+                                        <span class="bg-primary text-white rounded-pill py-2 px-3" style="background-color: #176b90 !important;">
                                             ${{ memberships_dict|get_item:student.id }}
                                         </span>
                                     </div>
                                 <div class="row g-1">
                                     <div class="col-4">
-                                        <div class="border-top border-3 border-primary pt-2">
+                                        <div class="border-top border-3 border-primary pt-2" style="border-color: #103741 !important;">
                                             <h6 class="text-primary mb-1">Add:</h6>
                                             <small>
                                                 <button type="button" 
@@ -49,7 +49,8 @@
                                                         data-bs-toggle="modal" 
                                                         data-bs-target="#addItemModal" 
                                                         data-student-id="{{ student.id }}" 
-                                                        data-group-id="{{ group.id }}">Add</button>
+                                                        data-group-id="{{ group.id }}"  style="
+                                                        background-color: #176b90 !important;">Add</button>
                                             </small>
                                 
                                         </div>
@@ -58,7 +59,7 @@
                                        
                                     </div>
                                     <div class="col-4">
-                                        <div class="border-top border-3 border-warning pt-2">
+                                        <div class="border-top border-3 border-warning pt-2"  style="border-color: #103741 !important;">
                                             <h6 class="text-warning mb-1">Minus:</h6>
                                             <small>
                                                 <button type="button" 
@@ -66,7 +67,8 @@
                                                         data-bs-toggle="modal" 
                                                         data-bs-target="#minusItemModal" 
                                                         data-student-id="{{ student.id }}" 
-                                                        data-group-id="{{ group.id }}">Minus</button>
+                                                        data-group-id="{{ group.id }}"  style="
+                                                        background-color: #176b90 !important;">Minus</button>
                                             </small>                                    
                                         </div>
                                     </div>
@@ -305,7 +307,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" onclick="triggerAnimation()">Save changes</button>
+                <button type="button" class="btn btn-primary" onclick="triggerAnimation()" style="background-color: #0b3548;border-color: #ffffff;">Save changes</button>
             </div>
         </div>
     </div>
@@ -366,7 +368,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" onclick="triggerLossAnimation()">Save changes</button>
+                <button type="button" class="btn btn-primary" onclick="triggerLossAnimation()" style="background-color: #0b3548;border-color: #ffffff;">Save changes</button>
             </div>
         </div>
     </div>
@@ -508,6 +510,8 @@
 
 
 <style>
+
+
     .win-animation {
         position: fixed;
         top: 50%;
