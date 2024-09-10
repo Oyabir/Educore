@@ -1589,7 +1589,7 @@ def update_commande_status(request):
 
 @login_required(login_url='login')
 def list_categories(request):
-    categories = Category.objects.all()
+    categories = Category.objects.all().order_by('-date_added')
     return render(request, 'platformTK/SuperAdmin/list_categories.html', {'categories': categories})
 
 
@@ -1607,31 +1607,97 @@ def add_category(request):
         else:
             messages.error(request, 'Category name is required.')
 
-    return redirect('store_admin')  # Redirect to the store admin page
+    return redirect('list_categories')  # Redirect to the store admin page
 
 
 
 @login_required(login_url='login')
-def update_category(request):
-    if request.method == 'POST' and request.is_ajax():
+def edit_category(request):
+    if request.method == 'POST':
         category_id = request.POST.get('category_id')
         category_name = request.POST.get('category_name')
+        
+        # Retrieve and update the category
+        category = get_object_or_404(Category, id=category_id)
+        category.name = category_name
+        category.save()
 
-        if category_id and category_name:
-            category = get_object_or_404(Category, id=category_id)
-            category.name = category_name
-            category.save()
-            return JsonResponse({'success': True, 'message': 'Category updated successfully!'})
-        else:
-            return JsonResponse({'success': False, 'message': 'Invalid data.'})
-    return JsonResponse({'success': False, 'message': 'Invalid request.'})
+        # Success message
+        messages.success(request, 'Category updated successfully!')
+        return redirect('list_categories')
+
+    return redirect('list_categories')
 
 
 
 @login_required(login_url='login')
-def delete_category(request, category_id):
-    category = get_object_or_404(Category, id=category_id)
-    category.delete()
-    messages.success(request, 'Category deleted successfully!')
+def delete_category(request):
+    if request.method == 'POST':
+        category_id = request.POST.get('category_id')
+        
+        # Retrieve and delete the category
+        category = get_object_or_404(Category, id=category_id)
+        category.delete()
+
+        # Success message
+        messages.success(request, 'Category deleted successfully!')
+        return redirect('list_categories')
+
     return redirect('list_categories')
 
+
+
+
+
+# @login_required(login_url='login')
+# def dashboard(request):
+#     return render(request, 'platformTK/dashboard.html')
+
+
+
+
+@login_required(login_url='login')
+def dashboard(request):
+    groups = Groups.objects.all()
+    competitions = Competitions.objects.all()
+    
+    group_data = []
+    competition_data = []
+
+    # Initialize total points
+    total_points = 0
+    total_competition_points = 0
+    
+    # Collect group data and calculate total points for groups
+    for group in groups:
+        group_points = group.total_points()  # Assumes you have a `total_points` method in the Groups model
+        group_data.append({
+            'name': group.name,
+            'points': group_points
+        })
+        total_points += group_points
+
+    total_groups = len(groups)
+    avg_points = total_points / total_groups if total_groups > 0 else 0
+
+    # Collect competition data and calculate total points for competitions
+    for competition in competitions:
+        competition_points = competition.number_of_sections  # Assuming `number_of_sections` as points
+        competition_data.append({
+            'name': competition.name,
+            'points': competition_points
+        })
+        total_competition_points += competition_points
+
+    total_competitions = len(competitions)
+    avg_competition_points = total_competition_points / total_competitions if total_competitions > 0 else 0
+
+    context = {
+        'group_data': group_data,
+        'competition_data': competition_data,
+        'total_groups': total_groups,
+        'total_points': total_points,
+        'avg_points': avg_points,
+        'avg_competition_points': avg_competition_points  # Pass avg competition points to the template
+    }
+    return render(request, 'platformTK/dashboard.html', context)

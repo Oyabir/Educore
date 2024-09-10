@@ -78,8 +78,12 @@ urlpatterns = [
     
     path('add_category/', views.add_category, name='add_category'),
     path('categories/', views.list_categories, name='list_categories'),  
-    path('update-category/', views.update_category, name='update_category'),
-    path('delete-category/<int:category_id>/', views.delete_category, name='delete_category'),
+    path('edit-category/', views.edit_category, name='edit_category'),    
+    path('delete-category/', views.delete_category, name='delete_category'), 
+    
+    path('dashboard/', views.dashboard, name='dashboard'), 
+
+    
 
 
 

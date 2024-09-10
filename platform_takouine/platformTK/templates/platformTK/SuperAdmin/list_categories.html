@@ -3,10 +3,14 @@
 {% block content %}
 {% include 'platformTK/SuperAdmin/navbar.html' %}
 
-<div class="container py-5">
-    <h1 class="mb-4">Order List</h1>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
 
-    <!-- Orders Table -->
+<div class="container py-5">
+    <button class="btn btn-primary mb-3" onclick="openCategoryModal()" style="background-color: #176b90;">Add Category</button>
+
+    <h1 class="mb-4">Category List</h1>
+
     <table class="table table-striped">
         <thead>
             <tr>
@@ -19,75 +23,144 @@
         <tbody>
             {% for categorie in categories %}
             <tr>
-                <td>{{ categorie.id }}</td>
+                <td>{{ forloop.counter }}</td>
                 <td>{{ categorie.name }}</td>
                 <td>{{ categorie.date_added }}</td>
                 <td>
-                    <!-- Trigger for Edit Category Modal -->
-                <button class="btn btn-warning btn-sm">
-                Edit
-                </button>
+                    <button class="btn btn-warning btn-sm" data-toggle="modal" data-target="#editCategoryModal" 
+                        data-id="{{ categorie.id }}" data-name="{{ categorie.name }}">
+                        Edit
+                    </button>
 
-                <!-- Trigger for Delete Confirmation Modal -->
-                <button class="btn btn-danger btn-sm" >
-                Delete
-                </button>
-
+                    <button class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteCategoryModal" 
+                        data-id="{{ categorie.id }}" data-name="{{ categorie.name }}">
+                        Delete
+                    </button>
                 </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
     
-    <!-- Edit Category Modal -->
-    <div class="modal fade" id="editCategoryModal" tabindex="-1" role="dialog" aria-labelledby="editCategoryModalLabel" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="editCategoryModalLabel">Edit Category</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <form id="editCategoryForm" method="POST">
-                        {% csrf_token %}
-                        <div class="form-group">
-                            <label for="category_name">Category Name</label>
-                            <input type="text" class="form-control" id="category_name" name="category_name">
-                            <input type="hidden" id="category_id" name="category_id">
-                        </div>
-                        <button type="submit" class="btn btn-primary mt-3">Save Changes</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-    
-    <!-- Delete Confirmation Modal -->
-    <div class="modal fade" id="deleteCategoryModal" tabindex="-1" role="dialog" aria-labelledby="deleteCategoryModalLabel" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="deleteCategoryModalLabel">Delete Category</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    Are you sure you want to delete this category?
-                </div>
-                <div class="modal-footer">
-                    <form id="deleteCategoryForm" method="POST">
-                        {% csrf_token %}
-                        <input type="hidden" id="delete_category_id" name="category_id">
-                        <button type="submit" class="btn btn-danger">Delete</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
+   <!-- Edit Category Modal -->
+   <div class="modal fade" id="editCategoryModal" tabindex="-1" role="dialog" aria-labelledby="editCategoryModalLabel" aria-hidden="true">
+       <div class="modal-dialog" role="document">
+           <div class="modal-content">
+               <div class="modal-header">
+                   <h5 class="modal-title" id="editCategoryModalLabel">Edit Category</h5>
+                    <span class="close" data-dismiss="modal" aria-label="Close" aria-hidden="true">&times;</span>
+               </div>
+               <div class="modal-body">
+                   <form id="editCategoryForm" method="POST" action="{% url 'edit_category' %}">
+                       {% csrf_token %}
+                       <div class="form-group">
+                           <label for="category_name">Category Name</label>
+                           <input type="text" class="form-control" id="category_name" name="category_name">
+                           <input type="hidden" id="category_id" name="category_id">
+                       </div>
+                       <button type="submit" class="btn btn-primary mt-3">Save Changes</button>
+                   </form>
+               </div>
+           </div>
+       </div>
+   </div>
 
-    
+    <!-- Delete Confirmation Modal -->
+   <div class="modal fade" id="deleteCategoryModal" tabindex="-1" role="dialog" aria-labelledby="deleteCategoryModalLabel" aria-hidden="true">
+       <div class="modal-dialog" role="document">
+           <div class="modal-content">
+               <div class="modal-header">
+                   <h5 class="modal-title" id="deleteCategoryModalLabel">Delete Category</h5>
+                       <span class="close" data-dismiss="modal" aria-label="Close" aria-hidden="true">&times;</span>
+               </div>
+               <div class="modal-body">
+                   Are you sure you want to delete this category <strong id="delete_category_name"></strong>?
+               </div>
+               <div class="modal-footer">
+                   <form id="deleteCategoryForm" method="POST" action="{% url 'delete_category' %}">
+                       {% csrf_token %}
+                       <input type="hidden" id="delete_category_id" name="category_id">
+                       <button type="submit" class="btn btn-danger">Delete</button>
+                   </form>
+               </div>
+           </div>
+       </div>
+   </div>
+
+</div>
+
+<script>
+    // Handle Edit button click
+    $('#editCategoryModal').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget); 
+        var categoryId = button.data('id');
+        var categoryName = button.data('name');
+
+        var modal = $(this);
+        modal.find('#category_id').val(categoryId);
+        modal.find('#category_name').val(categoryName);
+    });
+
+    // Handle Delete button click
+    $('#deleteCategoryModal').on('show.bs.modal', function (event) {
+        var button = $(event.relatedTarget);
+        var categoryId = button.data('id');
+        var categoryName = button.data('name');
+
+        var modal = $(this);
+        modal.find('#delete_category_id').val(categoryId);
+        modal.find('#delete_category_name').text(categoryName);
+    });
+</script>
+
+
+
+   <!-- Category Modal -->
+   <div id="categoryModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <span class="close" onclick="closeCategoryModal()">&times;</span>
+            <h2>Add New Category</h2>
+        </div>
+        <div class="modal-body">
+            <form method="POST" action="{% url 'add_category' %}">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="category_name">Category Name:</label>
+                    <input type="text" id="category_name" name="category_name" class="form-control" required>
+                </div>
+                <br>
+                <div class="text-center">
+                    <button type="submit" class="btn btn-primary">Add Category</button>
+                    <a href="{% url 'list_categories' %}" class="btn btn-primary">View All Categories</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openCategoryModal() {
+        document.getElementById("categoryModal").style.display = "block";
+    }
+
+    function closeCategoryModal() {
+        document.getElementById("categoryModal").style.display = "none";
+    }
+</script>
+
+
+
+<style>    
+.modal-header {
+    background-color: #30bb96;
+}
+.btn-primary {
+    background-color: #176b90;
+    color: #ffffff;
+}
+</style>
+
 
 {% endblock %}
+
