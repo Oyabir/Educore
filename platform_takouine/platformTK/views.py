@@ -1654,23 +1654,38 @@ def delete_category(request):
 #     return render(request, 'platformTK/dashboard.html')
 
 
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from django.db.models import Count
+from datetime import datetime, timedelta
+import json
+from django.db.models import Sum
+
 
 
 @login_required(login_url='login')
 def dashboard(request):
     groups = Groups.objects.all()
     competitions = Competitions.objects.all()
+    etudiants = Etudiant.objects.all()
+    commandes = Commande.objects.all()
     
+
     group_data = []
     competition_data = []
+    etudiant_data = []
 
-    # Initialize total points
     total_points = 0
     total_competition_points = 0
-    
-    # Collect group data and calculate total points for groups
+    total_etudiant_points = 0
+
+    previous_etudiants = Etudiant.objects.filter(date_created__lt=datetime.now())
+    total_previous_etudiant_points = sum([etudiant.points for etudiant in previous_etudiants])
+    total_previous_etudiants = len(previous_etudiants)
+    previous_avg_etudiant_points = total_previous_etudiant_points / total_previous_etudiants if total_previous_etudiants > 0 else 0
+
     for group in groups:
-        group_points = group.total_points()  # Assumes you have a `total_points` method in the Groups model
+        group_points = group.total_points()
         group_data.append({
             'name': group.name,
             'points': group_points
@@ -1680,9 +1695,8 @@ def dashboard(request):
     total_groups = len(groups)
     avg_points = total_points / total_groups if total_groups > 0 else 0
 
-    # Collect competition data and calculate total points for competitions
     for competition in competitions:
-        competition_points = competition.number_of_sections  # Assuming `number_of_sections` as points
+        competition_points = competition.number_of_sections
         competition_data.append({
             'name': competition.name,
             'points': competition_points
@@ -1692,12 +1706,91 @@ def dashboard(request):
     total_competitions = len(competitions)
     avg_competition_points = total_competition_points / total_competitions if total_competitions > 0 else 0
 
+    for etudiant in etudiants:
+        etudiant_points = etudiant.points
+        etudiant_data.append({
+            'name': f"{etudiant.prenom} {etudiant.nom}",
+            'points': etudiant_points
+        })
+        total_etudiant_points += etudiant_points
+
+    total_etudiants = len(etudiants)
+    avg_etudiant_points = total_etudiant_points / total_etudiants if total_etudiants > 0 else 0
+
+    total_orders = len(commandes)
+
+    # Retrieve the count of Commandes per date
+    commandes_per_date = Commande.objects.values('date_ordered__date').annotate(count=Count('id')).order_by('date_ordered__date')
+    dates = [item['date_ordered__date'].strftime('%Y-%m-%d') for item in commandes_per_date]
+    counts = [item['count'] for item in commandes_per_date]
+
+    # Convert to JSON for JavaScript
+    commandes_data = json.dumps({
+        'dates': dates,
+        'counts': counts
+    })
+
+    # Prepare data for the doughnut chart
+    chart_data = {
+        'labels': ['Pending', 'Completed', 'Cancelled'],  # Replace with actual labels
+        'data': [
+            Commande.objects.filter(status='Pending').count(),
+            Commande.objects.filter(status='Completed').count(),
+            Commande.objects.filter(status='Cancelled').count()
+        ]
+    }
+    chart_data_json = json.dumps(chart_data)
+    
+    
+# Retrieve the top 4 products based on total quantity ordered
+    top_products = Commande.objects.values('product__name').annotate(total_quantity=Sum('quantity')).order_by('-total_quantity')[:4]
+    top_product_data = [{
+        'name': item['product__name'],
+        'total_quantity': item['total_quantity']
+    } for item in top_products]
+
+    # Calculate the total quantity for percentage calculations
+    total_quantity = sum(item['total_quantity'] for item in top_product_data)
+
+    # Retrieve the top 7 students based on points
+    top_etudiants = Etudiant.objects.order_by('-points')[:7]
+    top_etudiant_data = [{
+        'name': f"{etudiant.prenom} {etudiant.nom}",
+        'points': etudiant.points
+    } for etudiant in top_etudiants]
+    
+    
+    professors = prof.objects.all()
+    prof_data = []
+    
+    # Correct indentation here
+    for professor in professors:
+        prof_points = professor.total_points()
+        prof_data.append({
+            'name': f"{professor.prenom} {professor.nom}",
+            'points': prof_points
+        })
+
+    # Sort professors by points and get top 4
+    top_prof_data = sorted(prof_data, key=lambda x: x['points'], reverse=True)[:4]
+
+
     context = {
         'group_data': group_data,
         'competition_data': competition_data,
+        'etudiant_data': etudiant_data,
+        'top_etudiant_data': top_etudiant_data,
+        'top_product_data': top_product_data,  
+        'total_quantity': total_quantity, 
         'total_groups': total_groups,
         'total_points': total_points,
         'avg_points': avg_points,
-        'avg_competition_points': avg_competition_points  # Pass avg competition points to the template
+        'avg_competition_points': avg_competition_points,
+        'avg_etudiant_points': avg_etudiant_points,
+        'previous_avg_etudiant_points': previous_avg_etudiant_points,
+        'total_orders': total_orders,
+        'commandes_data': commandes_data,
+        'chart_data': chart_data_json,  # Pass chart data to the template
+        'top_prof_data': top_prof_data,
     }
     return render(request, 'platformTK/dashboard.html', context)

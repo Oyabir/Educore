@@ -21,7 +21,7 @@
     <meta name="description" content="Responsive Bootstrap 4 Dashboard Template">
     <meta name="author" content="BootstrapDash">
 
-    <title>Azia Responsive Bootstrap 4 Dashboard Template</title>
+    <title>Dashboard Platform Takouine</title>
 
     <!-- vendor css -->
     <link href="{% static 'dashboard/lib/fontawesome-free/css/all.min.css' %}" rel="stylesheet">
@@ -46,7 +46,7 @@
             <a href="index.html" class="az-logo"><span></span> Dashboard</a>
             <a href="" class="close">&times;</a>
           </div><!-- az-header-menu-header -->
-          <ul class="nav">
+          {% comment %} <ul class="nav">
             <li class="nav-item active show">
               <a href="index.html" class="nav-link"><i class="typcn typcn-chart-area-outline"></i> Dashboard</a>
             </li>
@@ -78,10 +78,10 @@
                 </div><!-- container -->
               </div>
             </li>
-          </ul>
+          </ul> {% endcomment %}
         </div><!-- az-header-menu -->
         <div class="az-header-right">
-          <a href="https://www.bootstrapdash.com/demo/azia-free/docs/documentation.html" target="_blank" class="az-header-search-link"><i class="far fa-file-alt"></i></a>
+          {% comment %} <a href="https://www.bootstrapdash.com/demo/azia-free/docs/documentation.html" target="_blank" class="az-header-search-link"><i class="far fa-file-alt"></i></a>
           <a href="" class="az-header-search-link"><i class="fas fa-search"></i></a>
           <div class="az-header-message">
             <a href="#"><i class="typcn typcn-messages"></i></a>
@@ -146,7 +146,7 @@
               <a href="" class="dropdown-item"><i class="typcn typcn-time"></i> Activity Logs</a>
               <a href="" class="dropdown-item"><i class="typcn typcn-cog-outline"></i> Account Settings</a>
               <a href="page-signin.html" class="dropdown-item"><i class="typcn typcn-power-outline"></i> Sign Out</a>
-            </div><!-- dropdown-menu -->
+            </div><!-- dropdown-menu --> {% endcomment %}
           </div>
         </div><!-- az-header-right -->
       </div><!-- container -->
@@ -158,10 +158,10 @@
           <div class="az-dashboard-one-title">
             <div>
               <h2 class="az-dashboard-title">Hi, welcome back!</h2>
-              <p class="az-dashboard-text">Your web analytics dashboard template.</p>
+              {% comment %} <p class="az-dashboard-text">Your web analytics dashboard template.</p> {% endcomment %}
             </div>
             <div class="az-content-header-right">
-              <div class="media">
+              {% comment %} <div class="media">
                 <div class="media-body">
                   <label>Start Date</label>
                   <h6>Oct 10, 2018</h6>
@@ -178,23 +178,23 @@
                   <label>Event Category</label>
                   <h6>All Categories</h6>
                 </div><!-- media-body -->
-              </div><!-- media -->
+              </div><!-- media --> {% endcomment %}
               <a href="" class="btn btn-purple">Export</a>
             </div>
           </div><!-- az-dashboard-one-title -->
 
           <div class="az-dashboard-nav"> 
             <nav class="nav">
-              <a class="nav-link active" data-toggle="tab" href="#">Overview</a>
+              {% comment %} <a class="nav-link active" data-toggle="tab" href="#">Overview</a>
               <a class="nav-link" data-toggle="tab" href="#">Audiences</a>
               <a class="nav-link" data-toggle="tab" href="#">Demographics</a>
-              <a class="nav-link" data-toggle="tab" href="#">More</a>
+              <a class="nav-link" data-toggle="tab" href="#">More</a> {% endcomment %}
             </nav>
 
             <nav class="nav">
               <a class="nav-link" href="#"><i class="far fa-save"></i> Save Report</a>
               <a class="nav-link" href="#"><i class="far fa-file-pdf"></i> Export to PDF</a>
-              <a class="nav-link" href="#"><i class="far fa-envelope"></i>Send to Email</a>
+              {% comment %} <a class="nav-link" href="#"><i class="far fa-envelope"></i>Send to Email</a> {% endcomment %}
               <a class="nav-link" href="#"><i class="fas fa-ellipsis-h"></i></a>
             </nav>
           </div>
@@ -204,13 +204,13 @@
               <div class="card card-dashboard-one">
                 <div class="card-header">
                   <div>
-                    <h6 class="card-title">Website Audience Metrics</h6>
-                    <p class="card-text">Audience to which the users belonged while on the current date range.</p>
+                    <h6 class="card-title">The Points by Groups</h6>
+                    {% comment %} <p class="card-text">Audience to which the users belonged while on the current date range.</p> {% endcomment %}
                   </div>
                   <div class="btn-group">
-                    <button class="btn active">Day</button>
+                    {% comment %} <button class="btn active">Day</button>
                     <button class="btn">Week</button>
-                    <button class="btn">Month</button>
+                    <button class="btn">Month</button> {% endcomment %}
                   </div>
                 </div><!-- card-header -->
                 <div class="card-body">
@@ -225,7 +225,7 @@
                     </div>
                     <div>
                       <label class="mg-b-0">Average Points per Group</label>
-                      <h2>{{ avg_points }}</h2>
+                      <h2>{{ avg_points|floatformat:2 }}</h2>
                     </div>
                     {% comment %} <div>
                       <label class="mg-b-0">Sessions</label>
@@ -250,8 +250,10 @@
                             {{ avg_competition_points|floatformat:2 }}  
                             {% if avg_competition_points > some_previous_value %}
                                 <i class="icon ion-md-trending-up tx-success"></i>
-                            {% else %}
+                            {% elif avg_competition_points < some_previous_value %}
                                 <i class="icon ion-md-trending-down tx-danger"></i>
+                            {% else %}
+                            <i class="icon ion-md-remove tx-warning"></i> <!-- When points are equal -->
                             {% endif %}
                             <small>{{ avg_competition_points|floatformat:2 }}%</small> 
                         </h6>
@@ -267,8 +269,20 @@
                 <div class="col-sm-6 mg-t-20 mg-sm-t-0">
                   <div class="card card-dashboard-two">
                     <div class="card-header">
-                      <h6>86k <i class="icon ion-md-trending-down tx-danger"></i> <small>0.86%</small></h6>
-                      <p>Total Users</p>
+                      <h6>
+                        {{ avg_etudiant_points|floatformat:2 }} {% comment %} % {% endcomment %}
+                        <!-- Check if the average points are greater than the previous average -->
+                        {% if avg_etudiant_points > previous_avg_etudiant_points %}
+                            <i class="icon ion-md-trending-up tx-success"></i> 
+                        {% elif avg_etudiant_points < previous_avg_etudiant_points %}
+                            <i class="icon ion-md-trending-down tx-danger"></i>
+                        {% else %}
+                            <i class="icon ion-md-remove tx-warning"></i> <!-- When points are equal -->
+                        {% endif %}
+                        
+                        <small>{{ avg_etudiant_points|floatformat:2 }}%</small>  <!-- Display current average -->
+                    </h6>
+                    <p>Average Points for Etudiants</p>                    
                     </div><!-- card-header -->
                     <div class="card-body">
                       <div class="chart-wrapper">
@@ -280,9 +294,9 @@
                 <div class="col-sm-12 mg-t-20">
                   <div class="card card-dashboard-three">
                     <div class="card-header">
-                      <p>All Sessions</p>
-                      <h6>16,869 <small class="tx-success"><i class="icon ion-md-arrow-up"></i> 2.87%</small></h6>
-                      <small>The total number of sessions within the date range. It is the period time a user is actively engaged with your website, page or app, etc.</small>
+                      <p>Total Number of Orders</p>
+                      <h6>{{ total_orders }}</h6>
+                      <small>The total number of orders made within the system.</small>
                     </div><!-- card-header -->
                     <div class="card-body">
                       <div class="chart"><canvas id="chartBar5"></canvas></div>
@@ -297,60 +311,22 @@
             <div class="col-lg-4">
               <div class="card card-dashboard-pageviews">
                 <div class="card-header">
-                  <h6 class="card-title">Page Views by Page Title</h6>
-                  <p class="card-text">This report is based on 100% of sessions.</p>
+                  <h6 class="card-title">The top 10 student</h6>
+                  {% comment %} <p class="card-text">This report is based on 100% of sessions.</p> {% endcomment %}
                 </div><!-- card-header -->
-                <div class="card-body">
+                <div class="card-body">{% for student in top_etudiant_data %}
                   <div class="az-list-item">
+                    
                     <div>
-                      <h6>Admin Home</h6>
-                      <span>/demo/admin/index.html</span>
+                      <h6>{{ student.name }}</h6>
+                      {% comment %} <span>/demo/admin/index.html</span> {% endcomment %}
                     </div>
                     <div>
-                      <h6 class="tx-primary">7,755</h6>
-                      <span>31.74% (-100.00%)</span>
+                      <h6 class="tx-primary">{{ student.points }}</h6>
+                      <span>Average Points {{ avg_etudiant_points|floatformat:2 }}%</span>
                     </div>
                   </div><!-- list-group-item -->
-                  <div class="az-list-item">
-                    <div>
-                      <h6>Form Elements</h6>
-                      <span>/demo/admin/forms.html</span>
-                    </div>
-                    <div>
-                      <h6 class="tx-primary">5,215</h6>
-                      <span>28.53% (-100.00%)</span>
-                    </div>
-                  </div><!-- list-group-item -->
-                  <div class="az-list-item">
-                    <div>
-                      <h6>Utilities</h6>
-                      <span>/demo/admin/util.html</span>
-                    </div>
-                    <div>
-                      <h6 class="tx-primary">4,848</h6>
-                      <span>25.35% (-100.00%)</span>
-                    </div>
-                  </div><!-- list-group-item -->
-                  <div class="az-list-item">
-                    <div>
-                      <h6>Form Validation</h6>
-                      <span>/demo/admin/validation.html</span>
-                    </div>
-                    <div>
-                      <h6 class="tx-primary">3,275</h6>
-                      <span>23.17% (-100.00%)</span>
-                    </div>
-                  </div><!-- list-group-item -->
-                  <div class="az-list-item">
-                    <div>
-                      <h6>Modals</h6>
-                      <span>/demo/admin/modals.html</span>
-                    </div>
-                    <div>
-                      <h6 class="tx-primary">3,003</h6>
-                      <span>22.21% (-100.00%)</span>
-                    </div>
-                  </div><!-- list-group-item -->
+                  {% endfor %}
                 </div><!-- card-body -->
               </div><!-- card -->
 
@@ -361,66 +337,80 @@
                   <h6 class="card-title">Sessions by Channel</h6>
                 </div><!-- card-header -->
                 <div class="card-body row">
-                  <div class="col-md-6 d-flex align-items-center">
-                    <div class="chart"><canvas id="chartDonut"></canvas></div>
+                  <div class="col-md-6 d-flex align-items-center" style="flex: 0 0 0; max-width: 100%">
+                    <canvas id="chartDonut" style="width: 350px; height: 350px;"></canvas>
                   </div><!-- col -->
-                  <div class="col-md-6 col-lg-5 mg-lg-l-auto mg-t-20 mg-md-t-0">
-                    <div class="az-traffic-detail-item">
-                      <div>
-                        <span>Organic Search</span>
-                        <span>1,320 <span>(25%)</span></span>
-                      </div>
-                      <div class="progress">
-                        <div class="progress-bar bg-purple wd-25p" role="progressbar" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
-                      </div><!-- progress -->
+               <!-- Existing Code -->
+               <div class="col-md-6 col-lg-5 mg-lg-l-auto mg-t-20 mg-md-t-0">
+                <h2>Top 4 Products by Quantity Ordered</h2>
+                {% for product in top_product_data %}
+                <div class="az-traffic-detail-item">
+                    <div>
+                        <span>{{ product.name }}</span>
+                        <span>{{ product.total_quantity }} <span>({{ product.total_quantity|floatformat:0 }}%)</span></span>
                     </div>
-                    <div class="az-traffic-detail-item">
-                      <div>
-                        <span>Email</span>
-                        <span>987 <span>(20%)</span></span>
-                      </div>
-                      <div class="progress">
-                        <div class="progress-bar bg-primary wd-20p" role="progressbar" aria-valuenow="20" aria-valuemin="0" aria-valuemax="100"></div>
-                      </div><!-- progress -->
-                    </div>
-                    <div class="az-traffic-detail-item">
-                      <div>
-                        <span>Referral</span>
-                        <span>2,010 <span>(30%)</span></span>
-                      </div>
-                      <div class="progress">
-                        <div class="progress-bar bg-info wd-30p" role="progressbar" aria-valuenow="30" aria-valuemin="0" aria-valuemax="100"></div>
-                      </div><!-- progress -->
-                    </div>
-                    <div class="az-traffic-detail-item">
-                      <div>
-                        <span>Social</span>
-                        <span>654 <span>(15%)</span></span>
-                      </div>
-                      <div class="progress">
-                        <div class="progress-bar bg-teal wd-15p" role="progressbar" aria-valuenow="15" aria-valuemin="0" aria-valuemax="100"></div>
-                      </div><!-- progress -->
-                    </div>
-                    <div class="az-traffic-detail-item">
-                      <div>
-                        <span>Other</span>
-                        <span>400 <span>(10%)</span></span>
-                      </div>
-                      <div class="progress">
-                        <div class="progress-bar bg-gray-500 wd-10p" role="progressbar" aria-valuenow="10" aria-valuemin="0" aria-valuemax="100"></div>
-                      </div><!-- progress -->
-                    </div>
-                  </div><!-- col -->
+                    <div class="progress">
+                        {% if total_quantity %}
+                        <div class="progress-bar bg-purple" role="progressbar" style="width: {{ product.total_quantity|floatformat:2 }}%;" aria-valuenow="{{ product.total_quantity }}" aria-valuemin="0" aria-valuemax="{{ total_quantity }}"></div>
+                        {% else %}
+                        <div class="progress-bar bg-purple" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="1"></div>
+                        {% endif %}
+                    </div><!-- progress -->
+                </div>
+                {% empty %}
+                <div class="az-traffic-detail-item">
+                    <div>No top products available</div>
+                </div>
+                {% endfor %}
+              </div><!-- col -->            
                 </div><!-- card-body -->
               </div><!-- card-dashboard-four -->
             </div><!-- col -->
           </div><!-- row -->
 
+         
+  <!-- Add Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+      document.addEventListener('DOMContentLoaded', function() {
+          var ctxDoughnut = document.getElementById('chartDonut').getContext('2d');
+          var chartData = JSON.parse('{{ chart_data|escapejs }}');
+
+          var myDoughnutChart = new Chart(ctxDoughnut, {
+              type: 'doughnut',
+              data: {
+                  labels: chartData.labels,
+                  datasets: [{
+                      data: chartData.data,
+                      backgroundColor: ['#ff6384', '#36a2eb', '#cc65fe'],  // Custom colors for the segments
+                      borderColor: '#fff',
+                      borderWidth: 1
+                  }]
+              },
+              options: {
+                  responsive: true,
+                  plugins: {
+                      legend: {
+                          position: 'top',
+                      },
+                      tooltip: {
+                          callbacks: {
+                              label: function(tooltipItem) {
+                                  return tooltipItem.label + ': ' + tooltipItem.raw;
+                              }
+                          }
+                      }
+                  }
+              }
+          });
+      });
+  </script>
+
           <div class="row row-sm mg-b-20 mg-lg-b-0">
             <div class="col-lg-5 col-xl-4">
               <div class="row row-sm">
                 <div class="col-md-6 col-lg-12 mg-b-20 mg-md-b-0 mg-lg-b-20">
-                  <div class="card card-dashboard-five">
+                  {% comment %} <div class="card card-dashboard-five">
                     <div class="card-header">
                       <h6 class="card-title">Acquisition</h6>
                       <span class="card-text">Tells you where your visitors originated from, such as search engines, social networks or website referrals.</span>
@@ -445,9 +435,9 @@
                         </div>
                       </div><!-- col -->
                     </div><!-- card-body -->
-                  </div><!-- card-dashboard-five -->
+                  </div><!-- card-dashboard-five --> {% endcomment %}
                 </div><!-- col -->
-                <div class="col-md-6 col-lg-12">
+                {% comment %} <div class="col-md-6 col-lg-12">
                   <div class="card card-dashboard-five">
                     <div class="card-header">
                       <h6 class="card-title">Sessions</h6>
@@ -474,72 +464,33 @@
                       </div><!-- col -->
                     </div><!-- card-body -->
                   </div><!-- card-dashboard-five -->
-                </div><!-- col -->
+                </div><!-- col --> {% endcomment %}
               </div><!-- row -->
             </div><!-- col-lg-3 -->
             <div class="col-lg-7 col-xl-8 mg-t-20 mg-lg-t-0">
               <div class="card card-table-one">
-                <h6 class="card-title">What pages do your users visit</h6>
-                <p class="az-content-text mg-b-20">Part of this date range occurs before the new users metric had been calculated, so the old users metric is displayed.</p>
+                <h6 class="card-title">Top 4 Professors by Points</h6>
                 <div class="table-responsive">
                   <table class="table">
                     <thead>
                       <tr>
-                        <th class="wd-5p">&nbsp;</th>
-                        <th class="wd-45p">Country</th>
-                        <th>Entrances</th>
-                        <th>Bounce Rate</th>
-                        <th>Exits</th>
+                        <th>Professor</th>
+                        <th>Total Points</th>
                       </tr>
                     </thead>
                     <tbody>
+                      {% for prof in top_prof_data %}
                       <tr>
-                        <td><i class="flag-icon flag-icon-us flag-icon-squared"></i></td>
-                        <td><strong>United States</strong></td>
-                        <td><strong>134</strong> (1.51%)</td>
-                        <td>33.58%</td>
-                        <td>15.47%</td>
+                        <td><strong>{{ prof.name }}</strong></td>
+                        <td>{{ prof.points }}</td>
                       </tr>
-                      <tr>
-                        <td><i class="flag-icon flag-icon-gb flag-icon-squared"></i></td>
-                        <td><strong>United Kingdom</strong></td>
-                        <td><strong>290</strong> (3.30%)</td>
-                        <td>9.22%</td>
-                        <td>7.99%</td>
-                      </tr>
-                      <tr>
-                        <td><i class="flag-icon flag-icon-in flag-icon-squared"></i></td>
-                        <td><strong>India</strong></td>
-                        <td><strong>250</strong> (3.00%)</td>
-                        <td>20.75%</td>
-                        <td>2.40%</td>
-                      </tr>
-                      <tr>
-                        <td><i class="flag-icon flag-icon-ca flag-icon-squared"></i></td>
-                        <td><strong>Canada</strong></td>
-                        <td><strong>216</strong> (2.79%)</td>
-                        <td>32.07%</td>
-                        <td>15.09%</td>
-                      </tr>
-                      <tr>
-                        <td><i class="flag-icon flag-icon-fr flag-icon-squared"></i></td>
-                        <td><strong>France</strong></td>
-                        <td><strong>216</strong> (2.79%)</td>
-                        <td>32.07%</td>
-                        <td>15.09%</td>
-                      </tr>
-                      <tr>
-                        <td><i class="flag-icon flag-icon-ph flag-icon-squared"></i></td>
-                        <td><strong>Philippines</strong></td>
-                        <td><strong>197</strong> (2.12%)</td>
-                        <td>32.07%</td>
-                        <td>15.09%</td>
-                      </tr>
+                      {% endfor %}
                     </tbody>
                   </table>
                 </div><!-- table-responsive -->
               </div><!-- card -->
             </div><!-- col-lg -->
+            
 
           </div><!-- row -->
         </div><!-- az-content-body -->
@@ -571,52 +522,55 @@
     </script>
     
     <script>
-        $(function(){
-            'use strict';
-    
-            // Extract group names and points from the Django data
-            var groupNames = groupPoints.map(group => group.name);
-            var groupPointsData = groupPoints.map(group => group.points);
-    
-            // Modify the Flot chart data to reflect points per group
-            var plot = $.plot('#flotChart', [{
-                data: groupPointsData.map((points, index) => [index, points]),  // Map points to x,y coordinates
-                color: '#007bff',
-                lines: {
-                    fillColor: { colors: [{ opacity: 0 }, { opacity: 0.2 }]}
-                }
-            }], {
-                series: {
-                    shadowSize: 0,
-                    lines: {
-                        show: true,
-                        lineWidth: 2,
-                        fill: true
-                    }
-                },
-                grid: {
-                    borderWidth: 0,
-                    labelMargin: 8
-                },
-                yaxis: {
-                    show: true,
-                    min: 0,
-                    ticks: [[0, ''], [20, '20 Points'], [40, '40 Points'], [60, '60 Points'], [80, '80 Points']],
-                    tickColor: '#eee'
-                },
-                xaxis: {
-                    show: true,
-                    ticks: groupNames.map((name, index) => [index, name]),  // Label each tick with the group name
-                    color: '#fff'
-                }
-            });
-        });
-    </script>
-    
+      $(function(){
+          'use strict';
+  
+          // Extract group names and points from the Django data
+          var groupNames = groupPoints.map(group => group.name);
+          var groupPointsData = groupPoints.map(group => group.points);
+  
+          // Modify the Flot chart data to reflect points per group as a Bar chart with Gradient
+          var plot = $.plot('#flotChart', [{
+              data: groupPointsData.map((points, index) => [index, points]),  // Map points to x,y coordinates
+              bars: {
+                  show: true,
+                  barWidth: 0.5,  // Adjust bar width for spacing
+                  align: 'center',
+                  fillColor: {
+                      colors: [
+                          { opacity: 1, color: "#007bff" },   // Start of gradient (lighter red)
+                          { opacity: 0.8, color: "#0056b3" }  // End of gradient (darker red)
+                      ]
+                  },
+                  lineWidth: 1,  // Optional: Add border to bars
+                  borderColor: '#900c3f'  // Optional: Set border color for bars
+              }
+          }], {
+              series: {
+                  shadowSize: 0
+              },
+              grid: {
+                  borderWidth: 0,
+                  labelMargin: 8
+              },
+              yaxis: {
+                  show: true,
+                  min: 0,
+                  max: Math.max(...groupPointsData) + 20,  // Create space above the highest point
+                  ticks: [[0, ''], [20, '20 Points'], [40, '40 Points'], [60, '60 Points'], [80, '80 Points'], [Math.max(...groupPointsData) + 20, '']],  // Add a tick for the maximum value
+                  tickColor: '#eee'
+              },
+              xaxis: {
+                  show: true,
+                  ticks: groupNames.map((name, index) => [index, name]),  // Label each tick with the group name
+                  color: '#fff',
+                  tickLength: 0  // Removes tick lines on x-axis
+              }
+          });
+      });
+  </script>
+  
 
     
-    
-
-
   </body>
 </html>

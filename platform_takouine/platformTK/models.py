@@ -80,6 +80,14 @@ class prof(models.Model):
 
     def __str__(self):
         return f"{self.prenom} {self.nom}"
+    
+    # method to calculate total points for professor
+    def total_points(self):
+        # Sum points from students of the professor's groups
+        total_points = sum(
+            etudiant.points for group in self.groups.all() for etudiant in group.etudiants.all()
+        )
+        return total_points
 
 
 
@@ -249,6 +257,7 @@ class Membership(models.Model):
     etudiant = models.ForeignKey(Etudiant, on_delete=models.SET_NULL, null=True, blank=True)  # Set null on delete
     group = models.ForeignKey(Groups, on_delete=models.SET_NULL, null=True, blank=True)  # Set null on delete
     pointsG = models.IntegerField(default=0)
+
 
     def __str__(self):
         return f"{self.etudiant if self.etudiant else 'No Etudiant'} in {self.group if self.group else 'No Group'}"
