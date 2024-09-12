@@ -16,9 +16,9 @@
 	{% endif %}
     <div class="login-container">
         <div class="login-card">
-            <img src="https://example.com/anime-character.png" alt="Anime Character" class="anime-image">
+            {% comment %} <img src="https://example.com/anime-character.png" alt="Anime Character" class="anime-image"> {% endcomment %}
             <h1 class="login-title">Welcome Back!</h1>
-            <p class="login-subtitle">Log in to your magical world</p>
+            <p class="login-subtitle">Log in to Platform Takouine</p>
             <form action="" method="POST">
                 {% csrf_token %}
                 <label for="username">Username</label>
@@ -70,7 +70,7 @@ body {
 
 .login-title {
     font-size: 28px;
-    color: #ff6f61;
+    color: #176b90;
     margin-bottom: 10px;
 }
 
@@ -109,7 +109,7 @@ input[type="text"], input[type="password"] {
 }
 
 input[type="text"]:focus, input[type="password"]:focus {
-    border-color: #ff6f61;
+    border-color: #176b90;
     outline: none;
 }
 
@@ -118,7 +118,7 @@ input[type="text"]:focus, input[type="password"]:focus {
     padding: 12px;
     border-radius: 8px;
     border: none;
-    background-color: #ff6f61;
+    background-color: #176b90;
     color: #fff;
     font-size: 18px;
     cursor: pointer;
@@ -127,7 +127,7 @@ input[type="text"]:focus, input[type="password"]:focus {
 }
 
 .login-button:hover {
-    background-color: #e65c50;
+    background-color: ##176b90;
     transform: scale(1.05);
 }
 

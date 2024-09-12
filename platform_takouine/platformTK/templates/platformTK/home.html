@@ -1,4 +1,6 @@
 {% load static  %}
+{% load custom_tags %}
+
 
 <!DOCTYPE html>
 <html lang="en">
@@ -60,9 +62,23 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarCollapse">
                 <div class="navbar-nav mx-auto">
-                    <a href="{% url "home" %}" class="nav-item nav-link active">Home</a>
-                    <a href="{% url "login_view" %}" class="nav-item nav-link">Login</a>
-                </div>
+                    <a href="{% url 'home' %}" class="nav-item nav-link active">Home</a>
+                
+                    {% if user.is_authenticated %}
+                        {% if is_etudiant %}
+                            <a href="{% url 'homeEtudiant' %}" class="nav-item nav-link">Home Etudiants</a>
+                        {% endif %}
+                        {% if is_prof %}
+                            <a href="{% url 'homeProf' %}" class="nav-item nav-link">Home Prof</a>
+                        {% endif %}
+                        {% if is_superadmin %}
+                            <a href="{% url 'add_groupe' %}" class="nav-item nav-link">Home SuperAdmin</a>
+                        {% endif %}
+                        <a href="{% url 'userLogout' %}" class="nav-item nav-link">Déconnexion</a>
+                    {% else %}
+                        <a href="{% url 'login_view' %}" class="nav-item nav-link">Login</a>
+                    {% endif %}
+                </div>                              
                 {% comment %} <a href="" class="btn btn-primary rounded-pill px-3 d-none d-lg-block">Join Us<i class="fa fa-arrow-right ms-3"></i></a> {% endcomment %}
             </div>
         </nav>
@@ -128,10 +144,10 @@
                         </div>
                         <div class="col-md-6 text-center text-md-end">
                             <div class="footer-menu">
-                                <a href="">Home</a>
+                                {% comment %} <a href="">Home</a>
                                 <a href="">Cookies</a>
                                 <a href="">Help</a>
-                                <a href="">FQAs</a>
+                                <a href="">FQAs</a> {% endcomment %}
                             </div>
                         </div>
                     </div>

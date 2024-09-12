@@ -16,9 +16,17 @@ import json
 
 
 
+def home(request):  
+    context = {}
+    
+    # Check if the user is authenticated
+    if request.user.is_authenticated:
+        context['is_etudiant'] = request.user.groups.filter(name='Etudiants').exists()
+        context['is_prof'] = request.user.groups.filter(name='Prof').exists()
+        context['is_superadmin'] = request.user.groups.filter(name='SuperAdmin').exists()
 
-def home(requset):
-    return render(requset,"platformTK/home.html")
+    return render(request, "platformTK/home.html", context)  
+
 
 
 
@@ -36,7 +44,7 @@ def login_view(request):
             elif request.user.groups.filter(name='Prof').exists():
                 return redirect('/homeProf')
             elif request.user.groups.filter(name='SuperAdmin').exists():
-                return redirect('/homeSuperAdmin')
+                return redirect('/add_groupe')
         else:
             messages.error(request, 'Invalid username or password.')
     return render(request, "platformTK/login.html")
@@ -56,13 +64,21 @@ def userLogout(request):
 @login_required(login_url='login')
 @allowedUsers(allowedGroups=['Etudiants'])
 def homeEtudiant(request):
-    etudiant = get_object_or_404(Etudiant, user=request.user)
-    
+    # Ensure that the logged-in user has an associated Etudiant object
+    try:
+        etudiant = Etudiant.objects.get(user=request.user)
+    except Etudiant.DoesNotExist:
+        # Handle the case where the user is not associated with an Etudiant
+        messages.error(request, "You are not associated with any student profile.")
+        return redirect('home')
+
+    # Get the sections for the student
     sections = Sections.objects.filter(etudiants=etudiant)
-    
+
+    # Fetch competitions related to the student's sections
     competitions = Competitions.objects.filter(sections__in=sections).distinct()
-    
-    # Prepare the competition data
+
+    # Prepare competition data
     competition_section_data = []
     for competition in competitions:
         for section in sections.filter(competition=competition):
@@ -78,31 +94,28 @@ def homeEtudiant(request):
                 'points': section.points,
                 'rank': section_rank,
             })
-    
+
     # Fetch all groups that the student is a part of
-    etudiant = request.user.etudiant
-    
-    # Get all groups that the student is a part of
     memberships = Membership.objects.filter(etudiant=etudiant).select_related('group')
-    
+
     group_data = []
     for membership in memberships:
         group = membership.group
         etudiant_pointsG = membership.pointsG
-        
+
         # Get all memberships in the group, ordered by pointsG (descending)
         memberships_in_group = Membership.objects.filter(group=group).order_by('-pointsG')
-        
+
         # Calculate the rank of the student in this specific group
         rank = list(memberships_in_group).index(membership) + 1
-        
+
         group_data.append({
             'group': group,
             'points': etudiant_pointsG,
             'rank': rank,
-            'total_students': group.etudiants.count()  # Get the total number of students from the group
+            'total_students': group.etudiants.count()  # Get the total number of students in the group
         })
-    
+
     context = {
         'etudiant': etudiant,
         'competition_section_data': competition_section_data,
@@ -110,7 +123,6 @@ def homeEtudiant(request):
     }
 
     return render(request, "platformTK/Etudiant/homeEtudiant.html", context)
-
 
 
 
@@ -676,22 +688,45 @@ def Répartition_points(request, code_group):
     group = get_object_or_404(Groups, code_group=code_group)
     students = group.etudiants.all()
     memberships = Membership.objects.filter(group=group)
+    
+    # Create a dictionary of pointsG by student ID
     memberships_dict = {membership.etudiant.id: membership.pointsG for membership in memberships}
 
-    # Add pointsG to each student and sort
+    # Add pointsG to each student dynamically
+    students_with_points = []
     for student in students:
-        student.pointsG = memberships_dict.get(student.id, 0)
+        pointsG = memberships_dict.get(student.id, 0)
+        students_with_points.append((student, pointsG))
 
-    students = sorted(students, key=lambda s: s.pointsG, reverse=True)
+    # Sort students by pointsG
+    students_with_points = sorted(students_with_points, key=lambda x: x[1], reverse=True)
+
+    # Extract sorted students and their pointsG
+    students_sorted, points_sorted = zip(*students_with_points) if students_with_points else ([], [])
+
+    # Apply filters based on query parameters
+    prenom_filter = request.GET.get('prenom', '')
+    nom_filter = request.GET.get('nom', '')
+    code_filter = request.GET.get('code', '')
+
+    if prenom_filter:
+        students_sorted = [s for s in students_sorted if prenom_filter.lower() in s.prenom.lower()]
+    if nom_filter:
+        students_sorted = [s for s in students_sorted if nom_filter.lower() in s.nom.lower()]
+    if code_filter:
+        students_sorted = [s for s in students_sorted if code_filter.lower() in s.EtudiantCode.lower()]
+
+    # Create a dictionary of points for filtered students
+    memberships_dict_filtered = dict(zip([s.id for s in students_sorted], [points_sorted[students_with_points.index((s, p))] for s, p in students_with_points if s in students_sorted]))
 
     return render(request, "platformTK/Prof/Répartition_points.html", {
         "group": group,
-        "students": students,
-        "memberships_dict": memberships_dict
+        "students": students_sorted,
+        "memberships_dict": memberships_dict_filtered,
     })
-
-
-
+    
+    
+    
 
 #Another way for do this
 
@@ -787,33 +822,80 @@ def homeSuperAdmin(requset):
 
 
 
-def add_groupe(requset):
+
+from django.core.paginator import Paginator
+
+def add_groupe(request):
+    # Get filter parameters
+    name_filter = request.GET.get('name', '')
+    code_group_filter = request.GET.get('code_group', '')
+
+    # Apply filters
     etudiants = Etudiant.objects.all()
     profs = prof.objects.all()
-    groups = Groups.objects.all()
-    
-    return render(requset,"platformTK/SuperAdmin/add_groupe.html", {
-        'groups': groups,
+    groups = Groups.objects.order_by('-date_created')
+
+    if name_filter:
+        groups = groups.filter(name__icontains=name_filter)
+    if code_group_filter:
+        groups = groups.filter(code_group__icontains=code_group_filter)
+
+    # Pagination
+    paginator = Paginator(groups, 5)  # Show 5 groups per page
+    page_number = request.GET.get('page', 1)
+    paginated_groups = paginator.get_page(page_number)
+
+    return render(request, "platformTK/SuperAdmin/add_groupe.html", {
+        'groups': paginated_groups,
         'etudiants': etudiants,
-        'profs': profs
+        'profs': profs,
+        'name_filter': name_filter,
+        'code_group_filter': code_group_filter,
     })
 
 
 
 
-def add_student(requset):
-    etudiants = Etudiant.objects.all()
-    profs = prof.objects.all()
+
+def add_student(request):
+    # Get filter parameters
+    prenom_filter = request.GET.get('prenom', '')
+    nom_filter = request.GET.get('nom', '')
+    etudiant_code_filter = request.GET.get('etudiant_code', '')
+
+    # Apply filters
+    etudiants = Etudiant.objects.order_by('-date_created')
+
+    if prenom_filter:
+        etudiants = etudiants.filter(prenom__icontains=prenom_filter)
+    if nom_filter:
+        etudiants = etudiants.filter(nom__icontains=nom_filter)
+    if etudiant_code_filter:
+        etudiants = etudiants.filter(EtudiantCode__icontains=etudiant_code_filter)
+
+    # Pagination
+    paginator = Paginator(etudiants, 5)  # Show 5 students per page
+    page_number = request.GET.get('page', 1)
+    paginated_etudiants = paginator.get_page(page_number)
+
+    # Get all groups and profs
     groups = Groups.objects.all()
-    return render(requset,"platformTK/SuperAdmin/add_student.html", {
+    profs = prof.objects.all()
+
+    return render(request, "platformTK/SuperAdmin/add_student.html", {
         'groups': groups,
-        'etudiants': etudiants,
-        'profs': profs
+        'etudiants': paginated_etudiants,
+        'profs': profs,
+        'prenom_filter': prenom_filter,
+        'nom_filter': nom_filter,
+        'etudiant_code_filter': etudiant_code_filter,
     })
 
 
 
 
+from django.contrib import messages
+from django.shortcuts import render, redirect
 
 def group_list(request):
     if request.method == 'POST':
@@ -822,28 +904,37 @@ def group_list(request):
         student_ids_str = request.POST.get('students', '')  # Get the comma-separated student IDs as a string
         prof_ids_str = request.POST.get('profs', '')  # Get the comma-separated professor IDs as a string
 
-        # Convert the comma-separated strings into lists of integers
-        student_ids = [int(id) for id in student_ids_str.split(',') if id.isdigit()]
-        prof_ids = [int(id) for id in prof_ids_str.split(',') if id.isdigit()]
+        try:
+            # Convert the comma-separated strings into lists of integers
+            student_ids = [int(id) for id in student_ids_str.split(',') if id.isdigit()]
+            prof_ids = [int(id) for id in prof_ids_str.split(',') if id.isdigit()]
 
-        # Create and save the new group
-        group = Groups(name=group_name, description=description)
-        group.save()
+            # Create and save the new group
+            group = Groups(name=group_name, description=description)
+            group.save()
 
-        # Add students and professors to the group
-        students = Etudiant.objects.filter(id__in=student_ids)
-        profs = prof.objects.filter(id__in=prof_ids)
-        
-        group.etudiants.set(students)
-        group.profs.set(profs)
-        group.save()
+            # Add students and professors to the group
+            students = Etudiant.objects.filter(id__in=student_ids)
+            profs = prof.objects.filter(id__in=prof_ids)
+            
+            group.etudiants.set(students)
+            group.profs.set(profs)
+            group.save()
 
-        # Create Membership records for each student added to the group, with pointsG initialized to 0
-        for student in students:
-            Membership.objects.create(etudiant=student, group=group, pointsG=0)
+            # Create Membership records for each student added to the group, with pointsG initialized to 0
+            for student in students:
+                Membership.objects.create(etudiant=student, group=group, pointsG=0)
+
+            # Success message
+            messages.success(request, 'Group created successfully!')
+
+        except Exception as e:
+            # Handle and log the error, if needed
+            messages.error(request, f'Error occurred while creating the group: {str(e)}')
 
         return redirect('add_groupe')  # Ensure 'add_groupe' is defined in your URL patterns
 
+    # If GET request, fetch all groups, students, and professors
     etudiants = Etudiant.objects.all()
     profs = prof.objects.all()
     groups = Groups.objects.all()
@@ -855,7 +946,8 @@ def group_list(request):
     })
 
 
-# views.py
+
+
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages 
 from .models import Groups
@@ -875,9 +967,9 @@ def edit_group(request):
         else:
             messages.error(request, 'Please provide all required fields.')
         
-        return redirect('add_groupe')  # Change to your desired redirect URL
+        return redirect('add_groupe')  #
 
-    return redirect('add_groupe')  # Handle GET request or invalid form submission
+    return redirect('add_groupe') 
 
 
 
@@ -987,14 +1079,18 @@ def add_etudiant(request):
         avatar = request.FILES.get('avatar')
         group_id = request.POST.get('group')
 
-        # print("Group ID:", group_id)  # Debugging line
-
+        # Check if required fields are provided
         if not username or not password or not prenom or not nom or not date_de_naissance or not email:
-            return render(request, "platformTK/SuperAdmin/add_student.html", {'error': 'Please fill in all required fields.', 'groups': groups})
+            return render(request, "platformTK/SuperAdmin/add_student.html", {
+                'error': 'Please fill in all required fields.',
+                'groups': groups
+            })
 
         try:
+            # Create a new user for the student
             user = User.objects.create_user(username=username, password=password)
 
+            # Create the Etudiant object
             etudiant = Etudiant.objects.create(
                 user=user,
                 prenom=prenom,
@@ -1005,20 +1101,31 @@ def add_etudiant(request):
                 avatar=avatar
             )
 
+            # Assign the student to the selected group if a group is provided
             if group_id:
                 group = Groups.objects.get(id=group_id)
                 group.etudiants.add(etudiant)
-                
+
+                # Also add the student to the Membership model with the initial points (0)
+                Membership.objects.create(etudiant=etudiant, group=group, pointsG=0)
+
+            # Add the student to the 'Etudiants' group (Django's Group model for permissions)
             group = Group.objects.get(name="Etudiants")
             user.groups.add(group)
 
+            # Success message
             messages.success(request, 'Etudiant added successfully!')
             return redirect('add_student')
 
         except Exception as e:
-            return render(request, "platformTK/SuperAdmin/add_student.html", {'error': str(e), 'groups': groups})
+            # Handle any errors and display them on the page
+            return render(request, "platformTK/SuperAdmin/add_student.html", {
+                'error': str(e),
+                'groups': groups
+            })
 
     return render(request, "platformTK/SuperAdmin/add_student.html", {'groups': groups})
+
 
 
 
@@ -1194,20 +1301,43 @@ def add_students_from_file(request):
 
 
 
-def add_prof(requset):
-    etudiants = Etudiant.objects.all()
-    profs = prof.objects.all()
+
+def add_prof(request):
+    # Get filter parameters
+    prenom_filter = request.GET.get('prenom', '')
+    nom_filter = request.GET.get('nom', '')
+    prof_code_filter = request.GET.get('prof_code', '')
+
+    # Apply filters
+    profs = prof.objects.order_by('-date_created')
+
+    if prenom_filter:
+        profs = profs.filter(prenom__icontains=prenom_filter)
+    if nom_filter:
+        profs = profs.filter(nom__icontains=nom_filter)
+    if prof_code_filter:
+        profs = profs.filter(ProfCode__icontains=prof_code_filter)
+
+    # Pagination
+    paginator = Paginator(profs, 5)  # Show 5 professors per page
+    page_number = request.GET.get('page', 1)
+    paginated_profs = paginator.get_page(page_number)
+
+    # Get all groups and etudiants
     groups = Groups.objects.all()
-    return render(requset,"platformTK/SuperAdmin/add_prof.html", {
+    etudiants = Etudiant.objects.all()
+
+    return render(request, "platformTK/SuperAdmin/add_prof.html", {
         'groups': groups,
         'etudiants': etudiants,
-        'profs': profs,
+        'profs': paginated_profs,
+        'prenom_filter': prenom_filter,
+        'nom_filter': nom_filter,
+        'prof_code_filter': prof_code_filter,
     })
-    
-    
-    
-    
-    
+
+
+
 
 
 
@@ -1467,15 +1597,35 @@ def upload_prof_from_file(request):
 
 @login_required(login_url='login')
 def store_admin(request):
-    products = Product.objects.all()  # Fetch all products (or filter as needed)
-    categories = Category.objects.all()  # Fetch all categories
+    # Get filter parameters
+    name_filter = request.GET.get('name', '')
+    category_filter = request.GET.get('category', '')
+
+    # Apply filters
+    products = Product.objects.order_by('-date_added')
     
-    return render(request,"platformTK/SuperAdmin/store_admin.html", {
-        'products': products,
-        'categories': categories
+    if name_filter:
+        products = products.filter(name__icontains=name_filter)
+    if category_filter:
+        products = products.filter(category__name__icontains=category_filter)
+
+    # Pagination
+    paginator = Paginator(products, 5) 
+    page_number = request.GET.get('page', 1)
+    paginated_products = paginator.get_page(page_number)
+
+    # Get all categories
+    categories = Category.objects.all()
+
+    return render(request, "platformTK/SuperAdmin/store_admin.html", {
+        'products': paginated_products,
+        'categories': categories,
+        'name_filter': name_filter,
+        'category_filter': category_filter,
     })
-
-
+    
+    
+    
 
 
 @login_required(login_url='login')
@@ -1558,11 +1708,29 @@ def delete_product(request, product_code):
 
 
 
-@login_required(login_url='login')  
+@login_required(login_url='login')
 def commandes_admin(request):
-    commandes = Commande.objects.all()
+    # Get filter parameters
+    commande_code_filter = request.GET.get('commande_code', '')
+    status_filter = request.GET.get('status', '')
+
+    # Apply filters
+    commandes = Commande.objects.order_by('-date_ordered')
+    
+    if commande_code_filter:
+        commandes = commandes.filter(commande_code__icontains=commande_code_filter)
+    if status_filter:
+        commandes = commandes.filter(status=status_filter)
+
+    # Pagination
+    paginator = Paginator(commandes, 10)  # Show 10 commandes per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     context = {
-        'commandes': commandes,
+        'page_obj': page_obj,
+        'commande_code_filter': commande_code_filter,
+        'status_filter': status_filter,
     }
     return render(request, "platformTK/SuperAdmin/commandes_admin.html", context)
 

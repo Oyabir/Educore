@@ -1,5 +1,4 @@
 {% extends "platformTK/SuperAdmin/HomeBase.html" %}
-
 {% load static %}
 
 {% block content %}
@@ -7,25 +6,51 @@
 
 <div class="container mt-5">
     {% if messages %}
+    <div id="message-container">
         {% for message in messages %}
             {% if message.tags == 'error' %}
-                <div class="alert alert-danger" role="alert">
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
                     {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             {% endif %}
-        {% endfor %}
-    {% endif %}
-
-    {% if messages %}
-        {% for message in messages %}
             {% if message.tags == 'success' %}
-                <div class="alert alert-success" role="alert">
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
                     {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             {% endif %}
         {% endfor %}
-    {% endif %}
-   
+    </div>
+{% endif %}
+
+<script>
+    setTimeout(function() {
+        var messageContainer = document.getElementById('message-container');
+        if (messageContainer) {
+            messageContainer.style.display = 'none';
+        }
+    }, 5000);  
+</script>
+
+    <!-- Filter Form Start -->
+    <div class="mb-4">
+        <form method="get" class="d-flex">
+            <!-- Filter by Commande Code -->
+            <input type="text" class="form-control me-2" style="height: 42px;" name="commande_code" placeholder="Filter by Commande Code" value="{{ commande_code_filter }}">
+
+            <!-- Filter by Status -->
+            <select class="form-control me-2" style="height: 42px;" name="status">
+                <option value="">Filter by Status</option>
+                <option value="Pending" {% if status_filter == 'Pending' %}selected{% endif %}>Pending</option>
+                <option value="Completed" {% if status_filter == 'Completed' %}selected{% endif %}>Completed</option>
+                <option value="Cancelled" {% if status_filter == 'Cancelled' %}selected{% endif %}>Cancelled</option>
+            </select>
+            <button type="submit" style="height: 42px;" class="btn btn-primary">Apply</button>&nbsp;
+            <a href="{% url 'commandes_admin' %}" style="height: 42px;" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+    <!-- Filter Form End -->
 
     <div class="container py-5">
         <h1 class="mb-4">Order List</h1>
@@ -37,21 +62,18 @@
                     <th>Order ID</th>
                     <th>Etudiant</th>
                     <th>Product</th>
-                    {% comment %} <th>Quantity</th> {% endcomment %}
                     <th>Total Price</th>
                     <th>Status</th>
                     <th>Code commande</th>
-                    {% comment %} <th>Date</th> {% endcomment %}
                     <th>Action</th>
                 </tr>
             </thead>
             <tbody>
-                {% for commande in commandes %}
+                {% for commande in page_obj %}
                 <tr>
-                    <td>{{ commande.id }}</td>
+                    <td>{{ forloop.counter }}</td>
                     <td>{{ commande.etudiant.prenom }} {{ commande.etudiant.nom }}</td>
-                    <td>{{ commande.product }}</td>
-                    {% comment %} <td>{{ commande.quantity }}</td> {% endcomment %}
+                    <td>{{ commande.product.name }}</td>
                     <td>${{ commande.total_price }}</td>
                     <td>
                         {% if commande.status == 'Pending' %}
@@ -63,22 +85,60 @@
                         {% else %}
                         <span class="badge bg-secondary text-white">Unknown</span>
                         {% endif %}
-                    </td> {% comment %} <td>{{ commande.get_status_display }}</td>{% endcomment %}
+                    </td>
                     <td>{{ commande.commande_code }}</td>
-                    {% comment %} <td>{{ commande.date_ordered|date:"M d, Y" }}</td> {% endcomment %}
                     <td>
                         {% if commande.status == 'Completed' %}
                         <button class="btn btn-primary btn-sm" style="background-color: #176b90;">Status Completed</button>
                         {% elif commande.status == 'Cancelled' %}
-                        <button class="btn btn-primary btn-sm" style="background-color: #176b90;" >Status Cancelled</button>
+                        <button class="btn btn-primary btn-sm" style="background-color: #176b90;">Status Cancelled</button>
                         {% else %}
                            <button class="btn btn-primary btn-sm" style="background-color: #176b90;" onclick="openStatusModal('{{ commande.id }}', '{{ commande.status }}')">Change Status</button>
                         {% endif %}
                     </td>
                 </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center">No orders found.</td>
+                </tr>
                 {% endfor %}
             </tbody>
         </table>
+
+        <!-- Pagination Controls -->
+        <div class="d-flex justify-content-center mt-4">
+            <nav>
+                <ul class="pagination">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?{% if commande_code_filter %}commande_code={{ commande_code_filter }}&{% endif %}{% if status_filter %}status={{ status_filter }}&{% endif %}page=1">First</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?{% if commande_code_filter %}commande_code={{ commande_code_filter }}&{% endif %}{% if status_filter %}status={{ status_filter }}&{% endif %}page={{ page_obj.previous_page_number }}">Previous</a>
+                        </li>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                            <li class="page-item active" aria-current="page"><span class="page-link">{{ num }}</span></li>
+                        {% else %}
+                            <li class="page-item"><a class="page-link" href="?{% if commande_code_filter %}commande_code={{ commande_code_filter }}&{% endif %}{% if status_filter %}status={{ status_filter }}&{% endif %}page={{ num }}">{{ num }}</a></li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?{% if commande_code_filter %}commande_code={{ commande_code_filter }}&{% endif %}{% if status_filter %}status={{ status_filter }}&{% endif %}page={{ page_obj.next_page_number }}">Next</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?{% if commande_code_filter %}commande_code={{ commande_code_filter }}&{% endif %}{% if status_filter %}status={{ status_filter }}&{% endif %}page={{ page_obj.paginator.num_pages }}">Last</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
 
     <!-- Status Change Modal -->
 <div id="statusModal" class="modal">
@@ -121,16 +181,26 @@
     }
 </script>
 
+
 <style>
+    .page-item.active .page-link {
+        z-index: 3;
+        color: #fff;
+        background-color: #176b90;
+        border-color: #176b90;
+    }
+    .page-link {
+        color: #176b90;
+    }
+
     .modal-header {
     background-color: #30bb96;
-}
-.btn-primary {
-    background-color: #176b90;
-    color: #ffffff;
-}
+    }
+    .btn-primary {
+        background-color: #176b90;
+        color: #ffffff;
+    }
 </style>
-
 
     
 {% endblock %}

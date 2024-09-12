@@ -1,44 +1,59 @@
 {% extends "platformTK/Prof/HomeBase.html" %}
-
 {% load static %}
+{% load custom_filters %}
 
 {% block content %}
 {% include 'platformTK/Prof/navbar.html' %}
- 
-    <!-- Classes Start -->
-        <div class="container-xxl py-5">
-            <div class="container">
-                <div class="text-center mx-auto mb-5 wow fadeInUp" data-wow-delay="0.1s" style="max-width: 600px;">
-                    <h1 class="mb-3">Students of {{group.name}}</h1>
-                    {% comment %} <p>Eirmod sed ipsum dolor sit rebum labore magna erat. Tempor ut dolore lorem kasd vero ipsum sit eirmod sit. Ipsum diam justo sed rebum vero dolor duo.</p> {% endcomment %}
-                </div>
-                <div class="row g-4">
-                    {% load custom_filters %}
 
-                    {% for student in students %}
-                        <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
-                            <div class="classes-item">
-                                <div class="bg-light rounded-circle w-75 mx-auto p-3">
-                                    <img class="img-fluid rounded-circle" src="img/classes-1.jpg" alt="">
-                                </div>
-                                <div class="bg-light rounded p-4 pt-5 mt-n5">
-                                    <a class="d-block text-center h3 mt-3 mb-4" href="">{{ student.prenom }} {{ student.nom }}</a>
-                                    <div class="d-flex align-items-center justify-content-between mb-4">
-                                        <div class="d-flex align-items-center">
-                                            {% if student.avatar %}
-                                            <img class="rounded-circle flex-shrink-0" src="{{ student.avatar.url }}" alt="" style="width: 55px;height: 55px;">
-                                            {% else %}
-                                            <img class="rounded-circle flex-shrink-0" src="{% static 'img/user.jpg' %}" alt="" style="width: 55px;height: 55px;">
-                                            {% endif %}
-                                            <div class="ms-3">
-                                                <h6 class="text-primary mb-1" style="color: #30bb96 !important;">{{ student.prenom }} {{ student.nom }}</h6>
-                                                <small>{{ group.name }}</small>
-                                            </div> 
-                                        </div>
-                                        <span class="bg-primary text-white rounded-pill py-2 px-3" style="background-color: #176b90 !important;">
-                                            ${{ memberships_dict|get_item:student.id }}
-                                        </span>
+    <!-- Filter Form Start -->
+    <div class="container-xxl py-5">
+        <div class="container">
+            <!-- Students List Start -->
+            <div class="text-center mx-auto mb-5 wow fadeInUp" data-wow-delay="0.1s" style="max-width: 600px;">
+                <h1 class="mb-3">Students of {{ group.name }}</h1>
+            </div>
+            <form method="get" class="mb-4">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <input type="text" class="form-control" name="prenom" placeholder="Filter by Prenom" value="{{ request.GET.prenom }}">
+                    </div>
+                    <div class="col-md-4">
+                        <input type="text" class="form-control" name="nom" placeholder="Filter by Nom" value="{{ request.GET.nom }}">
+                    </div>
+                    <div class="col-md-4">
+                        <input type="text" class="form-control" name="code" placeholder="Filter by Code Etudiant" value="{{ request.GET.code }}">
+                    </div>
+                    <div class="col-md-12">
+                        <button type="submit" class="btn btn-primary" style="background-color: #176b90;border-color: #176b90;">Apply Filters</button>
+                        <a href="{% url 'Répartition_points' code_group=group.code_group %}" class="btn btn-secondary">Cancel Filter</a>
+                    </div>
+                </div>
+            </form>
+            <div class="row g-4">
+                {% for student in students %}
+                    <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
+                        <div class="classes-item">
+                            <div class="bg-light rounded-circle w-75 mx-auto p-3">
+                                <img class="img-fluid rounded-circle" src="img/classes-1.jpg" alt="">
+                            </div>
+                            <div class="bg-light rounded p-4 pt-5 mt-n5">
+                                <a class="d-block text-center h3 mt-3 mb-4" href="">{{ student.prenom }} {{ student.nom }}</a>
+                                <div class="d-flex align-items-center justify-content-between mb-4">
+                                    <div class="d-flex align-items-center">
+                                        {% if student.avatar %}
+                                        <img class="rounded-circle flex-shrink-0" src="{{ student.avatar.url }}" alt="" style="width: 55px;height: 55px;">
+                                        {% else %}
+                                        <img class="rounded-circle flex-shrink-0" src="{% static 'img/user.jpg' %}" alt="" style="width: 55px;height: 55px;">
+                                        {% endif %}
+                                        <div class="ms-3">
+                                            <h6 class="text-primary mb-1" style="color: #30bb96 !important;">{{ student.prenom }} {{ student.nom }}</h6>
+                                            <small>{{ student.EtudiantCode }}</small>
+                                        </div> 
                                     </div>
+                                    <span class="bg-primary text-white rounded-pill py-2 px-3" style="background-color: #176b90 !important;">
+                                        ${{ memberships_dict|get_item:student.id }}
+                                    </span>
+                                </div>
                                 <div class="row g-1">
                                     <div class="col-4">
                                         <div class="border-top border-3 border-primary pt-2" style="border-color: #103741 !important;">
@@ -49,17 +64,14 @@
                                                         data-bs-toggle="modal" 
                                                         data-bs-target="#addItemModal" 
                                                         data-student-id="{{ student.id }}" 
-                                                        data-group-id="{{ group.id }}"  style="
-                                                        background-color: #176b90 !important;">Add</button>
+                                                        data-group-id="{{ group.id }}" 
+                                                        style="background-color: #176b90 !important;">Add</button>
                                             </small>
-                                
                                         </div>
                                     </div>
+                                    <div class="col-4"></div>
                                     <div class="col-4">
-                                       
-                                    </div>
-                                    <div class="col-4">
-                                        <div class="border-top border-3 border-warning pt-2"  style="border-color: #103741 !important;">
+                                        <div class="border-top border-3 border-warning pt-2" style="border-color: #103741 !important;">
                                             <h6 class="text-warning mb-1">Minus:</h6>
                                             <small>
                                                 <button type="button" 
@@ -67,8 +79,8 @@
                                                         data-bs-toggle="modal" 
                                                         data-bs-target="#minusItemModal" 
                                                         data-student-id="{{ student.id }}" 
-                                                        data-group-id="{{ group.id }}"  style="
-                                                        background-color: #176b90 !important;">Minus</button>
+                                                        data-group-id="{{ group.id }}" 
+                                                        style="background-color: #176b90 !important;">Minus</button>
                                             </small>                                    
                                         </div>
                                     </div>
@@ -77,7 +89,13 @@
                         </div>
                     </div>
                 {% endfor %}
-                
+                {% if not students %}
+                <p>No students found matching your search.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
 
                     <style>
                         .win-animation {

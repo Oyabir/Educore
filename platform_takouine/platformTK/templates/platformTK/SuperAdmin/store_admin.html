@@ -1,5 +1,4 @@
 {% extends "platformTK/SuperAdmin/HomeBase.html" %}
-
 {% load static %}
 
 {% block content %}
@@ -7,80 +6,139 @@
 
 <div class="container mt-5">
     {% if messages %}
-	{% for message in messages %}
-	  {% if message.tags == 'error' %}
-		<div class="alert alert-danger" role="alert">
-		  {{ message }}
-		</div>
-	  {% endif %}
-	{% endfor %}
-	{% endif %}
+    <div id="message-container">
+        {% for message in messages %}
+            {% if message.tags == 'error' %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endif %}
+            {% if message.tags == 'success' %}
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+{% endif %}
 
-	{% if messages %}
-  {% for message in messages %}
-      {% if message.tags == 'success' %}
-        <div class="alert alert-success" role="alert">
-          {{ message }}
-        </div>
-      {% endif %}
-    {% endfor %}
-  {% endif %}
-	
-<div class="container py-5">
-    <h1 class="mb-4">Product List</h1>
-    
+<script>
+    setTimeout(function() {
+        var messageContainer = document.getElementById('message-container');
+        if (messageContainer) {
+            messageContainer.style.display = 'none';
+        }
+    }, 5000); 
+</script>
+
+    <!-- Filter Form Start -->
+    <div class="mb-4">
+        <form method="get" class="d-flex">
+            <input type="text" class="form-control me-2" style="height: 42px;" name="name" placeholder="Filter by Name" value="{{ name_filter }}">
+            <!-- Category Dropdown -->
+            <select class="form-control me-2" name="category" style="height: 42px;">
+                <option value="">Filter by Category</option>
+                {% for category in categories %}
+                    <option value="{{ category.name }}" {% if category.name == category_filter %}selected{% endif %}>
+                        {{ category.name }}
+                    </option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="btn btn-primary" style="height: 42px;">Apply</button>&nbsp;
+            <a href="{% url 'store_admin' %}" class="btn btn-secondary" style="height: 42px;">Cancel</a>
+
+        </form>
+    </div>
+    <!-- Filter Form End -->
+
     <!-- Button to Open the Add Product Modal -->
     <button type="button" class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addProductModal" style="background-color: #176b90;">
         Add New Product
     </button>
     <button class="btn btn-primary mb-3" onclick="openCategoryModal()" style="background-color: #176b90;">Add Category</button>
 
+    <!-- Product List Table -->
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Category</th>
+                <th>Price</th>
+                <th>Stock</th>
+                <th>Image</th>
+                <th>Date Added</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for product in products %}
+            <tr>
+                <td>{{ product.name }}</td>
+                <td>{{ product.description|truncatechars:50 }}</td>
+                <td>{{ product.category.name }}</td>
+                <td>${{ product.price }}</td>
+                <td>{{ product.stock }}</td>
+                <td>
+                    {% if product.image %}
+                        <img src="{{ product.image.url }}" alt="{{ product.name }}" style="width: 100px;">
+                    {% else %}
+                        No Image
+                    {% endif %}
+                </td>
+                <td>{{ product.date_added|date:"M d, Y" }}</td>
+                <td>
+                    <!-- Edit Button -->
+                    <button type="button" class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#editProductModal{{ product.ProductCode }}">
+                        Edit
+                    </button>
+                    
+                    <!-- Delete Button -->
+                    <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal{{ product.ProductCode }}">
+                        Delete
+                    </button>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="8" class="text-center">No products found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 
-   <!-- Product List Table -->
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Description</th>
-            <th>Category</th>
-            <th>Price</th>
-            <th>Stock</th>
-            <th>Image</th>
-            <th>Date Added</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for product in products %}
-        <tr>
-            <td>{{ product.name }}</td>
-            <td>{{ product.description|truncatechars:50 }}</td>
-            <td>{{ product.category.name }}</td>
-            <td>${{ product.price }}</td>
-            <td>{{ product.stock }}</td>
-            <td>
-                {% if product.image %}
-                    <img src="{{ product.image.url }}" alt="{{ product.name }}" style="width: 100px;">
-                {% else %}
-                    No Image
+    <!-- Pagination Controls -->
+    <div class="d-flex justify-content-center mt-4">
+        <nav>
+            <ul class="pagination">
+                {% if products.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1{% if name_filter %}&name={{ name_filter }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}">First</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ products.previous_page_number }}{% if name_filter %}&name={{ name_filter }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}">Previous</a>
+                    </li>
                 {% endif %}
-            </td>
-            <td>{{ product.date_added|date:"M d, Y" }}</td>
-            <td>
-                <!-- Edit Button -->
-                <button type="button" class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#editProductModal{{ product.ProductCode }}">
-                    Edit
-                </button>
-                
-                <!-- Delete Button -->
-                <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal{{ product.ProductCode }}">
-                    Delete
-                </button>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+                {% for num in products.paginator.page_range %}
+                    <li class="page-item {% if num == products.number %}active{% endif %}">
+                        <a class="page-link" href="?page={{ num }}{% if name_filter %}&name={{ name_filter }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}">{{ num }}</a>
+                    </li>
+                {% endfor %}
+                {% if products.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ products.next_page_number }}{% if name_filter %}&name={{ name_filter }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}">Next</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ products.paginator.num_pages }}{% if name_filter %}&name={{ name_filter }}{% endif %}{% if category_filter %}&category={{ category_filter }}{% endif %}">Last</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+</div>
+
 
 <!-- Add Product Modal -->
 <div class="modal fade full-width-modal" id="addProductModal" tabindex="-1" aria-labelledby="addProductModalLabel" aria-hidden="true">
@@ -317,14 +375,25 @@
 </style>
 
 <style>
+    .page-item.active .page-link {
+        z-index: 3;
+        color: #fff;
+        background-color: #176b90;
+        border-color: #176b90;
+    }
+    .page-link {
+        color: #176b90;
+    }
+
     .modal-header {
     background-color: #30bb96;
-}
-.btn-primary {
-    background-color: #176b90;
-    color: #ffffff;
-}
+    }
+    .btn-primary {
+        background-color: #176b90;
+        color: #ffffff;
+    }
 </style>
+
 
 
 {% endblock %}
