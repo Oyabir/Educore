@@ -360,7 +360,7 @@
 </div>
 
 <!-- Winning Sound -->
-<audio id="winningSound" src="{% static 'mixkit-small-group-moderate-applause-505.wav' %}" preload="auto"></audio>
+<audio id="winningSound" src="{% static 'mixkit-small-group-moderate-applause-505 (mp3cut.net).mp3' %}" preload="auto"></audio>
 
 <!-- Minus Item Modal -->
 <div id="minusItemModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="minusItemModalLabel" aria-hidden="true">
@@ -421,7 +421,7 @@
 </div>
 
 <!-- Loss Sound -->
-<audio id="losingSound" src="{% static 'verloren-89595.mp3' %}" preload="auto"></audio>
+<audio id="losingSound" src="{% static 'verloren-89595 (mp3cut.net).mp3' %}" preload="auto"></audio>
 
 <script>
     let selectedStudentId = null;
@@ -447,7 +447,7 @@
             setTimeout(() => {
                 document.getElementById('winAnimation').classList.add('d-none');
                 location.reload();
-            }, 6000);
+            }, 3000);
     
             if (selectedStudentId && selectedGroupId) {
                 fetch(`/update_points/${selectedStudentId}/${selectedGroupId}/`, {
@@ -503,7 +503,7 @@
                         setTimeout(() => {
                             document.getElementById('lossAnimation').classList.add('d-none');
                             location.reload();
-                        }, 6000);
+                        }, 3000);
                     } else {
                         console.error('Error (Minus):', data.error);
                         alert('Failed to subtract points: ' + data.error);

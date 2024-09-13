@@ -4,68 +4,125 @@
 
 {% block content %}
 {% include 'platformTK/Prof/navbar.html' %}
- 
-    <!-- Classes Start -->
-        <div class="container-xxl py-5">
-            <div class="container">
-                <div class="text-center mx-auto mb-5 wow fadeInUp" data-wow-delay="0.1s" style="max-width: 600px;">
-                    <h1 class="mb-3">List of Products</h1>
-                    {% comment %} <p>Eirmod sed ipsum dolor sit rebum labore magna erat. Tempor ut dolore lorem kasd vero ipsum sit eirmod sit. Ipsum diam justo sed rebum vero dolor duo.</p> {% endcomment %}
+
+<!-- Search Form -->
+<div class="container-xxl py-3">
+    <div class="container">
+            <form method="GET" class="row mb-4">
+                <!-- Search by name -->
+                <div class="col-md-6 mb-2">
+                    <input type="text" name="name" class="form-control" placeholder="Search for products by name..."
+                           value="{{ name_query }}">
                 </div>
 
-                <div class="row g-4">
-                    {% for product in products %}
-                    <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
-                        <div class="classes-item">
-                            <div class="bg-light rounded-circle w-75 mx-auto p-3">
-                                <img class="img-fluid rounded-circle" src="img/classes-1.jpg" alt="">
-                            </div>
-                            <div class="bg-light rounded p-4 pt-5 mt-n5">
-                                <a class="d-block text-center h3 mt-3 mb-4" href="">{{product.name}}</a>
-                                <div class="d-flex align-items-center justify-content-between mb-4">
-                                    <div class="d-flex align-items-center">
-                                        <img class="rounded-circle flex-shrink-0" src="{{ product.image.url }}" alt="" style="width: 45px; height: 45px;">
-                                        <div class="ms-3">
-                                            <h6 class="text-primary mb-1" style="color: #176b90 !important;">{{product.name}}</h6>
-                                            <small>{{product.category}}</small>
-                                        </div>
-                                    </div>
-                                    <span class="bg-primary text-white rounded-pill py-2 px-3" href="" style="background-color: #176b90 !important;">${{product.price}}</span>
-                                </div>
-                                <div class="row g-1" >
-                                    <div class="col-4">
-                                        <p style="width: 259px;">{{product.description}}</p>
-                                    </div>
-                                </div>
+                <!-- Filter by category -->
+                <div class="col-md-4 mb-2">
+                    <select name="category" class="form-select">
+                        <option value="">All Categories</option>
+                        {% for category in categories %}
+                            <option value="{{ category.id }}" {% if category.id|stringformat:"s" == selected_category %}selected{% endif %}>
+                                {{ category.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
 
-                                <div class="row g-1">
-                                    <div class="col-4">
-                                        {% comment %} <div class="border-top border-3 border-primary pt-2">
-                                            <h6 class="text-primary mb-1">Age:</h6>
-                                            <span class="bg-primary text-white rounded-pill py-2 px-3" href="">Achate</span>
-                                        </div> {% endcomment %}
-                                    </div>
-                                    <div class="col-4">
-                                        <div class="">
-                                            {% comment %} <h6 class="text-primary mb-1">Acheter:</h6>
-                                            <br> {% endcomment %}
-                                            {% comment %} <a class="bg-primary text-white rounded-pill py-2 px-3" href="">Acheter</a> {% endcomment %}
-                                        </div> 
-                                    </div>
-                                    <div class="col-4">
-                                        {% comment %} <div class="border-top border-3 border-warning pt-2">
-                                            <h6 class="text-warning mb-1">Capacity:</h6>
-                                            <small>30 Kids</small>
-                                        </div> {% endcomment %}
-                                    </div>
+                <!-- Submit button -->
+                <div class="col-md-2 mb-2">
+                    <button type="submit" class="btn btn-primary w-100" style="margin-bottom: 4px;background-color: #176b90;border-color: #176b90;">Search</button>
+                    <a href="{% url 'StoreProf' %}" class="btn btn-secondary w-100">Cancel</a>
+                </div>
+            </form>
+            <br><br>
+
+        <!-- Product List -->
+        <div class="row g-4">
+            {% for product in page_obj %}
+            <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.1s" style="margin-bottom: 53px;">
+                <div class="classes-item">
+                    {% comment %} <div class="bg-light rounded-circle w-75 mx-auto p-3">
+                        <img class="img-fluid rounded-circle" src="{% static 'img/classes-1.jpg' %}" alt="">
+                    </div> {% endcomment %}
+                    <div class="bg-light rounded p-4 pt-5 mt-n5">
+                        <a class="d-block text-center h3 mt-3 mb-4" href="">{{ product.name }}</a>
+                        <div class="d-flex align-items-center justify-content-between mb-4">
+                            <div class="d-flex align-items-center">
+                                <img class="rounded-circle flex-shrink-0" src="{{ product.image.url }}" alt="" style="width: 45px; height: 45px;">
+                                <div class="ms-3">
+                                    <h6 class="text-primary mb-1" style="color: #176b90 !important;">{{ product.name }}</h6>
+                                    <small>{{ product.category.name }}</small>
                                 </div>
+                            </div>
+                            <span class="bg-primary text-white rounded-pill py-2 px-3" href="" style="background-color: #176b90 !important;">${{ product.price }}</span>
+                        </div>
+                        <div class="row g-1">
+                            <div class="col-4">
+                                <p style="width: 259px;">{{ product.description }}</p>
                             </div>
                         </div>
                     </div>
-                    {% endfor %}
                 </div>
             </div>
+            {% endfor %}
+            {% if not page_obj %}
+            <p>Not found Products mach by your filter</p>
+            {% endif %}
         </div>
-        <!-- Classes End -->
-  
-{% endblock  %}
+
+        <!-- Pagination Controls -->
+        <div class="d-flex justify-content-center mt-4">
+            <nav>
+                <ul class="pagination">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1{% if name_query %}&name={{ name_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}">First</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if name_query %}&name={{ name_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}">Previous</a>
+                        </li>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                        <li class="page-item {% if num == page_obj.number %}active{% endif %}">
+                            <a class="page-link" href="?page={{ num }}{% if name_query %}&name={{ name_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}">{{ num }}</a>
+                        </li>
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if name_query %}&name={{ name_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}">Next</a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if name_query %}&name={{ name_query }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}">Last</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+<!-- Classes End -->
+
+
+<style>
+    .page-item.active .page-link {
+        z-index: 3;
+        color: #fff;
+        background-color: #176b90;
+        border-color: #176b90;
+    }
+    .page-link {
+        color: #176b90;
+    }
+
+    .modal-header {
+    background-color: #30bb96;
+    }
+    .btn-primary {
+        background-color: #176b90;
+        color: #ffffff;
+    }
+</style>    
+
+
+{% endblock %}

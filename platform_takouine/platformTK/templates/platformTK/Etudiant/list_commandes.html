@@ -3,60 +3,142 @@
 {% block content %}
 {% include 'platformTK/Etudiant/navbar.html' %}
 
+<div class="container-xxl py-3">
+    <div class="text-center mb-5">
+        <h1 class="mb-3">{{ page_title }}</h1>
+        <p class="lead">Here is the list of your orders, {{ etudiant.prenom }}.</p>
+    </div>
+    <div class="container">
 
 
-<div class="container-xxl py-5">
-        <div class="text-center mb-5">
-            <h1 class="mb-3">{{ page_title }}</h1>
-            <p class="lead">Here is the list of your orders, {{ etudiant.prenom }}.</p>
-        </div>
+    <!-- Search Form -->
+    <div class="row mb-4">
+        <form method="GET" class="row mb-4">
+            <!-- Search by commande_code -->
+            <div class="col-md-6 mb-2">
+                <input type="text" name="commande_code" class="form-control" placeholder="Search by order code..."
+                       value="{{ commande_code_query }}">
+            </div>
 
-        <div class="row justify-content-center">
-            {% if commandes %}
-            <!-- Competitions Table -->
-            <div class="col-lg-12 mb-4">
-                <div class="table-wrapper">
-                    <div class="table-responsive">
-                        <table class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>Product</th>
-                                    <th>Status</th>
-                                    <th>Total Price</th>
-                                    <th>Date Ordered</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for commande in commandes %}
-                                <tr>
-                                    <td>{{ forloop.counter }}</td>
-                                    <td>{{ commande.product.name }}</td>
-                                    <td>
-                                        {% if commande.status == 'Pending' %}
-                                            <span class="badge bg-warning text-dark">Pending</span>
-                                        {% elif commande.status == 'Completed' %}
-                                            <span class="badge bg-success text-white">Completed</span>
-                                        {% elif commande.status == 'Cancelled' %}
-                                            <span class="badge bg-danger text-white">Cancelled</span>
-                                        {% else %}
-                                            <span class="badge bg-secondary text-white">Unknown</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>${{ commande.total_price }}</td>
-                                    <td>{{ commande.date_ordered|date:"M d, Y" }}</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                {% else %}
-                    <div class="alert alert-info" role="alert">
-                        No orders found.
-                    </div>
+            <!-- Filter by status -->
+            <div class="col-md-4 mb-2">
+                <select name="status" class="form-select">
+                    <option value="">All Statuses</option>
+                    <option value="Pending" {% if status_query == 'Pending' %}selected{% endif %}>Pending</option>
+                    <option value="Completed" {% if status_query == 'Completed' %}selected{% endif %}>Completed</option>
+                    <option value="Cancelled" {% if status_query == 'Cancelled' %}selected{% endif %}>Cancelled</option>
+                </select>
+            </div>
+
+            <!-- Submit button -->
+            <div class="col-md-2 mb-2">
+                <button type="submit" class="btn btn-primary w-100" style="margin-bottom: 4px;background-color: #176b90;border-color: #176b90;">Search</button>
+                <a href="{% url 'list_commandes' %}" class="btn btn-secondary w-100">Cancel</a>
+            </div>
+        </form>
+    </div>
+
+    <div class="row justify-content-center">
+        {% if page_obj %}
+        <!-- Orders Table -->
+        <div class="col-lg-12 mb-4">
+            <div class="table-wrapper">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Product</th>
+                                <th>Status</th>
+                                <th>Total Price</th>
+                                <th>Code Commande</th>
+                                <th>Date Ordered</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for commande in page_obj %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ commande.product.name }}</td>
+                                <td>
+                                    {% if commande.status == 'Pending' %}
+                                        <span class="badge bg-warning text-dark">Pending</span>
+                                    {% elif commande.status == 'Completed' %}
+                                        <span class="badge bg-success text-white">Completed</span>
+                                    {% elif commande.status == 'Cancelled' %}
+                                        <span class="badge bg-danger text-white">Cancelled</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary text-white">Unknown</span>
+                                    {% endif %}
+                                </td>
+                                <td>${{ commande.total_price }}</td>
+                                <td>{{ commande.commande_code }}</td>
+                                <td>{{ commande.date_ordered|date:"M d, Y" }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+    </div>
+
+     <!-- Pagination Controls -->
+     <div class="d-flex justify-content-center mt-4">
+        <nav>
+            <ul class="pagination">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1{% if commande_code_query %}&commande_code={{ commande_code_query }}{% endif %}{% if status_query %}&status={{ status_query }}{% endif %}">First</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if commande_code_query %}&commande_code={{ commande_code_query }}{% endif %}{% if status_query %}&status={{ status_query }}{% endif %}">Previous</a>
+                    </li>
                 {% endif %}
-        </div>
+
+                {% for num in page_obj.paginator.page_range %}
+                    <li class="page-item {% if num == page_obj.number %}active{% endif %}">
+                        <a class="page-link" href="?page={{ num }}{% if commande_code_query %}&commande_code={{ commande_code_query }}{% endif %}{% if status_query %}&status={{ status_query }}{% endif %}">{{ num }}</a>
+                    </li>
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if commande_code_query %}&commande_code={{ commande_code_query }}{% endif %}{% if status_query %}&status={{ status_query }}{% endif %}">Next</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if commande_code_query %}&commande_code={{ commande_code_query }}{% endif %}{% if status_query %}&status={{ status_query }}{% endif %}">Last</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+</div>
+</div>
+{% else %}
+<div class="alert alert-info" role="alert">
+No orders found.
+</div>
+{% endif %}
+</div>
 </div>
 
 
+<style>
+    .page-item.active .page-link {
+        z-index: 3;
+        color: #fff;
+        background-color: #176b90;
+        border-color: #176b90;
+    }
+    .page-link {
+        color: #176b90;
+    }
+
+    .modal-header {
+    background-color: #30bb96;
+    }
+    .btn-primary {
+        background-color: #176b90;
+        color: #ffffff;
+    }
+</style>  
 {% endblock %}

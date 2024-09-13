@@ -174,7 +174,7 @@
             </div>
         </div>
     </div>
-    <audio id="winningSound" src="{% static 'mixkit-small-group-moderate-applause-505.wav' %}" preload="auto"></audio>
+    <audio id="winningSound" src="{% static 'mixkit-small-group-moderate-applause-505 (mp3cut.net).mp3' %}" preload="auto"></audio>
     
     <!-- Losing Animation -->
     <div id="loseAnimation" class="win-animation d-none">
@@ -197,7 +197,7 @@
             </div>
         </div>
     </div>
-    <audio id="losingSound" src="{% static 'verloren-89595.mp3' %}" preload="auto"></audio>
+    <audio id="losingSound" src="{% static 'verloren-89595 (mp3cut.net).mp3' %}" preload="auto"></audio>
     
     {% if not competition.is_finished %}
     <div class="text-center">
@@ -234,7 +234,7 @@
                 setTimeout(() => {
                     document.getElementById('winAnimation').classList.add('d-none');
                     location.reload();
-                }, 6000);
+                }, 3000);
     
                 if (selectedSectionId) {
                     fetch(`/increment_points/${selectedSectionId}/`, {
@@ -263,7 +263,7 @@
                 setTimeout(() => {
                     document.getElementById('loseAnimation').classList.add('d-none');
                     location.reload();
-                }, 6000);
+                }, 3000);
     
                 if (selectedSectionId) {
                     fetch(`/decrement_points/${selectedSectionId}/`, {

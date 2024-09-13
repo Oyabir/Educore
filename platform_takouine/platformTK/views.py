@@ -12,6 +12,16 @@ from django.shortcuts import render, get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 import json
+from django.db.models import Q
+from django.core.paginator import Paginator
+from django.db.models import Sum
+from django.urls import reverse
+from django.db.models import Sum, OuterRef, Subquery
+from django.core.exceptions import ValidationError
+
+
+
+
 
 
 
@@ -58,6 +68,7 @@ from django.contrib.auth.decorators import login_required
 def userLogout(request):
    logout(request)
    return redirect('home')
+
 
 
 
@@ -127,18 +138,41 @@ def homeEtudiant(request):
 
 
 
-
-
 @login_required(login_url='login')
 @allowedUsers(allowedGroups=['Etudiants'])
 def Store(request):
-    products = Product.objects.all()
     etudiant = get_object_or_404(Etudiant, user=request.user)
+    
+    # Get query parameters for filtering
+    category_id = request.GET.get('category')
+    name_query = request.GET.get('name')  # Use 'name' instead of 'search'
+    
+    # Filter products by category or name only
+    products = Product.objects.all()
+
+    if category_id:
+        products = products.filter(category__id=category_id)
+        
+    if name_query and name_query != "None":  # Ensure name_query is valid and not "None"
+        products = products.filter(name__icontains=name_query)  # Filter by name
+    
+    # Pagination (6 products per page)
+    paginator = Paginator(products, 6)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    
+    # Get all categories for filter dropdown
+    categories = Category.objects.all()
+    
     context = {
         'etudiant': etudiant,
-        'products': products,
+        'page_obj': page_obj,  # The paginated products
+        'categories': categories,
+        'selected_category': category_id,  # Keep track of selected category
+        'name_query': name_query if name_query != "None" else "",  # Avoid "None" in the template
     }
     return render(request, "platformTK/Etudiant/Store.html", context)
+
 
 
 
@@ -151,9 +185,6 @@ def profile(request):
         'etudiant': etudiant,
     }
     return render(request, "platformTK/Etudiant/profile.html", context)
-
-
-
 
 
 
@@ -180,8 +211,6 @@ def update_profile(request):
         return redirect('profile')  # Redirect to the profile page or another page of your choice
 
     return render(request, 'platformTK/Etudiant/profile.html', {'etudiant': etudiant})
-
-
 
 
 
@@ -213,16 +242,34 @@ def purchase_product(request, slug):
 
 
 
+
 @login_required(login_url='login')
 @allowedUsers(allowedGroups=['Etudiants'])
 def list_commandes(request):
     etudiant = get_object_or_404(Etudiant, user=request.user)
+    
+    # Get query parameters for filtering
+    commande_code_query = request.GET.get('commande_code', '')
+    status_query = request.GET.get('status', '')
+
+    # Filter commandes by commande_code and status
     commandes = Commande.objects.filter(etudiant=etudiant)
+    if commande_code_query:
+        commandes = commandes.filter(commande_code__icontains=commande_code_query)
+    if status_query:
+        commandes = commandes.filter(status=status_query)
+
+    # Paginate results
+    paginator = Paginator(commandes, 10)  # Show 10 commandes per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
 
     context = {
-        'commandes': commandes,
+        'page_obj': page_obj,
         'etudiant': etudiant,
         'page_title': 'My Orders',
+        'commande_code_query': commande_code_query,
+        'status_query': status_query,
     }
 
     return render(request, "platformTK/Etudiant/list_commandes.html", context)
@@ -313,7 +360,6 @@ def my_groups(request):
 
 
 
-from django.db.models import Sum
 
 @login_required(login_url='login')
 @allowedUsers(allowedGroups=['Prof'])
@@ -432,8 +478,8 @@ def add_competition(request):
 
 
 
-from django.urls import reverse
-
+@login_required(login_url='login')
+@allowedUsers(allowedGroups=['Prof'])
 def add_section(request, competition_id):
     competition = get_object_or_404(Competitions, id=competition_id)
     
@@ -493,6 +539,8 @@ def add_section(request, competition_id):
 
 
 
+@login_required(login_url='login')
+@allowedUsers(allowedGroups=['Prof'])
 def competition_sections(request, competition_id):
     competition = get_object_or_404(Competitions, id=competition_id)
     sections = competition.sections.all().order_by('-points')  # Get all sections related to the competition
@@ -500,9 +548,8 @@ def competition_sections(request, competition_id):
 
 
 
-
-
-
+@login_required(login_url='login')
+@allowedUsers(allowedGroups=['Prof'])
 def finish_competition(request, competition_id):
     competition = get_object_or_404(Competitions, id=competition_id)
 
@@ -535,7 +582,8 @@ def finish_competition(request, competition_id):
 
 
 
-
+@login_required(login_url='login')
+@allowedUsers(allowedGroups=['Prof'])
 def competition_results(request, competition_id):
     competition = get_object_or_404(Competitions, id=competition_id)
     sections = competition.sections.all().order_by('-points')  # Order sections by points descending
@@ -548,6 +596,8 @@ def competition_results(request, competition_id):
 
 
 
+@login_required(login_url='login')
+@allowedUsers(allowedGroups=['Prof'])
 def rank_competition(request, competition_id):
     competition = get_object_or_404(Competitions, id=competition_id)
     return redirect('competition_results', competition_id=competition.id)
@@ -555,6 +605,8 @@ def rank_competition(request, competition_id):
 
 
 
+@login_required(login_url='login')
+@allowedUsers(allowedGroups=['Prof'])
 @csrf_exempt
 def increment_section_points(request, section_id):
     if request.method == 'POST':
@@ -575,6 +627,9 @@ def increment_section_points(request, section_id):
 
 
 
+
+@login_required(login_url='login')
+@allowedUsers(allowedGroups=['Prof'])
 @csrf_exempt
 def decrement_section_points(request, section_id):
     if request.method == 'POST':
@@ -597,9 +652,37 @@ def decrement_section_points(request, section_id):
 
 
 
-def StoreProf(requset):
+@login_required(login_url='login')
+@allowedUsers(allowedGroups=['Prof'])
+def StoreProf(request):
+    # Get query parameters for filtering
+    search_query = request.GET.get('name', '')
+    category_id = request.GET.get('category', '')
+
+    # Filter products by name and category
     products = Product.objects.all()
-    return render(requset,"platformTK/Prof/Store.html", {'products': products})
+    if search_query:
+        products = products.filter(name__icontains=search_query)
+    if category_id:
+        products = products.filter(category_id=category_id)
+
+    # Pagination (6 products per page)
+    paginator = Paginator(products, 6)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    # Get all categories for filtering
+    categories = Category.objects.all()
+
+    context = {
+        'page_obj': page_obj,
+        'name_query': search_query,  # Pass the search query to the template
+        'categories': categories,    # Pass all categories to the template
+        'selected_category': category_id,  # Pass the selected category ID to the template
+    }
+    return render(request, "platformTK/Prof/Store.html", context)
+
+
 
 
 
@@ -658,11 +741,8 @@ def update_profil_prof(request):
 
 
 
-
-
-
-from django.db.models import Sum, OuterRef, Subquery
-
+@login_required(login_url='login')
+@allowedUsers(allowedGroups=['Prof'])
 def group_detail(request, code_group):
     group = get_object_or_404(Groups, code_group=code_group)
     
@@ -684,6 +764,8 @@ def group_detail(request, code_group):
 
 
 
+@login_required(login_url='login')
+@allowedUsers(allowedGroups=['Prof'])
 def Répartition_points(request, code_group):
     group = get_object_or_404(Groups, code_group=code_group)
     students = group.etudiants.all()
@@ -726,7 +808,8 @@ def Répartition_points(request, code_group):
     })
     
     
-    
+
+ 
 
 #Another way for do this
 
@@ -760,7 +843,8 @@ def Répartition_points(request, code_group):
 
 
 
-
+@login_required(login_url='login')
+@allowedUsers(allowedGroups=['Prof'])
 @csrf_exempt  
 def update_points(request, student_id, group_id):
     if request.method == 'POST':
@@ -786,6 +870,8 @@ def update_points(request, student_id, group_id):
 
 
 
+@login_required(login_url='login')
+@allowedUsers(allowedGroups=['Prof'])
 @csrf_exempt  
 def subtract_points(request, student_id, group_id):
     if request.method == 'POST':
@@ -816,15 +902,16 @@ def subtract_points(request, student_id, group_id):
 
 
 
-
+@login_required(login_url='login')
+@allowedUsers(allowedGroups=['SuperAdmin'])
 def homeSuperAdmin(requset):
     return render(requset,"platformTK/SuperAdmin/homeSuperAdmin.html")
 
 
 
 
-from django.core.paginator import Paginator
-
+@login_required(login_url='login')
+@allowedUsers(allowedGroups=['SuperAdmin'])
 def add_groupe(request):
     # Get filter parameters
     name_filter = request.GET.get('name', '')
@@ -856,7 +943,8 @@ def add_groupe(request):
 
 
 
-
+@login_required(login_url='login')
+@allowedUsers(allowedGroups=['SuperAdmin'])
 def add_student(request):
     # Get filter parameters
     prenom_filter = request.GET.get('prenom', '')
@@ -894,9 +982,8 @@ def add_student(request):
 
 
 
-from django.contrib import messages
-from django.shortcuts import render, redirect
-
+@login_required(login_url='login')
+@allowedUsers(allowedGroups=['SuperAdmin'])
 def group_list(request):
     if request.method == 'POST':
         group_name = request.POST.get('group_name')
@@ -948,10 +1035,8 @@ def group_list(request):
 
 
 
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib import messages 
-from .models import Groups
-
+@login_required(login_url='login')
+@allowedUsers(allowedGroups=['SuperAdmin'])
 def edit_group(request):
     if request.method == 'POST':
         group_id = request.POST.get('group_id')
@@ -974,9 +1059,9 @@ def edit_group(request):
 
 
 
-from django.shortcuts import get_object_or_404, redirect
-from django.contrib import messages
 
+@login_required(login_url='login')
+@allowedUsers(allowedGroups=['SuperAdmin'])
 def delete_group(request):
     if request.method == 'POST':
         group_id = request.POST.get('group_id')
@@ -987,10 +1072,8 @@ def delete_group(request):
 
 
 
-
-from django.shortcuts import get_object_or_404, redirect, render
-from django.core.exceptions import ValidationError
-
+@login_required(login_url='login')
+@allowedUsers(allowedGroups=['SuperAdmin'])
 def add_profs_etudiants(request, group_id):
     group = get_object_or_404(Groups, id=group_id)
 
@@ -1028,6 +1111,8 @@ def add_profs_etudiants(request, group_id):
 
 
 
+@login_required(login_url='login')
+@allowedUsers(allowedGroups=['SuperAdmin'])
 def delete_profs_etudiants(request, group_id):
     group = get_object_or_404(Groups, id=group_id)
     
@@ -1063,8 +1148,8 @@ def delete_profs_etudiants(request, group_id):
 
 
 
-
-
+@login_required(login_url='login')
+@allowedUsers(allowedGroups=['SuperAdmin'])
 def add_etudiant(request):
     groups = Groups.objects.all()
 
@@ -1128,15 +1213,14 @@ def add_etudiant(request):
 
 
 
-
-
-
+@login_required(login_url='login')
+@allowedUsers(allowedGroups=['SuperAdmin'])
 def update_etudiant(request):
     if request.method == 'POST':
         etudiant_id = request.POST.get('id')
         if not etudiant_id:
             return redirect('add_student')  # Redirect if no ID is provided
-        
+
         etudiant = get_object_or_404(Etudiant, id=etudiant_id)
 
         # Update fields
@@ -1152,23 +1236,42 @@ def update_etudiant(request):
 
         # Handle group assignment (for ManyToManyField)
         group_ids = request.POST.getlist('groups')  # Can select multiple groups
-        selected_groups = Groups.objects.filter(id__in=group_ids) 
+        selected_groups = Groups.objects.filter(id__in=group_ids)
+
         try:
-            # Save etudiant details and update groups
+            # Save etudiant details
             etudiant.save()
-            etudiant.groups.set(selected_groups)  # Update the many-to-many relationship with selected groups
-            messages.success(request, 'etudiant details and groups updated successfully.')
+
+            # Update the many-to-many relationship with selected groups
+            etudiant.groups.set(selected_groups)
+
+            # Update Membership entries
+            existing_memberships = Membership.objects.filter(etudiant=etudiant)
+
+            # Remove memberships for groups that are no longer selected
+            for membership in existing_memberships:
+                if membership.group not in selected_groups:
+                    membership.delete()
+
+            # Add new memberships for groups that are newly selected
+            for group in selected_groups:
+                membership, created = Membership.objects.get_or_create(etudiant=etudiant, group=group)
+                if created:
+                    membership.pointsG = 0  # Initialize points to 0 for newly added memberships
+                    membership.save()
+
+            messages.success(request, 'Etudiant details and memberships updated successfully.')
         except Exception as e:
             messages.error(request, f'Error updating etudiant: {str(e)}')
 
-        etudiant.save()
         return redirect('add_student')  # Redirect to the list of students or relevant page
 
     return redirect('add_student')  # Redirect in case of GET request or failure
 
 
 
-
+@login_required(login_url='login')
+@allowedUsers(allowedGroups=['SuperAdmin'])
 def delete_etudiant(request, etudiant_id):
     etudiant = get_object_or_404(Etudiant, id=etudiant_id)
 
@@ -1186,10 +1289,10 @@ def delete_etudiant(request, etudiant_id):
 import csv
 import pandas as pd
 
-
-
 logger = logging.getLogger(__name__)
 
+@login_required(login_url='login')
+@allowedUsers(allowedGroups=['SuperAdmin'])
 def add_students_from_file(request):
     if request.method == 'POST':
         file = request.FILES.get('file')
@@ -1301,7 +1404,8 @@ def add_students_from_file(request):
 
 
 
-
+@login_required(login_url='login')
+@allowedUsers(allowedGroups=['SuperAdmin'])
 def add_prof(request):
     # Get filter parameters
     prenom_filter = request.GET.get('prenom', '')
@@ -1339,9 +1443,8 @@ def add_prof(request):
 
 
 
-
-
-
+@login_required(login_url='login')
+@allowedUsers(allowedGroups=['SuperAdmin'])
 @login_required(login_url='login')
 def prof_list(request):
     groups = Groups.objects.all()
@@ -1423,9 +1526,8 @@ def prof_list(request):
 
 
 
-
-
-@login_required
+@login_required(login_url='login')
+@allowedUsers(allowedGroups=['SuperAdmin'])
 def update_prof(request, prof_id):
     # Fetch the professor using the provided ID
     professor = get_object_or_404(prof, id=prof_id)
@@ -1462,7 +1564,8 @@ def update_prof(request, prof_id):
 
 
 
-@login_required
+@login_required(login_url='login')
+@allowedUsers(allowedGroups=['SuperAdmin'])
 def delete_prof(request, prof_id):
     professor = get_object_or_404(prof, id=prof_id)
 
@@ -1486,6 +1589,7 @@ def delete_prof(request, prof_id):
 logger = logging.getLogger(__name__)
 
 @login_required(login_url='login')
+@allowedUsers(allowedGroups=['SuperAdmin'])
 def upload_prof_from_file(request):
     if request.method == 'POST':
         file = request.FILES.get('file')
@@ -1596,6 +1700,7 @@ def upload_prof_from_file(request):
 
 
 @login_required(login_url='login')
+@allowedUsers(allowedGroups=['SuperAdmin'])
 def store_admin(request):
     # Get filter parameters
     name_filter = request.GET.get('name', '')
@@ -1629,6 +1734,7 @@ def store_admin(request):
 
 
 @login_required(login_url='login')
+@allowedUsers(allowedGroups=['SuperAdmin'])
 def add_product(request):
     if request.method == 'POST':
         name = request.POST.get('name')
@@ -1662,6 +1768,7 @@ def add_product(request):
 
 
 @login_required(login_url='login')
+@allowedUsers(allowedGroups=['SuperAdmin'])
 def update_product(request, product_code):
     product = get_object_or_404(Product, ProductCode=product_code)
 
@@ -1698,6 +1805,7 @@ def update_product(request, product_code):
 
 
 @login_required(login_url='login')
+@allowedUsers(allowedGroups=['SuperAdmin'])
 def delete_product(request, product_code):
     product = get_object_or_404(Product, ProductCode=product_code)
     product.delete()
@@ -1709,6 +1817,7 @@ def delete_product(request, product_code):
 
 
 @login_required(login_url='login')
+@allowedUsers(allowedGroups=['SuperAdmin'])
 def commandes_admin(request):
     # Get filter parameters
     commande_code_filter = request.GET.get('commande_code', '')
@@ -1737,7 +1846,8 @@ def commandes_admin(request):
 
 
 
-
+@login_required(login_url='login')
+@allowedUsers(allowedGroups=['SuperAdmin'])
 def update_commande_status(request):
     if request.method == 'POST':
         commande_id = request.POST.get('commande_id')
@@ -1756,6 +1866,7 @@ def update_commande_status(request):
 
 
 @login_required(login_url='login')
+@allowedUsers(allowedGroups=['SuperAdmin'])
 def list_categories(request):
     categories = Category.objects.all().order_by('-date_added')
     return render(request, 'platformTK/SuperAdmin/list_categories.html', {'categories': categories})
@@ -1763,6 +1874,7 @@ def list_categories(request):
 
 
 @login_required(login_url='login')
+@allowedUsers(allowedGroups=['SuperAdmin'])
 def add_category(request):
     if request.method == 'POST':
         category_name = request.POST.get('category_name')
@@ -1779,7 +1891,9 @@ def add_category(request):
 
 
 
+
 @login_required(login_url='login')
+@allowedUsers(allowedGroups=['SuperAdmin'])
 def edit_category(request):
     if request.method == 'POST':
         category_id = request.POST.get('category_id')
@@ -1798,7 +1912,9 @@ def edit_category(request):
 
 
 
+
 @login_required(login_url='login')
+@allowedUsers(allowedGroups=['SuperAdmin'])
 def delete_category(request):
     if request.method == 'POST':
         category_id = request.POST.get('category_id')
@@ -1832,6 +1948,7 @@ from django.db.models import Sum
 
 
 @login_required(login_url='login')
+@allowedUsers(allowedGroups=['SuperAdmin'])
 def dashboard(request):
     groups = Groups.objects.all()
     competitions = Competitions.objects.all()
