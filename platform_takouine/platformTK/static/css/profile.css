@@ -1,0 +1,74 @@
+ /* General Body Styling */
+ body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f0f2f5;
+    color: #212529;
+    margin: 0;
+    padding: 0;
+}
+
+/* Profile Card Styling */
+.profile-card {
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+    margin: 20px auto;
+    max-width: 800px;
+    border: 1px solid #ced4da;
+}
+
+/* Profile Picture Styling */
+.profile-picture {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 6px solid #176b90;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Card Title Styling */
+.card-title {
+    color: #176b90;
+    border-bottom: 2px solid #176b90;
+    padding-bottom: 15px;
+    margin-bottom: 25px;
+    font-size: 2rem;
+    font-weight: 600;
+}
+
+/* Form Input and Textarea Styling */
+.form-control {
+    border-radius: 8px;
+    border: 1px solid #ced4da;
+    padding: 12px;
+    font-size: 1rem;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: #00796b;
+    box-shadow: 0 0 0 0.2rem rgba(0, 121, 107, 0.25);
+    outline: none;
+}
+
+/* Textarea Styling */
+textarea.form-control {
+    height: auto;
+    resize: vertical;
+}
+
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .profile-picture {
+        width: 120px;
+        height: 120px;
+    }
+
+    .profile-card {
+        padding: 20px;
+        margin: 10px auto;
+    }
+}

@@ -2,82 +2,71 @@
 
 {% load static %}
 
-
-
 {% block content %}
     {% include 'platformTK/Prof/navbar.html' %}
-
     <link href="{% static 'css/add_section.css' %}" rel="stylesheet">
 
     <div class="container">
-    {% if current_sections_count >= competition.number_of_sections %}
-    <div class="alert alert-success">
-        "Now you cannot add more sections than the allowed number. <a href="{% url 'competition_sections' competition.id %}">Go to Competition Sections</a>
-    </div>
-    <!-- Center the button using the .center-container class -->
-    <div class="center-container">
-        <a href="{% url 'competition_sections' competition.id %}">
-            <button type="button" class="btn btn-primary">Go to competition is finished</button>
-        </a>
-    </div>
-{% endif %}
-</div>
-
-{% if not current_sections_count >= competition.number_of_sections %}
-<div class="container">
-    {% if error_message %}
-    <div class="alert alert-danger">
-        {{ error_message|safe }}
-    </div>
-{% endif %}
-
-<h2>Add Section to {{ competition.name }}</h2>
-<form action="{% url 'add_section' competition.id %}" method="post">
-    {% csrf_token %}
-    <div class="mb-3">
-        <label for="sectionName" class="form-label">Section Name</label>
-        <input type="text" class="form-control" id="sectionName" name="section_name" placeholder="Enter section name" required>
+        {% if current_sections_count >= competition.number_of_sections %}
+        <div class="alert alert-success">
+            "Now you cannot add more sections than the allowed number. <a href="{% url 'competition_sections' competition.id %}">Go to Competition Sections</a>
+        </div>
+        <!-- Center the button using the .center-container class -->
+        <div class="center-container">
+            <a href="{% url 'competition_sections' competition.id %}">
+                <button type="button" class="btn btn-primary">Go to competition is finished</button>
+            </a>
+        </div>
+        {% endif %}
     </div>
 
-    <!-- Row for Student List and Selected Students -->
-    <div class="row">
-        <!-- Student Search and List -->
-        <div class="col-md-6 mb-3">
-            <label for="studentSearch" class="form-label">Search Students</label>
-            <div class="input-group">
-                <input type="text" class="form-control" id="studentSearch" placeholder="Search students..." oninput="filterList('student')">
-            </div>
-            <div class="card mt-3 p-2 scrollable-container" id="studentList">
-                {% for etudiant in students %}
-                <div data-id="{{ etudiant.id }}" class="student-item">
-                    {{ etudiant.prenom }} {{ etudiant.nom }}
-                    <button type="button" class="btn btn-danger btn-sm" onclick="addStudent({{ etudiant.id }}, '{{ etudiant.prenom }} {{ etudiant.nom }}')" style="background-color: #007bff;border-color: #007bff;">Add</button>
+    {% if not current_sections_count >= competition.number_of_sections %}
+    <div class="container">
+        {% if error_message %}
+        <div class="alert alert-danger">
+            {{ error_message|safe }}
+        </div>
+    {% endif %}
+    
+
+    <h2>Add Section to {{ competition.name }}</h2>
+    <form action="{% url 'add_section' competition.id %}" method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="sectionName" class="form-label">Section Name</label>
+            <input type="text" class="form-control" id="sectionName" name="section_name" placeholder="Enter section name" required>
+        </div>
+
+        <!-- Row for Student List and Selected Students -->
+        <div class="row">
+            <!-- Student Search and List -->
+            <div class="col-md-6 mb-3">
+                <label for="studentSearch" class="form-label">Search Students</label>
+                <div class="input-group">
+                    <input type="text" class="form-control" id="studentSearch" placeholder="Search students..." oninput="filterList('student')">
                 </div>
-                {% endfor %}
+                <div class="card mt-3 p-2 scrollable-container" id="studentList">
+                    {% for etudiant in students %}
+                    <div data-id="{{ etudiant.id }}" class="student-item">
+                        {{ etudiant.prenom }} {{ etudiant.nom }}
+                        <button type="button" class="btn btn-danger btn-sm" onclick="addStudent({{ etudiant.id }}, '{{ etudiant.prenom }} {{ etudiant.nom }}')" style="background-color: #007bff;border-color: #007bff;">Add</button>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Selected Students -->
+            <div class="col-md-6 mt-2 mb-3">
+                <label class="form-label">Selected Students</label>
+                <div id="selectedStudents" class="scrollable-list border rounded p-2"></div>
+                <input type="hidden" id="students" name="students">
             </div>
         </div>
-
-        <!-- Selected Students -->
-        <div class="col-md-6 mt-2 mb-3">
-            <label class="form-label">Selected Students</label>
-            <div id="selectedStudents" class="scrollable-list border rounded p-2"></div>
-            <input type="hidden" id="students" name="students">
-        </div>
-    </div>
-
     <button type="submit" class="btn btn-primary">Add Section</button>
-</form>
+    </form>
 </div>
 
 {% endif %}
-
-
-<style>
-  
-</style>
-
-
-
 
 
 <script>
@@ -125,5 +114,10 @@
     
 </script>
 
+<style>
+    .container-fluid{
+        margin-top: 16rem !important;
+    }
+</style>
 
 {% endblock %}

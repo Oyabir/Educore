@@ -4,14 +4,42 @@
 {% block content %}
 {% include 'platformTK/Etudiant/navbar.html' %}
 
-<!-- Filters and Search -->
 <div class="container-xxl py-3">
+    {% if messages %}
     <div class="container">
+        {% for message in messages %}
+            {% if message.tags == 'error' %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endif %}
+            {% if message.tags == 'success' %}
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <script>
+        setTimeout(function() {
+            var messageContainer = document.getElementById('message-container');
+            if (messageContainer) {
+                messageContainer.style.display = 'none';
+            }
+        }, 5000); 
+    </script>
+
+    <div class="container">
+        <!-- Filters and Search -->
         <form method="GET" class="row mb-4">
             <!-- Search by name -->
             <div class="col-md-6 mb-2">
                 <input type="text" name="name" class="form-control" placeholder="Search for products by name..."
-                       {% if name_query %}value="{{ name_query }}"{% endif %}> <!-- Only set value if name_query exists -->
+                    {% if name_query %}value="{{ name_query }}"{% endif %}> 
             </div>
             <!-- Category filter -->
             <div class="col-md-4 mb-2">
@@ -30,9 +58,6 @@
                 <a href="{% url 'Store' %}" class="btn btn-secondary w-100">Cancel</a>
             </div>
         </form>
-        
-       
-        
         <br><br>
         <!-- Product List -->
         <div class="row g-4">
@@ -59,7 +84,6 @@
             </div>
             <br> <br> <br>
             {% endfor %}
-           
             {% if not page_obj %}
             <p>Not found Products mach by your filter</p>
             {% endif %}
@@ -98,37 +122,35 @@
     </div>
 </div>
 
-        <!-- Confirmation Modal -->
-<div class="modal fade" id="confirmPurchaseModal" tabindex="-1" aria-labelledby="confirmPurchaseModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="confirmPurchaseModalLabel">Confirm Purchase</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                Are you sure you want to purchase <span id="product-name"></span> for $<span id="product-price"></span>?
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <a id="confirmPurchaseLink" class="btn btn-primary" style="background-color: #176b90 !important;border-color: #ffffff;">Confirm Purchase</a>
+    <!-- Confirmation Modal -->
+    <div class="modal fade" id="confirmPurchaseModal" tabindex="-1" aria-labelledby="confirmPurchaseModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmPurchaseModalLabel">Confirm Purchase</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to purchase <span id="product-name"></span> for $<span id="product-price"></span>?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <a id="confirmPurchaseLink" class="btn btn-primary" style="background-color: #176b90 !important;border-color: #ffffff;">Confirm Purchase</a>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
 
-<script>
-    function openConfirmModal(productName, productPrice, purchaseUrl) {
-        // Set the product details in the modal
-        document.getElementById('product-name').innerText = productName;
-        document.getElementById('product-price').innerText = productPrice;
-        document.getElementById('confirmPurchaseLink').setAttribute('href', purchaseUrl);
-    
-        // Show the modal
-        var confirmModal = new bootstrap.Modal(document.getElementById('confirmPurchaseModal'));
-        confirmModal.show();
-    }
+    <script>
+        function openConfirmModal(productName, productPrice, purchaseUrl) {
+            document.getElementById('product-name').innerText = productName;
+            document.getElementById('product-price').innerText = productPrice;
+            document.getElementById('confirmPurchaseLink').setAttribute('href', purchaseUrl);
+        
+            var confirmModal = new bootstrap.Modal(document.getElementById('confirmPurchaseModal'));
+            confirmModal.show();
+        }
     </script>
 
     <style>

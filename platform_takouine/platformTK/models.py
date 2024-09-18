@@ -10,18 +10,17 @@ def generate_etudiant_code():
     return f"TK-{unique_id}"
 
 
-
 class Etudiant(models.Model):
     user = models.OneToOneField(User, null=True, on_delete=models.CASCADE)
     prenom = models.CharField(max_length=50)
     nom = models.CharField(max_length=50)
     date_de_naissance = models.DateField()
-    email = models.EmailField(unique=True)
+    email = models.EmailField(blank=True, null=True)
     numéro_de_téléphone = models.CharField(max_length=15, blank=True, null=True)
-    avatar = models.ImageField(null=True, blank=True)
+    avatar = models.ImageField(upload_to='avatars/', null=True, blank=True, default='avatars/786530_people_512x512.png')
     slugEtudiant = models.SlugField(blank=True, null=True)
     date_created = models.DateField(auto_now_add=True, null=True, blank=True)
-    points = models.IntegerField(default=0, blank=True, null=True) 
+    points = models.IntegerField(default=0, blank=True, null=True)
     EtudiantCode = models.CharField(max_length=100, unique=True, null=True, blank=True, default=generate_etudiant_code)
 
     def save(self, *args, **kwargs):
@@ -57,7 +56,6 @@ class Etudiant(models.Model):
 def generate_prof_code():
     unique_id = str(uuid.uuid4()).replace('-', '')[:8]  
     return f"TK-P-{unique_id}"
-
 
 
 class prof(models.Model):

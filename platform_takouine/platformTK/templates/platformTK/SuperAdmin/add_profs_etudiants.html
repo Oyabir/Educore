@@ -6,7 +6,6 @@
 
 <div class="container mt-5">
     <h2 class="text-center">Add Professors and Students to Group: {{ group.name }}</h2>
-
     <form method="post" action="{% url 'add_profs_etudiants' group.id %}">
         {% csrf_token %}
         <input type="hidden" name="group_id" value="{{ group.id }}">

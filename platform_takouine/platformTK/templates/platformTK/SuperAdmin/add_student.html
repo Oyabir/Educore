@@ -73,7 +73,7 @@
                 <tr>
                     <th>Username</th>
                     <th>Nom et prénom</th>
-                    <th>Email</th>
+                    <th>Tel</th>
                     <th>Avatar</th>
                     <th>Code Etudiant</th>
                     <th>Actions</th>
@@ -84,12 +84,12 @@
                 <tr>
                     <td>{{ etudiant.user.username }}</td>
                     <td>{{ etudiant.prenom }} {{ etudiant.nom }}</td>
-                    <td>{{ etudiant.email }}</td>
+                    <td>{{ etudiant.numéro_de_téléphone }}</td>
                     <td>
                         {% if etudiant.avatar %}
                             <img src="{{ etudiant.avatar.url }}" style="width: 48px; height: 48px;" alt="Avatar">
                         {% else %}
-                            No Avatar
+                        <img src="{% static 'img/786525_people_512x512.png' %}" style="width: 48px; height: 48px;" alt="Avatar">
                         {% endif %}
                     </td>
                     <td>{{ etudiant.EtudiantCode }}</td>

@@ -9,17 +9,13 @@
         <p class="lead">Here is the list of your orders, {{ etudiant.prenom }}.</p>
     </div>
     <div class="container">
-
-
     <!-- Search Form -->
     <div class="row mb-4">
         <form method="GET" class="row mb-4">
             <!-- Search by commande_code -->
             <div class="col-md-6 mb-2">
-                <input type="text" name="commande_code" class="form-control" placeholder="Search by order code..."
-                       value="{{ commande_code_query }}">
+                <input type="text" name="commande_code" class="form-control" placeholder="Search by order code..." value="{{ commande_code_query }}">
             </div>
-
             <!-- Filter by status -->
             <div class="col-md-4 mb-2">
                 <select name="status" class="form-select">
@@ -79,10 +75,12 @@
                         </tbody>
                     </table>
                 </div>
+            </div>
+        </div>
     </div>
 
-     <!-- Pagination Controls -->
-     <div class="d-flex justify-content-center mt-4">
+    <!-- Pagination Controls -->
+    <div class="d-flex justify-content-center mt-4">
         <nav>
             <ul class="pagination">
                 {% if page_obj.has_previous %}
@@ -111,15 +109,15 @@
             </ul>
         </nav>
     </div>
-</div>
-</div>
-{% else %}
-<div class="alert alert-info" role="alert">
-No orders found.
-</div>
-{% endif %}
-</div>
-</div>
+    </div>
+    </div>
+    {% else %}
+    <div class="alert alert-info" role="alert">
+    No orders found.
+    </div>
+    {% endif %}
+    </div>
+    </div>
 
 
 <style>
