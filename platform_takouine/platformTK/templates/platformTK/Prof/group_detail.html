@@ -1,6 +1,7 @@
 {% extends "platformTK/Prof/HomeBase.html" %}
 
 {% load static %}
+{% load custom_filters %}
 
 {% block content %}
     {% include 'platformTK/Prof/navbar.html' %}
@@ -43,7 +44,7 @@
                             {% for student in students %}
                             <tr>
                                 <td>{{ forloop.counter }}</td>
-                                <td>{{ student.prenom }} {{ student.nom }}</td>
+                                <td>{{ student.prenom|capitalize_first }} {{ student.nom|capitalize_first }}</td>
                                 {% comment %} <td>{{ student.email }}</td> {% endcomment %}
                                 <td>{{ group.name }}</td>
                                 <td>{{ student.pointsG }}</td> 

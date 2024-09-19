@@ -1,4 +1,5 @@
 {% load static  %}
+{% load custom_filters %}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -318,7 +319,7 @@
                   <div class="az-list-item">
                     
                     <div>
-                      <h6>{{ student.name }}</h6>
+                      <h6>{{ student.name|capitalize_first }}</h6>
                       {% comment %} <span>/demo/admin/index.html</span> {% endcomment %}
                     </div>
                     <div>
@@ -481,7 +482,7 @@
                     <tbody>
                       {% for prof in top_prof_data %}
                       <tr>
-                        <td><strong>{{ prof.name }}</strong></td>
+                        <td><strong>{{ prof.name|capitalize_first }}</strong></td>
                         <td>{{ prof.points }}</td>
                       </tr>
                       {% endfor %}

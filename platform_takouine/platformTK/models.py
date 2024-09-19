@@ -15,11 +15,11 @@ class Etudiant(models.Model):
     prenom = models.CharField(max_length=50)
     nom = models.CharField(max_length=50)
     date_de_naissance = models.DateField()
-    email = models.EmailField(blank=True, null=True)
+    email = models.EmailField(blank=True, null=True)  # Email is optional
     numéro_de_téléphone = models.CharField(max_length=15, blank=True, null=True)
     avatar = models.ImageField(upload_to='avatars/', null=True, blank=True, default='avatars/786530_people_512x512.png')
     slugEtudiant = models.SlugField(blank=True, null=True)
-    date_created = models.DateField(auto_now_add=True, null=True, blank=True)
+    date_created = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     points = models.IntegerField(default=0, blank=True, null=True)
     EtudiantCode = models.CharField(max_length=100, unique=True, null=True, blank=True, default=generate_etudiant_code)
 
@@ -62,18 +62,17 @@ class prof(models.Model):
     user = models.OneToOneField(User, null=True, on_delete=models.CASCADE)
     prenom = models.CharField(max_length=50)
     nom = models.CharField(max_length=50)
-    date_de_naissance = models.DateField()
-    email = models.EmailField(unique=True)
+    date_de_naissance = models.DateField(blank=True, null=True)  # Not required
+    email = models.EmailField(unique=True, blank=True, null=True)  # Not required
     numéro_de_téléphone = models.CharField(max_length=15, blank=True, null=True)
     avatar = models.ImageField(null=True, blank=True)
     slugProf = models.SlugField(blank=True, null=True)
-    date_created = models.DateField(auto_now_add=True, null=True, blank=True)
+    date_created = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     ProfCode = models.CharField(max_length=100, null=True, blank=True, default=generate_prof_code)
-
 
     def save(self, *args, **kwargs):
         if not self.slugProf:
-            self.slugProf = slugify(self.user.username) #slugify(self.user.username) 
+            self.slugProf = slugify(self.user.username)
         super().save(*args, **kwargs)
 
     def __str__(self):
@@ -81,11 +80,11 @@ class prof(models.Model):
     
     # method to calculate total points for professor
     def total_points(self):
-        # Sum points from students of the professor's groups
         total_points = sum(
             etudiant.points for group in self.groups.all() for etudiant in group.etudiants.all()
         )
         return total_points
+
 
 
 
@@ -101,9 +100,9 @@ class Groups(models.Model):
     name = models.CharField(max_length=100)
     description = models.CharField(max_length=300)
     code_group = models.CharField(max_length=100, unique=True, blank=True, editable=False)
-    etudiants = models.ManyToManyField(Etudiant, related_name='groups')
-    profs = models.ManyToManyField(prof, related_name='groups')
-    date_created = models.DateField(auto_now_add=True, null=True, blank=True)
+    etudiants = models.ManyToManyField('Etudiant', related_name='groups')
+    profs = models.ManyToManyField('Prof', related_name='groups')
+    date_created = models.DateTimeField(auto_now_add=True, null=True, blank=True)
 
     def save(self, *args, **kwargs):
         if not self.code_group:
@@ -113,7 +112,6 @@ class Groups(models.Model):
     def __str__(self):
         return self.name
     
-    
     @property
     def student_names(self):
         return ', '.join(f'{student.prenom} {student.nom}' for student in self.etudiants.all())
@@ -121,7 +119,6 @@ class Groups(models.Model):
     @property
     def professor_names(self):
         return ', '.join(f'{professeur.prenom} {professeur.nom}' for professeur in self.profs.all())
-
 
     def total_points(self):
         # Sum pointsG from Membership model for this group
@@ -146,7 +143,7 @@ class Competitions(models.Model):
     name = models.CharField(max_length=100)
     number_of_sections = models.PositiveIntegerField()  # Number of sections for the competition
     group = models.ForeignKey('Groups', related_name='competitions', on_delete=models.SET_NULL, null=True, blank=True)  # Set null on delete
-    date_created = models.DateField(auto_now_add=True, null=True, blank=True)
+    date_created = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     is_finished = models.BooleanField(default=False)  # New field to track if competition is finished
     prof = models.ForeignKey('Prof', related_name='competitions', on_delete=models.SET_NULL, null=True, blank=True)  # Set null on delete
 
@@ -172,7 +169,7 @@ class Sections(models.Model):
 
 class Category(models.Model):
     name = models.CharField(max_length=100, unique=True)
-    date_added = models.DateTimeField(auto_now_add=True)
+    date_added = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     def __str__(self):
         return self.name
 
@@ -193,7 +190,7 @@ class Product(models.Model):
     stock = models.PositiveIntegerField()
     image = models.ImageField(upload_to='products/', null=True, blank=True)
     slug = models.SlugField(max_length=100, unique=True, blank=True, null=True)
-    date_added = models.DateTimeField(auto_now_add=True)
+    date_added = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     ProductCode = models.CharField(max_length=100, null=True, blank=True, default=generate_product_code)
 
     def save(self, *args, **kwargs):
@@ -227,7 +224,7 @@ class Commande(models.Model):
 
     etudiant = models.ForeignKey('Etudiant', on_delete=models.SET_NULL, null=True, blank=True)  # Set null on delete
     product = models.ForeignKey('Product', on_delete=models.SET_NULL, null=True, blank=True)  # Set null on delete
-    date_ordered = models.DateTimeField(auto_now_add=True)
+    date_ordered = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     quantity = models.PositiveIntegerField(default=1)
     total_price = models.DecimalField(max_digits=10, decimal_places=2)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='Pending')

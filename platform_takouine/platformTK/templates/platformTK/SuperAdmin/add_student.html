@@ -1,5 +1,6 @@
 {% extends "platformTK/SuperAdmin/HomeBase.html" %}
 {% load static %}
+{% load custom_filters %}
 
 {% block content %}
 {% include 'platformTK/SuperAdmin/navbar.html' %}
@@ -83,7 +84,7 @@
                 {% for etudiant in etudiants %}
                 <tr>
                     <td>{{ etudiant.user.username }}</td>
-                    <td>{{ etudiant.prenom }} {{ etudiant.nom }}</td>
+                    <td>{{ etudiant.nom|capitalize_first }} {{ etudiant.prenom|capitalize_first }} </td>
                     <td>{{ etudiant.numéro_de_téléphone }}</td>
                     <td>
                         {% if etudiant.avatar %}
@@ -120,7 +121,7 @@
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
-                                Are you sure you want to delete the student <strong>{{ etudiant.prenom }} {{ etudiant.nom }}</strong>?
+                                Are you sure you want to delete the student <strong>{{ etudiant.prenom|capitalize_first }} {{ etudiant.nom|capitalize_first}}</strong>?
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -183,11 +184,11 @@
                 <input type="hidden" id="edit_id" name="id">
                 
                 <div class="mb-3">
-                    <label for="edit_prenom" class="form-label">First Name</label>
+                    <label for="edit_prenom" class="form-label">Prenom</label>
                     <input type="text" class="form-control" id="edit_prenom" name="prenom" required>
                 </div>
                 <div class="mb-3">
-                    <label for="edit_nom" class="form-label">Last Name</label>
+                    <label for="edit_nom" class="form-label">Nom</label>
                     <input type="text" class="form-control" id="edit_nom" name="nom" required>
                 </div>
                 <div class="mb-3">
@@ -196,7 +197,7 @@
                 </div>
                 <div class="mb-3">
                     <label for="edit_email" class="form-label">Email</label>
-                    <input type="email" class="form-control" id="edit_email" name="email" required>
+                    <input type="email" class="form-control" id="edit_email" name="email">
                 </div>
                 <div class="mb-3">
                     <label for="edit_numéro_de_téléphone" class="form-label">Phone Number</label>
@@ -316,7 +317,7 @@
                 </div>
                 <div class="mb-3">
                     <label for="email" class="form-label">Email</label>
-                    <input type="email" class="form-control" id="email" name="email" required>
+                    <input type="email" class="form-control" id="email" name="email">
                 </div>
                 <div class="mb-3">
                     <label for="numéro_de_téléphone" class="form-label">Phone Number</label>
@@ -335,8 +336,6 @@
                         {% endfor %}
                     </select>
                 </div>
-                
-                
                 
                 <div class="text-center">
                     <button type="submit" class="btn btn-primary">Add Etudiant</button>

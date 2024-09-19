@@ -38,7 +38,7 @@
                                 <img class="img-fluid rounded-circle" src="img/classes-1.jpg" alt="">
                             </div>
                             <div class="bg-light rounded p-4 pt-5 mt-n5">
-                                <a class="d-block text-center h3 mt-3 mb-4" href="">{{ student.prenom }} {{ student.nom }}</a>
+                                <a class="d-block text-center h3 mt-3 mb-4" href="">{{ student.prenom|capitalize_first }} {{ student.nom|capitalize_first }}</a>
                                 <div class="d-flex align-items-center justify-content-between mb-4">
                                     <div class="d-flex align-items-center">
                                         {% if student.avatar %}
@@ -47,7 +47,7 @@
                                         <img class="rounded-circle flex-shrink-0" src="{% static 'img/user.jpg' %}" alt="" style="width: 55px;height: 55px;">
                                         {% endif %}
                                         <div class="ms-3">
-                                            <h6 class="text-primary mb-1" style="color: #30bb96 !important;">{{ student.prenom }} {{ student.nom }}</h6>
+                                            <h6 class="text-primary mb-1" style="color: #30bb96 !important;">{{ student.prenom|capitalize_first }} {{ student.nom|capitalize_first }}</h6>
                                             <small>{{ student.EtudiantCode }}</small>
                                         </div> 
                                     </div>

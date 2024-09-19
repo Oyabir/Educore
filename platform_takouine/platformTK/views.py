@@ -881,7 +881,7 @@ def add_groupe(request):
         groups = groups.filter(code_group__icontains=code_group_filter)
 
     # Pagination
-    paginator = Paginator(groups, 5)
+    paginator = Paginator(groups, 10)
     page_number = request.GET.get('page', 1)
     paginated_groups = paginator.get_page(page_number)
 
@@ -915,7 +915,7 @@ def add_student(request):
         etudiants = etudiants.filter(EtudiantCode__icontains=etudiant_code_filter)
 
     # Pagination
-    paginator = Paginator(etudiants, 5)  
+    paginator = Paginator(etudiants, 15)  
     page_number = request.GET.get('page', 1)
     paginated_etudiants = paginator.get_page(page_number)
 
@@ -1331,7 +1331,7 @@ def add_prof(request):
         profs = profs.filter(ProfCode__icontains=prof_code_filter)
 
     # Pagination
-    paginator = Paginator(profs, 5)
+    paginator = Paginator(profs, 10)
     page_number = request.GET.get('page', 1)
     paginated_profs = paginator.get_page(page_number)
 

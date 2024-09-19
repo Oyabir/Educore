@@ -1,5 +1,6 @@
 {% extends "platformTK/SuperAdmin/HomeBase.html" %}
 {% load static %}
+{% load custom_filters %}
 
 {% block content %}
 {% include 'platformTK/SuperAdmin/navbar.html' %}
@@ -73,7 +74,7 @@
                 <tr>
                     <th>Username</th>
                     <th>Nom et Prénom</th>
-                    <th>Email</th>
+                    <th>Tel</th>
                     <th>Avatar</th>
                     <th>Code Professeur</th>
                     <th>Actions</th>
@@ -83,8 +84,8 @@
                 {% for prof in profs %}
                 <tr>
                     <td>{{ prof.user.username }}</td>
-                    <td>{{ prof.prenom }} {{ prof.nom }}</td>
-                    <td>{{ prof.email }}</td>
+                    <td>{{ prof.nom|capitalize_first }} {{ prof.prenom|capitalize_first}} </td>
+                    <td>{{ prof.numéro_de_téléphone }}</td>
                     <td>
                         {% if prof.avatar %}
                             <img src="{{ prof.avatar.url }}" style="width: 48px; height: 48px;" alt="Avatar">
@@ -152,11 +153,11 @@
                     {% csrf_token %}
                     <div class="mb-3">
                         <label for="prenom{{ prof.id }}" class="form-label">Prénom:</label>
-                        <input type="text" class="form-control" id="prenom{{ prof.id }}" name="prenom" value="{{ prof.prenom }}" required>
+                        <input type="text" class="form-control" id="prenom{{ prof.id }}" name="prenom" value="{{ prof.prenom|capitalize_first }}" required>
                     </div>
                     <div class="mb-3">
                         <label for="nom{{ prof.id }}" class="form-label">Nom:</label>
-                        <input type="text" class="form-control" id="nom{{ prof.id }}" name="nom" value="{{ prof.nom }}" required>
+                        <input type="text" class="form-control" id="nom{{ prof.id }}" name="nom" value="{{ prof.nom|capitalize_first }}" required>
                     </div>
                     <div class="mb-3">
                         <label for="email{{ prof.id }}" class="form-label">Email:</label>

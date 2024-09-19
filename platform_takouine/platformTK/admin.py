@@ -8,7 +8,8 @@ class EtudiantAdmin(admin.ModelAdmin):
     list_display = ('prenom', 'nom', 'email', 'numéro_de_téléphone', 'EtudiantCode', 'date_created', 'points')
     fields = ('user', 'prenom', 'nom', 'date_de_naissance', 'email', 'numéro_de_téléphone', 'avatar', 'slugEtudiant', 'EtudiantCode','points')
     readonly_fields = ('date_created',)
-    
+    search_fields = ('prenom', 'nom')
+
     
     
     
@@ -39,7 +40,7 @@ class SectionsAdmin(admin.ModelAdmin):
 
 @admin.register(Groups)
 class GroupAdmin(admin.ModelAdmin):
-    list_display = ('name',)
+    list_display = ('name','date_created')
     filter_horizontal = ('etudiants', 'profs')
 
 

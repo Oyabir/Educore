@@ -1,5 +1,6 @@
 {% extends "platformTK/SuperAdmin/HomeBase.html" %}
 {% load static %}
+{% load custom_filters %}
 
 {% block content %}
 {% include 'platformTK/SuperAdmin/navbar.html' %}
@@ -56,7 +57,7 @@
             <thead>
                 <tr>
                     <th>Group Name</th>
-                    <th>Description</th>
+                    <th>Professor</th>
                     <th>Members</th>
                     <th>Code Group</th>
                     <th>Add and Delete</th>
@@ -67,7 +68,13 @@
                 {% for group in groups %}
                 <tr>
                     <td>{{ group.name }}</td>
-                    <td>{{ group.description }}</td>
+                    <td>
+                        {% for professor in group.profs.all %}
+                            {{ professor.prenom|capitalize_first }} {{ professor.nom|capitalize_first }}{% if not forloop.last %}, {% endif %}
+                        {% empty %}
+                            No professors assigned
+                        {% endfor %}
+                    </td>
                     <td>{{ group.etudiants.count }}</td>
                     <td>{{ group.code_group }}</td>
                     <td>
@@ -294,7 +301,7 @@
                         <div class="card mt-3 p-2 scrollable-container" id="studentList">
                             {% for etudiant in etudiants %}
                             <div data-id="{{ etudiant.id }}" class="student-item">
-                                {{ etudiant.prenom }} {{ etudiant.nom }}
+                                {{ etudiant.prenom|capitalize_first }} {{ etudiant.nom|capitalize_first }}
                                 <button type="button" class="btn btn-sm btn-primary" onclick="addStudent({{ etudiant.id }}, '{{ etudiant.prenom }} {{ etudiant.nom }}')">Add</button>
                             </div>
                             {% endfor %}
@@ -320,7 +327,7 @@
                         <div class="card mt-3 p-2 scrollable-container" id="profList">
                             {% for prof in profs %}
                             <div data-id="{{ prof.id }}" class="prof-item">
-                                {{ prof.prenom }} {{ prof.nom }}
+                                {{ prof.prenom|capitalize_first }} {{ prof.nom|capitalize_first }}
                                 <button type="button" class="btn btn-sm btn-primary" onclick="addProf({{ prof.id }}, '{{ prof.prenom }} {{ prof.nom }}')">Add</button>
                             </div>
                             {% endfor %}
