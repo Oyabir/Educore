@@ -1,11 +1,12 @@
 {% load static  %}
+{% load custom_filters %}
 
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="utf-8">
-    <title>Kider - Preschool Website</title>
+    <title>Platform Takouine</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="keywords" content="">
     <meta name="description" content="">
@@ -40,12 +41,40 @@
 <body>
     {%  include  'platformTK/Etudiant/navbar.html' %}
     {% block content %}
+    
     <div class="container-xxl py-5">
+        {% if birthday_message %}
+        <div id="birthday-message" class="birthday-animation">
+            <p>🎉 Happy Birthday, {{ etudiant.prenom }}! 🎂</p>
+        </div>
+        {% endif %}
+
+<style>
+    .birthday-animation {
+        animation: bounce 2s infinite;
+        color: #FF6347; /* You can change the color */
+        font-size: 24px;
+        text-align: center;
+    }
+
+    @keyframes bounce {
+        0%, 20%, 50%, 80%, 100% {
+            transform: translateY(0);
+        }
+        40% {
+            transform: translateY(-20px);
+        }
+        60% {
+            transform: translateY(-10px);
+        }
+    }
+</style>
+
         <div class="container">
             <div class="text-center mb-5">
-                <h1 class="mb-3">My Groups</h1>
-                <p class="lead">Here are the groups you are part of, {{ etudiant.prenom }}.</p>
-            </div>
+                <h1 class="mb-3">Mes Groupes</h1>
+                <p class="lead">Voici les groupes dont vous faites partie, {{ etudiant.prenom|capitalize_first }}.</p>
+            </div>            
 
             <div class="row justify-content-center">
                 {% if group_data %}
@@ -57,19 +86,19 @@
                                 <thead>
                                     <tr>
                                         <th>#</th>
-                                        <th>Group Name</th>
+                                        <th>Nom du Groupe</th>
                                         <th>Description</th>
-                                        <th>Your Points</th>
-                                        <th>Your Rank</th>
-                                        <th>Total Students</th>
-                                    </tr>
+                                        <th>Vos Points</th>
+                                        <th>Votre Rang</th>
+                                        <th>Nombre Total d'Étudiants</th>
+                                    </tr>                                    
                                 </thead>
                                 <tbody>
                                     {% for data in group_data %}
                                     <tr>
                                         <td>{{ forloop.counter }}</td>
                                         <td>{{ data.group.name }}</td>
-                                        <td>{{ data.group.description }}</td>
+                                        <td class="d-none d-md-table-cell" style="width: 309px;">{{ data.group.description }}</td>
                                         <td>{{ data.points }}</td>
                                         <td>{{ data.rank }}/{{ data.total_students }}</td>
                                         <td>{{ data.total_students }}</td>
@@ -82,8 +111,8 @@
                 </div>
                 {% else %}
                 <div class="alert alert-info" role="alert">
-                    You are not part of any groups.
-                </div>
+                    Vous ne faites partie d'aucun groupe.
+                </div>                
                 {% endif %}
             </div>
         </div>
@@ -93,10 +122,9 @@
     <div class="container-xxl py-5">
         <div class="container">
             <div class="text-center mb-5">
-                <h1 class="mb-3">My Competitions</h1>
-                <p class="lead">Here are the competitions you are involved in, {{ etudiant.prenom }}.</p>
-            </div>
-
+                <h1 class="mb-3">Mes Compétitions</h1>
+                <p class="lead">Voici les compétitions auxquelles vous participez, {{ etudiant.prenom|capitalize_first }}.</p>
+            </div>            
             <div class="row justify-content-center">
                 {% if competition_section_data %}
                 <!-- Competitions Table -->
@@ -107,14 +135,14 @@
                                 <thead>
                                     <tr>
                                         <th>#</th>
-                                        <th>Competition Name</th>
-                                        <th>Section Name</th>
+                                        <th>Nom de la Compétition</th>
+                                        <th>Nom de la Section</th>
                                         <th>Points</th>
-                                        <th class="d-none d-md-table-cell">Rank</th> <!-- Hidden on SM and XS -->
-                                        <th>The Prize</th> <!-- Visible on all screen sizes -->
-                                        <th class="d-none d-md-table-cell">Date Created</th> <!-- Hidden on SM and XS -->
-                                        <th class="d-none d-md-table-cell">Status</th> <!-- Hidden on SM and XS -->
-                                    </tr>
+                                        <th class="d-none d-md-table-cell">Rang</th> <!-- Caché sur SM et XS -->
+                                        <th>Le Prix</th> <!-- Visible sur toutes les tailles d'écran -->
+                                        <th class="d-none d-md-table-cell">Date de Création</th> <!-- Caché sur SM et XS -->
+                                        <th class="d-none d-md-table-cell">Statut</th> <!-- Caché sur SM et XS -->
+                                    </tr>                                    
                                 </thead>
                                 <tbody>
                                     {% for data in competition_section_data %}
@@ -126,23 +154,23 @@
                                         <td class="d-none d-md-table-cell">{{ data.rank }}/{{ data.competition.number_of_sections }}</td>
                                         <td>
                                             {% if data.rank == 1 %}
-                                            You won $10
+                                            Vous avez gagné 10 $
                                             {% elif data.rank == 2 %}
-                                            You won $5
+                                            Vous avez gagné 5 $
                                             {% elif data.rank == 3 %}
-                                            You won $1
+                                            Vous avez gagné 1 $
                                             {% else %}
-                                            You won $0
+                                            Vous avez gagné 0 $
                                             {% endif %}
-                                        </td>
+                                        </td>                                        
                                         <td class="d-none d-md-table-cell">{{ data.competition.date_created|date:"M d, Y" }}</td>
                                         <td class="d-none d-md-table-cell">
                                             {% if data.competition.is_finished %}
-                                                <span class="badge bg-success text-white">Finished</span>
+                                                <span class="badge bg-success text-white">Terminé</span>
                                             {% else %}
-                                                <span class="badge bg-warning text-dark">Ongoing</span>
+                                                <span class="badge bg-warning text-dark">En cours</span>
                                             {% endif %}
-                                        </td>
+                                        </td>                                        
                                     </tr>
                                     {% endfor %}
                                 </tbody>
@@ -152,8 +180,8 @@
                 </div>
                 {% else %}
                 <div class="alert alert-info" role="alert">
-                    You are not involved in any competitions.
-                </div>
+                    Vous ne participez à aucune compétition.
+                </div>                
                 {% endif %}
             </div>
         </div>

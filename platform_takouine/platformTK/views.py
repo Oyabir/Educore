@@ -66,10 +66,19 @@ def userLogout(request):
 
 
 
+from django.utils import timezone
+
+def is_birthday(etudiant):
+    today = timezone.now().date()
+    return today.day == etudiant.date_de_naissance.day and today.month == etudiant.date_de_naissance.month
+
+
 
 @login_required(login_url='login')
 @allowedUsers(allowedGroups=['Etudiants'])
 def homeEtudiant(request):
+    etudiant = request.user.etudiant  # Assuming you're getting the logged-in student
+    birthday_message = is_birthday(etudiant)
     try:
         etudiant = Etudiant.objects.get(user=request.user)
     except Etudiant.DoesNotExist:
@@ -121,6 +130,7 @@ def homeEtudiant(request):
         'etudiant': etudiant,
         'competition_section_data': competition_section_data,
         'group_data': group_data,
+        'birthday_message': birthday_message,
     }
 
     return render(request, "platformTK/Etudiant/homeEtudiant.html", context)
@@ -1823,6 +1833,9 @@ def delete_category(request):
         return redirect('list_categories')
 
     return redirect('list_categories')
+
+
+
 
 
 

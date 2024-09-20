@@ -158,7 +158,7 @@
         <div class="az-content-body">
           <div class="az-dashboard-one-title">
             <div>
-              <h2 class="az-dashboard-title">Hi, welcome back!</h2>
+              <h2 class="az-dashboard-title">Salut, bon retour !</h2>
               {% comment %} <p class="az-dashboard-text">Your web analytics dashboard template.</p> {% endcomment %}
             </div>
             <div class="az-content-header-right">
@@ -180,7 +180,7 @@
                   <h6>All Categories</h6>
                 </div><!-- media-body -->
               </div><!-- media --> {% endcomment %}
-              <a href="" class="btn btn-purple">Export</a>
+              <a href="" class="btn btn-purple">Exporter</a>
             </div>
           </div><!-- az-dashboard-one-title -->
 
@@ -191,13 +191,12 @@
               <a class="nav-link" data-toggle="tab" href="#">Demographics</a>
               <a class="nav-link" data-toggle="tab" href="#">More</a> {% endcomment %}
             </nav>
-
             <nav class="nav">
-              <a class="nav-link" href="#"><i class="far fa-save"></i> Save Report</a>
-              <a class="nav-link" href="#"><i class="far fa-file-pdf"></i> Export to PDF</a>
-              {% comment %} <a class="nav-link" href="#"><i class="far fa-envelope"></i>Send to Email</a> {% endcomment %}
+              <a class="nav-link" href="#"><i class="far fa-save"></i> Sauvegarder le rapport</a>
+              <a class="nav-link" href="#"><i class="far fa-file-pdf"></i> Exporter en PDF</a>
+              {% comment %} <a class="nav-link" href="#"><i class="far fa-envelope"></i>Envoyer par email</a> {% endcomment %}
               <a class="nav-link" href="#"><i class="fas fa-ellipsis-h"></i></a>
-            </nav>
+          </nav>          
           </div>
 
           <div class="row row-sm mg-b-20">
@@ -205,7 +204,7 @@
               <div class="card card-dashboard-one">
                 <div class="card-header">
                   <div>
-                    <h6 class="card-title">The Points by Groups</h6>
+                    <h6 class="card-title">Les Points par Groupes</h6>
                     {% comment %} <p class="card-text">Audience to which the users belonged while on the current date range.</p> {% endcomment %}
                   </div>
                   <div class="btn-group">
@@ -217,17 +216,17 @@
                 <div class="card-body">
                   <div class="card-body-top">
                     <div>
-                      <label class="mg-b-0">Total Groups</label>
+                      <label class="mg-b-0">Total des Groupes</label>
                       <h2>{{ total_groups }}</h2>
-                    </div>
-                    <div>
-                      <label class="mg-b-0">Total Points</label>
+                  </div>
+                  <div>
+                      <label class="mg-b-0">Total des Points</label>
                       <h2>{{ total_points }}</h2>
-                    </div>
-                    <div>
-                      <label class="mg-b-0">Average Points per Group</label>
+                  </div>
+                  <div>
+                      <label class="mg-b-0">Moyenne des Points par Groupe</label>
                       <h2>{{ avg_points|floatformat:2 }}</h2>
-                    </div>
+                  </div>                  
                     {% comment %} <div>
                       <label class="mg-b-0">Sessions</label>
                       <h2>16,869</h2>
@@ -258,8 +257,8 @@
                             {% endif %}
                             <small>{{ avg_competition_points|floatformat:2 }}%</small> 
                         </h6>
-                        <p>Average Points for Competitions</p>
-                    </div><!-- card-header -->
+                        <p>Moyenne des Points pour les Compétitions</p>
+                      </div><!-- card-header -->
                     <div class="card-body">
                       <div class="chart-wrapper">
                         <div id="flotChart1" class="flot-chart"></div>
@@ -283,8 +282,8 @@
                         
                         <small>{{ avg_etudiant_points|floatformat:2 }}%</small>  <!-- Display current average -->
                     </h6>
-                    <p>Average Points for Etudiants</p>                    
-                    </div><!-- card-header -->
+                    <p>Moyenne des Points pour les Étudiants</p>
+                  </div><!-- card-header -->
                     <div class="card-body">
                       <div class="chart-wrapper">
                         <div id="flotChart2" class="flot-chart"></div>
@@ -295,9 +294,9 @@
                 <div class="col-sm-12 mg-t-20">
                   <div class="card card-dashboard-three">
                     <div class="card-header">
-                      <p>Total Number of Orders</p>
+                      <p>Nombre Total de Commandes</p>
                       <h6>{{ total_orders }}</h6>
-                      <small>The total number of orders made within the system.</small>
+                      <small>Le nombre total de commandes effectuées dans le système.</small>
                     </div><!-- card-header -->
                     <div class="card-body">
                       <div class="chart"><canvas id="chartBar5"></canvas></div>
@@ -312,7 +311,7 @@
             <div class="col-lg-4">
               <div class="card card-dashboard-pageviews">
                 <div class="card-header">
-                  <h6 class="card-title">The top 10 student</h6>
+                  <h6 class="card-title">Les 10 meilleurs étudiants</h6>
                   {% comment %} <p class="card-text">This report is based on 100% of sessions.</p> {% endcomment %}
                 </div><!-- card-header -->
                 <div class="card-body">{% for student in top_etudiant_data %}
@@ -324,7 +323,7 @@
                     </div>
                     <div>
                       <h6 class="tx-primary">{{ student.points }}</h6>
-                      <span>Average Points {{ avg_etudiant_points|floatformat:2 }}%</span>
+                      <span>Points moyens {{ avg_etudiant_points|floatformat:2 }}%</span>
                     </div>
                   </div><!-- list-group-item -->
                   {% endfor %}
@@ -335,7 +334,7 @@
             <div class="col-lg-8 mg-t-20 mg-lg-t-0">
               <div class="card card-dashboard-four">
                 <div class="card-header">
-                  <h6 class="card-title">Sessions by Channel</h6>
+                  <h6 class="card-title">Commandé</h6>
                 </div><!-- card-header -->
                 <div class="card-body row">
                   <div class="col-md-6 d-flex align-items-center" style="flex: 0 0 0; max-width: 100%">
@@ -343,7 +342,7 @@
                   </div><!-- col -->
                <!-- Existing Code -->
                <div class="col-md-6 col-lg-5 mg-lg-l-auto mg-t-20 mg-md-t-0">
-                <h2>Top 4 Products by Quantity Ordered</h2>
+                <h2>Top 4 Produits par Quantité Commandée</h2>
                 {% for product in top_product_data %}
                 <div class="az-traffic-detail-item">
                     <div>
@@ -360,7 +359,7 @@
                 </div>
                 {% empty %}
                 <div class="az-traffic-detail-item">
-                    <div>No top products available</div>
+                  <div>Aucun produit vedette disponible</div>
                 </div>
                 {% endfor %}
               </div><!-- col -->            
@@ -470,14 +469,14 @@
             </div><!-- col-lg-3 -->
             <div class="col-lg-7 col-xl-8 mg-t-20 mg-lg-t-0">
               <div class="card card-table-one">
-                <h6 class="card-title">Top 4 Professors by Points</h6>
+                <h6 class="card-title">Top 4 Professeurs par Points</h6>
                 <div class="table-responsive">
                   <table class="table">
                     <thead>
                       <tr>
-                        <th>Professor</th>
-                        <th>Total Points</th>
-                      </tr>
+                        <th>Professeur</th>
+                        <th>Total des Points</th>
+                      </tr>                    
                     </thead>
                     <tbody>
                       {% for prof in top_prof_data %}

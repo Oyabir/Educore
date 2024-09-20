@@ -1,35 +1,37 @@
 {% extends "platformTK/Etudiant/HomeBase.html" %}
+{% load custom_filters %}
 
 {% block content %}
 {% include 'platformTK/Etudiant/navbar.html' %}
 
 <div class="container-xxl py-3">
     <div class="text-center mb-5">
-        <h1 class="mb-3">{{ page_title }}</h1>
-        <p class="lead">Here is the list of your orders, {{ etudiant.prenom }}.</p>
+        <h1 class="mb-3">Mes commandes</h1>
+        <p class="lead">Voici la liste de vos commandes, {{ etudiant.prenom|capitalize_first}}.</p>
     </div>
+    
     <div class="container">
     <!-- Search Form -->
     <div class="row mb-4">
         <form method="GET" class="row mb-4">
             <!-- Search by commande_code -->
             <div class="col-md-6 mb-2">
-                <input type="text" name="commande_code" class="form-control" placeholder="Search by order code..." value="{{ commande_code_query }}">
+                <input type="text" name="commande_code" class="form-control" placeholder="Rechercher par code de commande..." value="{{ commande_code_query }}">
             </div>
             <!-- Filter by status -->
             <div class="col-md-4 mb-2">
                 <select name="status" class="form-select">
-                    <option value="">All Statuses</option>
-                    <option value="Pending" {% if status_query == 'Pending' %}selected{% endif %}>Pending</option>
-                    <option value="Completed" {% if status_query == 'Completed' %}selected{% endif %}>Completed</option>
-                    <option value="Cancelled" {% if status_query == 'Cancelled' %}selected{% endif %}>Cancelled</option>
+                    <option value="">Tous les statuts</option>
+                    <option value="Pending" {% if status_query == 'Pending' %}selected{% endif %}>En attente</option>
+                    <option value="Completed" {% if status_query == 'Completed' %}selected{% endif %}>Complétée</option>
+                    <option value="Cancelled" {% if status_query == 'Cancelled' %}selected{% endif %}>Annulée</option>
                 </select>
             </div>
 
             <!-- Submit button -->
             <div class="col-md-2 mb-2">
-                <button type="submit" class="btn btn-primary w-100" style="margin-bottom: 4px;background-color: #176b90;border-color: #176b90;">Search</button>
-                <a href="{% url 'list_commandes' %}" class="btn btn-secondary w-100">Cancel</a>
+                <button type="submit" class="btn btn-primary w-100" style="margin-bottom: 4px;background-color: #176b90;border-color: #176b90;">Rechercher</button>
+                <a href="{% url 'list_commandes' %}" class="btn btn-secondary w-100">Annuler</a>
             </div>
         </form>
     </div>
@@ -44,12 +46,12 @@
                         <thead>
                             <tr>
                                 <th>#</th>
-                                <th>Product</th>
-                                <th>Status</th>
-                                <th>Total Price</th>
+                                <th>Produit</th>
+                                <th>Statut</th>
+                                <th>Prix Total</th>
                                 <th>Code Commande</th>
-                                <th>Date Ordered</th>
-                            </tr>
+                                <th>Date de Commande</th>
+                            </tr>                            
                         </thead>
                         <tbody>
                             {% for commande in page_obj %}
@@ -58,13 +60,13 @@
                                 <td>{{ commande.product.name }}</td>
                                 <td>
                                     {% if commande.status == 'Pending' %}
-                                        <span class="badge bg-warning text-dark">Pending</span>
+                                        <span class="badge bg-warning text-dark">En attente</span>
                                     {% elif commande.status == 'Completed' %}
-                                        <span class="badge bg-success text-white">Completed</span>
+                                        <span class="badge bg-success text-white">Complétée</span>
                                     {% elif commande.status == 'Cancelled' %}
-                                        <span class="badge bg-danger text-white">Cancelled</span>
+                                        <span class="badge bg-danger text-white">Annulée</span>
                                     {% else %}
-                                        <span class="badge bg-secondary text-white">Unknown</span>
+                                        <span class="badge bg-secondary text-white">Inconnue</span>
                                     {% endif %}
                                 </td>
                                 <td>${{ commande.total_price }}</td>
@@ -85,10 +87,10 @@
             <ul class="pagination">
                 {% if page_obj.has_previous %}
                     <li class="page-item">
-                        <a class="page-link" href="?page=1{% if commande_code_query %}&commande_code={{ commande_code_query }}{% endif %}{% if status_query %}&status={{ status_query }}{% endif %}">First</a>
+                        <a class="page-link" href="?page=1{% if commande_code_query %}&commande_code={{ commande_code_query }}{% endif %}{% if status_query %}&status={{ status_query }}{% endif %}">Première</a>
                     </li>
                     <li class="page-item">
-                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if commande_code_query %}&commande_code={{ commande_code_query }}{% endif %}{% if status_query %}&status={{ status_query }}{% endif %}">Previous</a>
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if commande_code_query %}&commande_code={{ commande_code_query }}{% endif %}{% if status_query %}&status={{ status_query }}{% endif %}">Précédente</a>
                     </li>
                 {% endif %}
 
@@ -100,10 +102,10 @@
 
                 {% if page_obj.has_next %}
                     <li class="page-item">
-                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if commande_code_query %}&commande_code={{ commande_code_query }}{% endif %}{% if status_query %}&status={{ status_query }}{% endif %}">Next</a>
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if commande_code_query %}&commande_code={{ commande_code_query }}{% endif %}{% if status_query %}&status={{ status_query }}{% endif %}">Suivante</a>
                     </li>
                     <li class="page-item">
-                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if commande_code_query %}&commande_code={{ commande_code_query }}{% endif %}{% if status_query %}&status={{ status_query }}{% endif %}">Last</a>
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if commande_code_query %}&commande_code={{ commande_code_query }}{% endif %}{% if status_query %}&status={{ status_query }}{% endif %}">Dernière</a>
                     </li>
                 {% endif %}
             </ul>
@@ -113,12 +115,12 @@
     </div>
     {% else %}
     <div class="alert alert-info" role="alert">
-    No orders found.
+        Aucune commande trouvée.
     </div>
     {% endif %}
     </div>
     </div>
-
+</div>
 
 <style>
     .page-item.active .page-link {

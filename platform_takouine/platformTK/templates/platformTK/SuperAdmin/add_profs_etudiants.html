@@ -1,66 +1,68 @@
 {% extends "platformTK/SuperAdmin/HomeBase.html" %}
 {% load static %}
+{% load custom_filters %}
+
 
 {% block content %}
 {% include 'platformTK/SuperAdmin/navbar.html' %}
 
 <div class="container mt-5">
-    <h2 class="text-center">Add Professors and Students to Group: {{ group.name }}</h2>
+    <h2 class="text-center">Ajouter des Professeurs et des Étudiants au Groupe: {{ group.name }}</h2>
     <form method="post" action="{% url 'add_profs_etudiants' group.id %}">
         {% csrf_token %}
         <input type="hidden" name="group_id" value="{{ group.id }}">
 
         <div class="students-container">
             <div class="professors-container flex-grow-1">
-                <h3>Professors</h3>
+                <h3>Professeurs</h3>
                 {% comment %} <div class="input-group mb-3">
                     <input type="text" id="profSearch" class="form-control" placeholder="Search Professors" oninput="filterList('prof')">
                 </div> {% endcomment %}
                 <div class="scrollable-container" id="profList">
                     {% for prof in professors %}
                     <div data-id="{{ prof.id }}" class="list-group-item d-flex justify-content-between align-items-center prof-item">
-                        {{ prof.prenom }} {{ prof.nom }}
-                        <button type="button" class="btn btn-primary" onclick="addProf('{{ prof.id }}', '{{ prof.prenom }} {{ prof.nom }}')">Add</button>
+                        {{ prof.prenom|capitalize_first}} {{ prof.nom|capitalize_first}}
+                        <button type="button" class="btn btn-primary" onclick="addProf('{{ prof.id }}', '{{ prof.prenom }} {{ prof.nom }}')">Ajouter</button>
                     </div>
                     {% empty %}
-                    <p>No professors available.</p>
+                    <p>Aucun professeur disponible.</p>
                     {% endfor %}
                 </div>
             </div>
 
-            <h3 class="mt-4">Selected</h3>
+            <h3 class="mt-4">Sélectionnés</h3>
             <div class="container">
-                <h4>Selected Professors</h4>
+                <h4>Professeurs Sélectionnés</h4>
                 <div id="selectedProfs" class="list-group"></div>
             </div>
 
             <br>
 
             <div class="students-container flex-grow-1 mr-2">
-                <h3>Students</h3>
+                <h3>Étudiants</h3>
                 {% comment %} <div class="input-group mb-3">
                     <input type="text" id="studentSearch" class="form-control" placeholder="Search Students" oninput="filterList('student')">
                 </div> {% endcomment %}
                 <div class="scrollable-container" id="studentList">
                     {% for etudiant in etudiants %}
                     <div data-id="{{ etudiant.id }}" class="list-group-item d-flex justify-content-between align-items-center student-item">
-                        {{ etudiant.prenom }} {{ etudiant.nom }}
-                        <button type="button" class="btn btn-primary" onclick="addEtudiant('{{ etudiant.id }}', '{{ etudiant.prenom }} {{ etudiant.nom }}')">Add</button>
+                        {{ etudiant.prenom|capitalize_first }} {{ etudiant.nom|capitalize_first }}
+                        <button type="button" class="btn btn-primary" onclick="addEtudiant('{{ etudiant.id }}', '{{ etudiant.prenom }} {{ etudiant.nom }}')">Ajouter</button>
                     </div>
                     {% empty %}
-                    <p>No students available.</p>
+                    <p>Aucun étudiant disponible.</p>
                     {% endfor %}
                 </div>
             </div>
         </div>
 
-        <h3 class="mt-4">Selected</h3>
+        <h3 class="mt-4">Sélectionnés</h3>
         <div class="container">
-            <h4 class="mt-4">Selected Students</h4>
+            <h4 class="mt-4">Étudiants Sélectionnés</h4>
             <div id="selectedEtudiants" class="list-group"></div>
         </div>
 
-        <button type="submit" class="btn btn-primary mt-4">Confirm Selection</button>
+        <button type="submit" class="btn btn-primary mt-4">Confirmer la Sélection</button>
     </form>
 </div>
 
@@ -69,7 +71,7 @@
     let selectedEtudiants = new Set();
 
     function addProf(profId, profName) {
-        console.log('Adding Professor:', profId, profName);
+        //console.log('Adding Professor:', profId, profName);
         if (selectedProfs.has(profId)) {
             selectedProfs.delete(profId);
             removeFromSelected('selectedProfs', profId);
@@ -79,11 +81,11 @@
                 addToSelected('selectedProfs', profId, profName);
             }
         }
-        console.log('Selected Professors:', Array.from(selectedProfs));
+        //console.log('Selected Professors:', Array.from(selectedProfs));
     }
 
     function addEtudiant(etudiantId, etudiantName) {
-        console.log('Adding Student:', etudiantId, etudiantName);
+        //console.log('Adding Student:', etudiantId, etudiantName);
         if (selectedEtudiants.has(etudiantId)) {
             selectedEtudiants.delete(etudiantId);
             removeFromSelected('selectedEtudiants', etudiantId);
@@ -93,7 +95,14 @@
                 addToSelected('selectedEtudiants', etudiantId, etudiantName);
             }
         }
-        console.log('Selected Students:', Array.from(selectedEtudiants));
+        //console.log('Selected Students:', Array.from(selectedEtudiants));
+    }
+
+    function capitalizeFirst(value) {
+        if (typeof value === 'string') {
+            return value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
+        }
+        return value;
     }
 
     function addToSelected(containerId, id, name) {
@@ -101,9 +110,14 @@
         let item = document.createElement('div');
         item.className = 'list-group-item d-flex justify-content-between align-items-center';
         item.id = id;
-        item.innerHTML = `${name} <button type="button" class="btn btn-danger btn-sm" onclick="removeFromSelected('${containerId}', '${id}')">Remove</button>`;
+
+        // Capitalize the first letter of the name
+        let capitalizedName = capitalizeFirst(name);
+
+        item.innerHTML = `${capitalizedName} <button type="button" class="btn btn-danger btn-sm" onclick="removeFromSelected('${containerId}', '${id}')">Supprimer</button>`;
         container.appendChild(item);
     }
+
 
     function removeFromSelected(containerId, id) {
         let container = document.getElementById(containerId);
@@ -130,8 +144,8 @@
         etudiantsInput.value = Array.from(selectedEtudiants).join(',');
         this.appendChild(etudiantsInput);
 
-        console.log('Form submission with Professors:', profsInput.value);
-        console.log('Form submission with Students:', etudiantsInput.value);
+        //console.log('Form submission with Professors:', profsInput.value);
+        //console.log('Form submission with Students:', etudiantsInput.value);
 
         this.submit();
     });

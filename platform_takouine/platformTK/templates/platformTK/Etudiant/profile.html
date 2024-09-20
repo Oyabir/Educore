@@ -1,6 +1,7 @@
 {% extends "platformTK/Etudiant/HomeBase.html" %}
 
 {% load static %}
+{% load custom_filters %}
 
 {% block content %}
 <link href="{% static 'css/profile.css' %}" rel="stylesheet">
@@ -43,23 +44,23 @@
                         <div class="text-center mb-4">
                             <img src="{% if etudiant.avatar %}{{ etudiant.avatar.url }}{% else %}{% static 'img/786525_people_512x512.png' %}{% endif %}" alt="Profile Picture" class="profile-picture img-fluid rounded-circle">
                         </div>
-                        <h2 class="card-title text-center">Etudiant Profile</h2>
+                        <h2 class="card-title text-center">Votre profil</h2>
                         <form id="profile-form" method="post" enctype="multipart/form-data" action="{% url 'update_profile' %}">
                             {% csrf_token %}
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label for="firstName" class="form-label">Prenom</label>
-                                    <input type="text" class="form-control" id="firstName" name="prenom" value="{{ etudiant.prenom }}">
+                                    <input type="text" class="form-control" id="firstName" name="prenom" value="{{ etudiant.prenom|capitalize_first }}">
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label for="lastName" class="form-label">Nom</label>
-                                    <input type="text" class="form-control" id="lastName" name="nom" value="{{ etudiant.nom }}">
+                                    <input type="text" class="form-control" id="lastName" name="nom" value="{{ etudiant.nom|capitalize_first }}">
                                 </div>
                             </div>
-                            <div class="mb-3">
+                            {% comment %} <div class="mb-3">
                                 <label for="email" class="form-label">Email</label>
                                 <input type="email" class="form-control" id="email" name="email" value="{{ etudiant.email }}">
-                            </div>
+                            </div> {% endcomment %}
                             <div class="mb-3">
                                 <label for="phone" class="form-label">Numéro de téléphone</label>
                                 <input type="text" class="form-control" id="phone" name="numéro_de_téléphone" value="{{ etudiant.numéro_de_téléphone }}">
@@ -69,7 +70,7 @@
                                 <input class="form-control" type="file" name="avatar" id="avatar">
                             </div>
                             <div class="d-grid">
-                                <button type="submit" class="btn btn-primary" style="background-color: #176b90 !important; border-color: #ffffff;">Update Profile</button>
+                                <button type="submit" class="btn btn-primary" style="background-color: #176b90 !important; border-color: #ffffff;">Mettre à jour le profil</button>
                             </div>
                         </form>
                     </div>

@@ -1,65 +1,66 @@
 {% extends "platformTK/SuperAdmin/HomeBase.html" %}
 {% load static %}
+{% load custom_filters %}
 
 {% block content %}
 {% include 'platformTK/SuperAdmin/navbar.html' %}
 
 <div class="container mt-5">
-    <h2 class="text-center">Manage Professors and Students for Group: {{ group.name }}</h2>
+    <h2 class="text-center">Supprimer les Professeurs et les Étudiants du Groupe : {{ group.name }}</h2>
 
     <form method="post" action="{% url 'delete_profs_etudiants' group.id %}">
         {% csrf_token %}
 
         <div class="students-container">
             <div class="professors-container flex-grow-1">
-                <h3>Professors</h3>
+                <h3>Professeurs</h3>
             <div class="scrollable-container" id="profList">
                 {% for prof in professors %}
                 <div data-id="{{ prof.id }}" class="list-group-item d-flex justify-content-between align-items-center ">
-                    {{ prof.prenom }} {{ prof.nom }}
+                    {{ prof.prenom|capitalize_first }} {{ prof.nom|capitalize_first }}
                     <div class="btn-group" role="group">
                         {% comment %} <input type="checkbox" name="profs" value="{{ prof.id }}" id="prof_{{ prof.id }}"> {% endcomment %}
-                        <button type="button" class="btn btn-primary btn-sm" onclick="addToSelected('prof', '{{ prof.id }}', '{{ prof.prenom }} {{ prof.nom }}')">Add</button>
+                        <button type="button" class="btn btn-primary btn-sm" onclick="addToSelected('prof', '{{ prof.id }}', '{{ prof.prenom }} {{ prof.nom }}')">Supprimer</button>
                     </div>
                 </div>
                 {% empty %}
-                <p>No professors to remove.</p>
+                <p>Aucun professeur à supprimer.</p>
                 {% endfor %}
             </div>
         </div>
         <div class="container mt-5">
-            <h3 class="text-center">Selected Items for Addition</h3>
+            <h3 class="text-center">Éléments sélectionnés à supprimer</h3>
     
-            <h4>Selected Professors</h4>
+            <h4>Professeurs Sélectionnés</h4>
             <div id="selectedProfs" class="list-group"></div>
         </div>
 
         <div class="students-container flex-grow-1 mr-2">
-        <h3 class="mt-4">Students</h3>
+        <h3 class="mt-4">Étudiants</h3>
         <div class="scrollable-container" id="studentList">
             {% for etudiant in etudiants %}
             <div data-id="{{ etudiant.id }}" class="list-group-item d-flex justify-content-between align-items-center">
-                {{ etudiant.prenom }} {{ etudiant.nom }}
+                {{ etudiant.prenom|capitalize_first }} {{ etudiant.nom|capitalize_first }}
                 <div class="btn-group" role="group">
                     {% comment %} <input type="checkbox" name="etudiants" value="{{ etudiant.id }}" id="etudiant_{{ etudiant.id }}"> {% endcomment %}
-                    <button type="button" class="btn btn-primary btn-sm" onclick="addToSelected('student', '{{ etudiant.id }}', '{{ etudiant.prenom }} {{ etudiant.nom }}')">Add</button>
+                    <button type="button" class="btn btn-primary btn-sm" onclick="addToSelected('student', '{{ etudiant.id }}', '{{ etudiant.prenom }} {{ etudiant.nom }}')">Supprimer</button>
                 </div>
             </div>
             {% empty %}
-            <p>No students to remove.</p>
+            <p>Aucun étudiant à supprimer.</p>
             {% endfor %}
         </div>
         </div>
 
          <!-- Section to display selected items for addition -->
     <div class="container mt-5">
-        <h3 class="text-center">Selected Items for Addition</h3>
+        <h3 class="text-center">Éléments sélectionnés à supprimer</h3>
 
-        <h4 class="mt-4">Selected Students</h4>
+        <h4 class="mt-4">Étudiants Sélectionnés</h4>
         <div id="selectedStudents" class="list-group"></div>
     </div>
 
-        <button type="submit" class="btn btn-danger mt-4">Confirm Removal</button>
+        <button type="submit" class="btn btn-danger mt-4">Confirmer la Suppression</button>
     </form>
 
    
@@ -82,14 +83,26 @@
         }
     }
 
+    function capitalizeFirst(value) {
+        if (typeof value === 'string') {
+            return value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
+        }
+        return value;
+    }
+    
     function addItemToSelected(containerId, id, name) {
         let container = document.getElementById(containerId);
         let item = document.createElement('div');
         item.className = 'list-group-item d-flex justify-content-between align-items-center';
         item.id = id;
-        item.innerHTML = `${name} <button type="button" class="btn btn-danger btn-sm" onclick="removeFromSelected('${containerId}', '${id}')">Remove</button>`;
+    
+        // Capitalize the first letter of the name
+        let capitalizedName = capitalizeFirst(name);
+    
+        item.innerHTML = `${capitalizedName} <button type="button" class="btn btn-danger btn-sm" onclick="removeFromSelected('${containerId}', '${id}')">Annuler</button>`;
         container.appendChild(item);
     }
+    
 
     function removeFromSelected(containerId, id) {
         let container = document.getElementById(containerId);

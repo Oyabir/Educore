@@ -37,34 +37,34 @@
     <div class="mb-4">
         <form method="get" class="d-flex">
             <!-- Filter by Commande Code -->
-            <input type="text" class="form-control me-2" style="height: 42px;" name="commande_code" placeholder="Filter by Commande Code" value="{{ commande_code_filter }}">
+            <input type="text" class="form-control me-2" style="height: 42px;" name="commande_code" placeholder="Filtrer par Code Commande" value="{{ commande_code_filter }}">
 
             <!-- Filter by Status -->
             <select class="form-control me-2" style="height: 42px;" name="status">
-                <option value="">Filter by Status</option>
-                <option value="Pending" {% if status_filter == 'Pending' %}selected{% endif %}>Pending</option>
-                <option value="Completed" {% if status_filter == 'Completed' %}selected{% endif %}>Completed</option>
-                <option value="Cancelled" {% if status_filter == 'Cancelled' %}selected{% endif %}>Cancelled</option>
+                <option value="">Filtrer par Statut</option>
+                <option value="Pending" {% if status_filter == 'Pending' %}selected{% endif %}>En Attente</option>
+                <option value="Completed" {% if status_filter == 'Completed' %}selected{% endif %}>Terminé</option>
+                <option value="Cancelled" {% if status_filter == 'Cancelled' %}selected{% endif %}>Annulé</option>
             </select>
-            <button type="submit" style="height: 42px;" class="btn btn-primary">Apply</button>&nbsp;
-            <a href="{% url 'commandes_admin' %}" style="height: 42px;" class="btn btn-secondary">Cancel</a>
+            <button type="submit" style="height: 42px;" class="btn btn-primary">Appliquer</button>&nbsp;
+            <a href="{% url 'commandes_admin' %}" style="height: 42px;" class="btn btn-secondary">Annuler</a>
         </form>
     </div>
     <!-- Filter Form End -->
 
     <div class="container py-5">
-        <h1 class="mb-4">Order List</h1>
+        <h1 class="mb-4">Liste des Commandes</h1>
 
         <!-- Orders Table -->
         <table class="table table-striped">
             <thead>
                 <tr>
-                    <th>Order ID</th>
-                    <th>Etudiant</th>
-                    <th>Product</th>
-                    <th>Total Price</th>
-                    <th>Status</th>
-                    <th>Code commande</th>
+                    <th>ID de Commande</th>
+                    <th>Étudiant</th>
+                    <th>Produit</th>
+                    <th>Prix Total</th>
+                    <th>Statut</th>
+                    <th>Code Commande</th>
                     <th>Action</th>
                 </tr>
             </thead>
@@ -77,29 +77,29 @@
                     <td>${{ commande.total_price }}</td>
                     <td>
                         {% if commande.status == 'Pending' %}
-                        <span class="badge bg-warning text-dark">Pending</span>
+                        <span class="badge bg-warning text-dark">En Attente</span>
                         {% elif commande.status == 'Completed' %}
-                        <span class="badge bg-success text-white">Completed</span>
+                        <span class="badge bg-success text-white">Terminé</span>
                         {% elif commande.status == 'Cancelled' %}
-                        <span class="badge bg-danger text-white">Cancelled</span>
+                        <span class="badge bg-danger text-white">Annulé</span>
                         {% else %}
-                        <span class="badge bg-secondary text-white">Unknown</span>
+                        <span class="badge bg-secondary text-white">Inconnu</span>
                         {% endif %}
                     </td>
                     <td>{{ commande.commande_code }}</td>
                     <td>
                         {% if commande.status == 'Completed' %}
-                        <button class="btn btn-primary btn-sm" style="background-color: #176b90;">Status Completed</button>
+                        <button class="btn btn-primary btn-sm" style="background-color: #176b90;">Statut Terminé</button>
                         {% elif commande.status == 'Cancelled' %}
-                        <button class="btn btn-primary btn-sm" style="background-color: #176b90;">Status Cancelled</button>
+                        <button class="btn btn-primary btn-sm" style="background-color: #176b90;">Statut Annulé</button>
                         {% else %}
-                           <button class="btn btn-primary btn-sm" style="background-color: #176b90;" onclick="openStatusModal('{{ commande.id }}', '{{ commande.status }}')">Change Status</button>
+                           <button class="btn btn-primary btn-sm" style="background-color: #176b90;" onclick="openStatusModal('{{ commande.id }}', '{{ commande.status }}')">Changer le Statut</button>
                         {% endif %}
                     </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="7" class="text-center">No orders found.</td>
+                    <td colspan="7" class="text-center">Aucune commande trouvée.</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -111,10 +111,10 @@
                 <ul class="pagination">
                     {% if page_obj.has_previous %}
                         <li class="page-item">
-                            <a class="page-link" href="?{% if commande_code_filter %}commande_code={{ commande_code_filter }}&{% endif %}{% if status_filter %}status={{ status_filter }}&{% endif %}page=1">First</a>
+                            <a class="page-link" href="?{% if commande_code_filter %}commande_code={{ commande_code_filter }}&{% endif %}{% if status_filter %}status={{ status_filter }}&{% endif %}page=1">Première</a>
                         </li>
                         <li class="page-item">
-                            <a class="page-link" href="?{% if commande_code_filter %}commande_code={{ commande_code_filter }}&{% endif %}{% if status_filter %}status={{ status_filter }}&{% endif %}page={{ page_obj.previous_page_number }}">Previous</a>
+                            <a class="page-link" href="?{% if commande_code_filter %}commande_code={{ commande_code_filter }}&{% endif %}{% if status_filter %}status={{ status_filter }}&{% endif %}page={{ page_obj.previous_page_number }}">Précédente</a>
                         </li>
                     {% endif %}
 
@@ -128,10 +128,10 @@
 
                     {% if page_obj.has_next %}
                         <li class="page-item">
-                            <a class="page-link" href="?{% if commande_code_filter %}commande_code={{ commande_code_filter }}&{% endif %}{% if status_filter %}status={{ status_filter }}&{% endif %}page={{ page_obj.next_page_number }}">Next</a>
+                            <a class="page-link" href="?{% if commande_code_filter %}commande_code={{ commande_code_filter }}&{% endif %}{% if status_filter %}status={{ status_filter }}&{% endif %}page={{ page_obj.next_page_number }}">Suivante</a>
                         </li>
                         <li class="page-item">
-                            <a class="page-link" href="?{% if commande_code_filter %}commande_code={{ commande_code_filter }}&{% endif %}{% if status_filter %}status={{ status_filter }}&{% endif %}page={{ page_obj.paginator.num_pages }}">Last</a>
+                            <a class="page-link" href="?{% if commande_code_filter %}commande_code={{ commande_code_filter }}&{% endif %}{% if status_filter %}status={{ status_filter }}&{% endif %}page={{ page_obj.paginator.num_pages }}">Dernière</a>
                         </li>
                     {% endif %}
                 </ul>
@@ -145,7 +145,7 @@
     <div class="modal-content">
         <div class="modal-header">
             <span class="close" onclick="closeStatusModal()">&times;</span>
-            <h2>Change Commande Status</h2>
+            <h2>Changer le Statut de la Commande</h2>
         </div>
         <div class="modal-body">
             <form id="statusForm" action="{% url 'update_commande_status' %}" method="POST">
@@ -153,16 +153,16 @@
                 <input type="hidden" id="commande_id" name="commande_id">
 
                 <div class="mb-3">
-                    <label for="status" class="form-label">Status</label>
+                    <label for="status" class="form-label">Statut</label>
                     <select id="status" name="status" class="form-control">
-                        <option value="Pending">Pending</option>
-                        <option value="Completed">Completed</option>
-                        <option value="Cancelled">Cancelled</option>
+                        <option value="Pending">En Attente</option>
+                        <option value="Completed">Terminé</option>
+                        <option value="Cancelled">Annulé</option>
                     </select>
                 </div>
 
                 <div class="text-center">
-                    <button type="submit" class="btn btn-primary">Update Status</button>
+                    <button type="submit" class="btn btn-primary">Mettre à Jour le Statut</button>
                 </div>
             </form>
         </div>
