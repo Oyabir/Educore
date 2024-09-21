@@ -78,7 +78,17 @@ def is_birthday(etudiant):
 @allowedUsers(allowedGroups=['Etudiants'])
 def homeEtudiant(request):
     etudiant = request.user.etudiant  # Assuming you're getting the logged-in student
+    today = timezone.now().date()
+
+    # Check if it's the student's birthday
     birthday_message = is_birthday(etudiant)
+
+    # Show the birthday message only once per login on the birthday
+    if birthday_message and request.session.get('birthday_message_shown') != str(today):
+        request.session['birthday_message_shown'] = str(today)  # Store the date when the message is shown
+    else:
+        birthday_message = False  # Don't show the message again on the same day
+        
     try:
         etudiant = Etudiant.objects.get(user=request.user)
     except Etudiant.DoesNotExist:
