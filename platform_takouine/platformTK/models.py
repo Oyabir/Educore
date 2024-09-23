@@ -123,6 +123,14 @@ class Groups(models.Model):
     def total_points(self):
         # Sum pointsG from Membership model for this group
         return Membership.objects.filter(group=self).aggregate(total_points=models.Sum('pointsG'))['total_points'] or 0
+    
+    @property
+    def total_absences(self):
+        return Attendance.objects.filter(group=self, is_present=False).count()
+    
+    @property
+    def total_present(self):
+        return Attendance.objects.filter(group=self, is_present=True).count()
 
 
 
@@ -257,3 +265,52 @@ class Membership(models.Model):
     def __str__(self):
         return f"{self.etudiant if self.etudiant else 'No Etudiant'} in {self.group if self.group else 'No Group'}"
 
+
+
+
+
+
+
+
+class Schedule(models.Model):
+    group = models.ForeignKey('Groups', related_name='schedules', on_delete=models.CASCADE)
+    day_of_week = models.CharField(max_length=9, choices=[
+        ('Monday', 'Monday'),
+        ('Tuesday', 'Tuesday'),
+        ('Wednesday', 'Wednesday'),
+        ('Thursday', 'Thursday'),
+        ('Friday', 'Friday'),
+        ('Saturday', 'Saturday'),
+        ('Sunday', 'Sunday')
+    ])
+    start_time = models.TimeField()
+    end_time = models.TimeField()
+
+    def __str__(self):
+        return f"{self.group.name} - {self.day_of_week}: {self.start_time} - {self.end_time}"
+
+
+
+class Class(models.Model):
+    schedule = models.ForeignKey(Schedule, related_name='classes', on_delete=models.CASCADE)
+    name = models.CharField(max_length=255)
+    date_added = models.DateField(auto_now_add=True, null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.name} for {self.schedule}"
+
+
+
+class Attendance(models.Model):
+    student = models.ForeignKey('Etudiant', related_name='attendances', on_delete=models.CASCADE)
+    group = models.ForeignKey(Groups, related_name='attendances', on_delete=models.CASCADE)
+    schedule = models.ForeignKey(Schedule, related_name='attendances', on_delete=models.CASCADE)
+    class_instance = models.ForeignKey(Class, related_name='attendances', on_delete=models.CASCADE)
+    date = models.DateField(auto_now_add=True)
+    is_present = models.BooleanField(default=True)
+
+    class Meta:
+        unique_together = ('student', 'schedule', 'class_instance', 'date')
+
+    def __str__(self):
+        return f"{self.student.prenom} {self.student.nom} - {self.group.name} - {self.class_instance.name} - {self.date} - {'Present' if self.is_present else 'Absent'}"

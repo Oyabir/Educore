@@ -14,3 +14,8 @@ def capitalize_first(value):
     if isinstance(value, str):
         return value.capitalize()
     return value
+
+
+@register.filter
+def get(attendance_records, student):
+    return next((record for record in attendance_records if record.student == student), None)

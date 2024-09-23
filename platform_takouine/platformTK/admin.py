@@ -79,3 +79,27 @@ class CategoryAdmin(admin.ModelAdmin):
     list_display = ('name',)  
     search_fields = ('name',)  
     ordering = ('name',)    
+    
+    
+    
+
+@admin.register(Schedule)
+class ScheduleAdmin(admin.ModelAdmin):
+    list_display = ('group', 'day_of_week', 'start_time', 'end_time')
+    list_filter = ('group', 'day_of_week')
+    search_fields = ('group__name',)
+    ordering = ('group', 'day_of_week', 'start_time')
+
+
+
+@admin.register(Attendance)
+class AttendanceAdmin(admin.ModelAdmin):
+    list_display = ('student', 'group', 'schedule', 'date', 'is_present')
+    list_filter = ('group', 'schedule', 'is_present', 'date')
+    search_fields = ('student__prenom', 'student__nom', 'group__name')
+    ordering = ('date', 'group', 'student')
+
+
+
+admin.site.register(Class),
+

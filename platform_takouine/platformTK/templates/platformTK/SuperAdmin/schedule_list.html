@@ -1,0 +1,105 @@
+{% extends "platformTK/SuperAdmin/HomeBase.html" %}
+{% load static %}
+
+{% block content %}
+{% include 'platformTK/SuperAdmin/navbar.html' %}
+<div class="container mt-5">
+    <h2>Schedule List</h2>
+    <div class="container py-5">
+        <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Group</th>
+                <th>Day of Week</th>
+                <th>Start Time</th>
+                <th>End Time</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+                {% for schedule in schedules %}
+                <tr>
+                    <td>{{ schedule.group.name }}</td>
+                    <td>{{ schedule.day_of_week }}</td>
+                    <td>{{ schedule.start_time }}</td>
+                    <td>{{ schedule.end_time }}</td>
+                    {% comment %} <td>
+                        <a href="{% url 'mark_attendance' schedule.group.id schedule.id %}" class="btn btn-secondary">Mark Attendance</a>
+                    </td> {% endcomment %}
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7">No schedules available.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <a href="{% url 'add_schedule' %}" class="btn btn-primary">Add Schedule</a>
+        <a href="{% url "list_classes" %}" class="btn btn-primary">List Classes</a>
+
+    </div>
+    
+    
+<style>
+    .container {
+        max-width: 1200px; /* Limit container width */
+        margin: 0 auto; /* Center align */
+        padding: 20px; /* Add padding for spacing */
+    }
+    
+    h2 {
+        color: #343a40; /* Darker color for headers */
+        text-align: center; /* Center the main title */
+    }
+    
+    h1 {
+       /* color: #007bff;  Bright color for the schedule title */
+       /* border-bottom: 2px solid #007bff;  Underline for emphasis */
+        padding-bottom: 10px; /* Space below the title */
+    }
+    
+    .table {
+        background-color: #ffffff; /* White background for table */
+        border-radius: 8px; /* Rounded corners */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    }
+    
+    .table th {
+        /*background-color: #007bff;  Header background */
+        color: #000000; /* Header text color */
+        padding: 12px; /* Padding for header cells */
+    }
+    
+    .table td {
+        padding: 10px; /* Padding for data cells */
+        vertical-align: middle; /* Center align vertically */
+    }
+    
+    .table-striped tbody tr:nth-of-type(odd) {
+        background-color: #f2f2f2; /* Alternate row color */
+    }
+    
+    .btn {
+        transition: background-color 0.3s; /* Smooth transition for button hover */
+    }
+    
+    {% comment %} .btn:hover {
+        background-color: #0056b3; /* Darker shade on hover */
+    } {% endcomment %}
+    
+    @media (max-width: 768px) {
+        .container {
+            padding: 10px; /* Reduced padding on smaller screens */
+        }
+    
+        h1, h2 {
+            font-size: 1.5rem; /* Smaller font size on mobile */
+        }
+    
+        .table {
+            font-size: 0.9rem; /* Adjust font size for better readability */
+        }
+    }
+    
+</style>
+{% endblock %}

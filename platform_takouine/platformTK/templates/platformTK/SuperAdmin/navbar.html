@@ -21,12 +21,13 @@
         </button>
         <div class="collapse navbar-collapse" id="navbarCollapse">
             <div class="navbar-nav mx-auto">
-                <a href="" class="nav-item nav-link active">Home</a>
+                {% comment %} <a href="" class="nav-item nav-link active">Home</a> {% endcomment %}
                 <a href="{% url "add_groupe" %}" class="nav-item nav-link">Gestion de groupe</a>
                 <a href="{% url "add_student" %}" class="nav-item nav-link">Gestion de étudiant</a>
                 <a href="{% url "add_prof" %}" class="nav-item nav-link">Gestion de prof</a>
                 <a href="{% url "store_admin" %}" class="nav-item nav-link">Store</a>
                 <a href="{% url "commandes_admin" %}" class="nav-item nav-link">Commandes</a>
+                <a href="{% url "schedule_list" %}" class="nav-item nav-link">Lomploi de temps</a>
                 <a href="{% url "dashboard" %}" class="nav-item nav-link">Dashboard</a>
                 <a href="{% url 'userLogout' %}" class="nav-item nav-link">Déconnexion</a>
             </div>

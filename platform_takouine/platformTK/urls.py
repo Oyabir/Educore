@@ -39,6 +39,8 @@ urlpatterns = [
     path('update_points/<int:student_id>/<int:group_id>/', views.update_points, name='update_points'),
     path('subtract_points/<int:student_id>/<int:group_id>/', views.subtract_points, name='subtract_points'),
 
+    path('mark-attendance/<int:group_id>/<int:schedule_id>/', views.mark_attendance, name='mark_attendance'),
+    path('view-attendance/<int:group_id>/<int:schedule_id>/', views.view_attendance, name='view_attendance'),
 
     
     
@@ -82,6 +84,12 @@ urlpatterns = [
     path('delete-category/', views.delete_category, name='delete_category'), 
     
     path('dashboard/', views.dashboard, name='dashboard'), 
+
+    path('schedule-list/', views.schedule_list, name='schedule_list'),
+    path('add-schedule/', views.add_schedule, name='add_schedule'),
+    path('list-classes/', views.list_classes, name='list_classes'),
+    path('view-students-in-class/<int:class_id>/', views.view_students_in_class, name='view_students_in_class'),
+
 
     
 

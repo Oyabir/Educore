@@ -1,0 +1,111 @@
+{% extends "platformTK/SuperAdmin/HomeBase.html" %}
+{% load static %}
+
+{% block content %}
+{% include 'platformTK/SuperAdmin/navbar.html' %}
+<div class="container mt-5">
+{% load custom_filters %}
+<h2>Students in {{ class_instance.name }}</h2>
+
+<table>
+    <thead>
+        <tr>
+            <th>Student Name</th>
+            <th>Attendance Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for student in students %}
+            <tr>
+                <td>{{ student.prenom }} {{ student.nom }}</td>
+                <td>
+                    {% with attendance_record=attendance_records|get:student %}
+                        {{ attendance_record.is_present|yesno:"Present,Absent" }}
+                        {% if not attendance_record %}
+                            No record
+                        {% endif %}
+                    {% endwith %}
+                </td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="2">No students in this class.</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+
+<style>
+    
+    .container {
+        max-width: 1200px; /* Limit container width */
+        margin: 0 auto; /* Center align */
+        padding: 30px; /* Ample padding for space */
+        background-color: #ffffff; /* White background */
+        border-radius: 10px; /* Rounded corners */
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+    }
+    
+    h2 {
+        color: #343a40; /* Dark gray for headers */
+        text-align: center; /* Center title */
+        font-size: 2rem; /* Larger font size */
+        margin-bottom: 20px; /* Space below title */
+    }
+    
+    table {
+        width: 100%; /* Full width */
+        border-collapse: collapse; /* Merge borders */
+        margin-top: 20px; /* Space above the table */
+    }
+    
+    thead {
+        /* background-color: #007bff; Header background */
+        color: #000000; /* Header text color */
+    }
+    
+    th, td {
+        padding: 12px; /* Padding for cells */
+        text-align: left; /* Left align text */
+        border-bottom: 1px solid #e9ecef; /* Light border below rows */
+    }
+    
+    th {
+        font-weight: 600; /* Bold text for headers */
+    }
+    
+    tbody tr:hover {
+        background-color: #e9ecef; /* Highlight on row hover */
+    }
+    
+    tbody tr:nth-of-type(odd) {
+        background-color: #f8f9fa; /* Light gray for odd rows */
+    }
+    
+    td {
+        color: #495057; /* Darker text for table data */
+    }
+    
+    .no-record {
+        color: #dc3545; /* Red for no record message */
+        font-style: italic; /* Italic style for emphasis */
+        text-align: center; /* Center align no record message */
+    }
+    
+    @media (max-width: 768px) {
+        .container {
+            padding: 15px; /* Reduced padding on smaller screens */
+        }
+    
+        h2 {
+            font-size: 1.5rem; /* Smaller font size on mobile */
+        }
+    
+        th, td {
+            padding: 8px; /* Adjust padding for smaller screens */
+        }
+    }
+    
+</style>
+{% endblock %}

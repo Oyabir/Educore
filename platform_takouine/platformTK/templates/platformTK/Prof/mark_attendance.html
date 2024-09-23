@@ -1,0 +1,93 @@
+{% extends "platformTK/Prof/HomeBase.html" %}
+{% load static %}
+{% load custom_filters %}
+
+{% block content %}
+    {% include 'platformTK/Prof/navbar.html' %}
+    <div class="container">
+        <h2>Mark Attendance for {{ schedule.day_of_week }}</h2>
+    
+        <form method="post">
+            {% csrf_token %}
+            {% for class_instance in classes %}
+                <h3>Class: {{ class_instance.name }}</h3>
+                {% for etudiant in group.etudiants.all %}
+                    <div class="mb-3 attendance-entry">
+                        <label>{{ etudiant.prenom|capitalize_first }} {{ etudiant.nom|capitalize_first  }}</label>
+                        <input type="checkbox" name="present_{{ class_instance.id }}_{{ etudiant.id }}">
+                    </div>
+                {% endfor %}
+            {% endfor %}
+            <button type="submit">Submit Attendance</button>
+        </form>
+    </div>
+    
+    <style>
+    
+        .container {
+            max-width: 1000px; /* Limit container width */
+            margin: 30px auto; /* Center align */
+            padding: 30px; /* Generous padding for space */
+            {% comment %} background-color: #ffffff; /* White background */
+            border-radius: 8px; /* Rounded corners */
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */ {% endcomment %}
+        }
+    
+        h2 {
+            color: #333; /* Dark gray for the main title */
+            text-align: center; /* Center the title */
+            font-size: 2.4rem; /* Larger font size for emphasis */
+            margin-bottom: 20px; /* Space below the title */
+        }
+    
+        h3 {
+            color: #007bff; /* Bright blue for class titles */
+            margin: 20px 0; /* Space around class titles */
+            font-weight: 600; /* Bold class titles */
+            border-bottom: 2px solid #e0e0e0; /* Underline for emphasis */
+            padding-bottom: 10px; /* Space below underline */
+        }
+    
+        .attendance-entry {
+            display: flex; /* Align label and checkbox horizontally */
+            align-items: center; /* Center vertically */
+            margin-bottom: 15px; /* Space between student entries */
+        }
+    
+        label {
+            flex: 1; /* Allow label to take available space */
+            font-size: 1.1rem; /* Standard font size for labels */
+            color: #495057; /* Darker text for better readability */
+        }
+    
+        input[type="checkbox"] {
+            margin-left: 15px; /* Space between label and checkbox */
+            width: 24px; /* Consistent size for checkboxes */
+            height: 24px; /* Consistent size for checkboxes */
+            cursor: pointer; /* Pointer cursor for checkboxes */
+        }
+    
+        button[type="submit"] {
+            background-color: #007bff; /* Button background color */
+            color: white; /* Button text color */
+            padding: 12px 20px; /* Button padding */
+            border: none; /* Remove border */
+            border-radius: 5px; /* Rounded corners */
+            cursor: pointer; /* Pointer cursor on hover */
+            font-size: 1rem; /* Standard button font size */
+            transition: background-color 0.3s, transform 0.2s; /* Smooth transition */
+            display: block; /* Center the button */
+            margin: 20px auto; /* Center the button */
+        }
+    
+        button[type="submit"]:hover {
+            background-color: #0056b3; /* Darker shade on hover */
+            transform: translateY(-2px); /* Lift effect on hover */
+        }
+
+        .container-xxl{
+            margin-bottom: -29px;
+        }
+    </style>
+    
+{% endblock %}

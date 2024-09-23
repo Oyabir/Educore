@@ -1,0 +1,109 @@
+{% extends "platformTK/Prof/HomeBase.html" %}
+{% load static %}
+{% load custom_filters %}
+
+{% block content %}
+    {% include 'platformTK/Prof/navbar.html' %}
+
+    <div class="container">
+        <h2>Attendance for {{ schedule.day_of_week }} at {{ schedule.start_time }}</h2>
+
+        {% for item in attendance_records %}
+            <h3>Class: {{ item.class_instance.name }}</h3>
+            <table class="attendance-table">
+                <thead>
+                    <tr>
+                        <th>Student Name</th>
+                        <th>Attendance Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for attendance in item.records %}
+                        <tr>
+                            <td>{{ attendance.student.prenom|capitalize_first }} {{ attendance.student.nom|capitalize_first }}</td>
+                            <td>
+                                {% if attendance.is_present %}
+                                    <span class="status present">Present</span>
+                                {% else %}
+                                    <span class="status absent">Absent</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="2">No attendance recorded for this class.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% empty %}
+            <p>No classes available for this schedule.</p>
+        {% endfor %}
+    </div>
+
+    <style>
+        {% comment %} body {
+            background-color: #f4f7fa; /* Soft background color */
+            font-family: 'Arial', sans-serif; /* Clean font */
+            line-height: 1.6; /* Improved readability */
+        } {% endcomment %}
+
+        {% comment %} .container {
+            max-width: 800px; /* Limit container width */
+            margin: 30px auto; /* Center align */
+            padding: 30px; /* Generous padding for space */
+            background-color: #ffffff; /* White background */
+            border-radius: 8px; /* Rounded corners */
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+        } {% endcomment %}
+
+        h2 {
+            color: #333; /* Dark gray for the main title */
+            text-align: center; /* Center the title */
+            font-size: 2.4rem; /* Larger font size for emphasis */
+            margin-bottom: 20px; /* Space below the title */
+        }
+
+        h3 {
+            color: #007bff; /* Bright blue for class titles */
+            margin: 20px 0; /* Space around class titles */
+            font-weight: 600; /* Bold class titles */
+            border-bottom: 2px solid #e0e0e0; /* Underline for emphasis */
+            padding-bottom: 10px; /* Space below underline */
+        }
+
+        .attendance-table {
+            width: 100%; /* Full width for the table */
+            border-collapse: collapse; /* Remove space between borders */
+            margin-bottom: 20px; /* Space below each table */
+        }
+
+        .attendance-table th, .attendance-table td {
+            padding: 12px; /* Padding for cells */
+            text-align: left; /* Left align text */
+            border-bottom: 1px solid #e0e0e0; /* Light gray border */
+        }
+
+        .attendance-table th {
+            background-color: #f8f9fa; /* Light gray background for header */
+            color: #333; /* Dark gray text */
+        }
+
+        .status {
+            font-weight: bold; /* Make status text bold */
+        }
+
+        .status.present {
+            color: #28a745; /* Green for present */
+        }
+
+        .status.absent {
+            color: #dc3545; /* Red for absent */
+        }
+
+        p {
+            text-align: center; /* Center text for empty states */
+            color: #666; /* Gray text color */
+        }
+    </style>
+{% endblock %}

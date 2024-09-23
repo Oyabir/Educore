@@ -723,6 +723,7 @@ def update_profil_prof(request):
 @allowedUsers(allowedGroups=['Prof'])
 def group_detail(request, code_group):
     group = get_object_or_404(Groups, code_group=code_group)
+    schedules = group.schedules.all()
     # Subquery to get pointsG for memberships related to the specific group
     memberships_subquery = Membership.objects.filter(
         group=group,
@@ -736,7 +737,7 @@ def group_detail(request, code_group):
         pointsG=Subquery(memberships_subquery, output_field=models.IntegerField())
     ).order_by('-pointsG') 
     
-    return render(request, "platformTK/Prof/group_detail.html", {"group": group, "students": students})
+    return render(request, "platformTK/Prof/group_detail.html", {"group": group, "students": students,'schedules': schedules})
 
 
 
@@ -843,6 +844,7 @@ def update_points(request, student_id, group_id):
 
 
 
+
 @login_required(login_url='login')
 @allowedUsers(allowedGroups=['Prof'])
 @csrf_exempt  
@@ -875,11 +877,134 @@ def subtract_points(request, student_id, group_id):
 
 
 
+def view_attendance(request, group_id, schedule_id):
+    group = get_object_or_404(Groups, id=group_id)
+    schedule = get_object_or_404(Schedule, id=schedule_id)
+    classes = schedule.classes.all()  # Get all classes related to the schedule
+    
+    attendance_records = []
+    
+    for class_instance in classes:
+        records = Attendance.objects.filter(class_instance=class_instance, schedule=schedule)
+        attendance_records.append({
+            'class_instance': class_instance,
+            'records': records
+        })
+
+    return render(request, 'platformTK/Prof/view_attendance.html', {
+        'group': group,
+        'schedule': schedule,
+        'attendance_records': attendance_records
+    })
+
+
+
+
+def mark_attendance(request, group_id, schedule_id):
+    group = get_object_or_404(Groups, id=group_id)
+    schedule = get_object_or_404(Schedule, id=schedule_id)
+
+    # Get current date in a formatted string
+    current_date = timezone.now().strftime('%Y-%m-%d')  # Example format: '2023-09-23'
+    
+    # Fetch existing classes
+    classes = schedule.classes.all()
+
+    # Create classes if they don't exist using the schedule name and current date
+    if not classes.exists():  # If no classes are linked, create them
+        class_name = f"{schedule.day_of_week} Class on {current_date}"  # Example using the schedule's day
+        Class.objects.create(schedule=schedule, name=class_name)
+        classes = schedule.classes.all()  # Re-fetch after creation
+        messages.success(request, "New class created for this schedule.")
+    else:
+        messages.info(request, "Classes already exist for this schedule.")
+
+    # Handle POST request for marking attendance
+    if request.method == 'POST':
+        for class_instance in classes:
+            for etudiant in group.etudiants.all():
+                is_present = request.POST.get(f'present_{class_instance.id}_{etudiant.id}', 'off') == 'on'
+                Attendance.objects.create(
+                    student=etudiant,
+                    group=group,
+                    schedule=schedule,
+                    class_instance=class_instance,
+                    is_present=is_present
+                )
+        messages.success(request, "Attendance marked successfully.")
+        return redirect('group_detail', code_group=group.code_group)
+
+    # Render the attendance form
+    return render(request, 'platformTK/Prof/mark_attendance.html', {
+        'group': group,
+        'schedule': schedule,
+        'classes': classes
+    })
+
+
+
+
+
+
+
+
 @login_required(login_url='login')
 @allowedUsers(allowedGroups=['SuperAdmin'])
 def homeSuperAdmin(requset):
     return render(requset,"platformTK/SuperAdmin/homeSuperAdmin.html")
 
+
+
+
+
+def add_schedule(request):
+    if request.method == 'POST':
+        group_id = request.POST.get('group')
+        day_of_week = request.POST.get('day_of_week')
+        start_time = request.POST.get('start_time')
+        end_time = request.POST.get('end_time')
+
+        # Create a new Schedule instance
+        schedule = Schedule(
+            group_id=group_id,
+            day_of_week=day_of_week,
+            start_time=start_time,
+            end_time=end_time
+        )
+        schedule.save()
+        return redirect('schedule_list')  # Redirect to the list of schedules or another page
+
+    # For GET request, fetch all groups to display in the form
+    groups = Groups.objects.all()
+    return render(request, 'platformTK/SuperAdmin/add_schedule.html', {'groups': groups})
+
+
+
+def schedule_list(request):
+    schedules = Schedule.objects.all()  # Fetch all schedules
+    return render(request, 'platformTK/SuperAdmin/schedule_list.html', {'schedules': schedules})
+
+
+
+def list_classes(request):
+    classes = Class.objects.all()  # Fetch all classes
+    return render(request, 'platformTK/SuperAdmin/list_classes.html', {'classes': classes})
+
+
+
+def view_students_in_class(request, class_id):
+    class_instance = get_object_or_404(Class, id=class_id)
+    group = class_instance.schedule.group  # Access the group through the class's schedule
+    students = group.etudiants.all()  # Get all students in the group
+
+    # Get attendance records for the class
+    attendance_records = Attendance.objects.filter(class_instance=class_instance)
+
+    return render(request, 'platformTK/SuperAdmin/view_students_in_class.html', {
+        'class_instance': class_instance,
+        'students': students,
+        'attendance_records': attendance_records
+    })
 
 
 

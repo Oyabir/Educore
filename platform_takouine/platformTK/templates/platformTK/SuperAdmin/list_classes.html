@@ -1,0 +1,99 @@
+{% extends "platformTK/SuperAdmin/HomeBase.html" %}
+{% load static %}
+
+{% block content %}
+{% include 'platformTK/SuperAdmin/navbar.html' %}
+    <div class="container mt-5">
+    <h2>List of All Classes</h2>
+
+    <div class="container py-5">
+        {% comment %} <h1 class="mb-4">Schedule List</h1> {% endcomment %}
+        <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Class Name</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for class_instance in classes %}
+                <tr>
+                    <td>{{ class_instance.name }}</td>
+                    <td>
+                        <a href="{% url 'view_students_in_class' class_instance.id %}" class="btn btn-primary">
+                            View Students
+                        </a>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="2">No classes available.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<style>
+    .container {
+        max-width: 1200px; /* Limit container width */
+        margin: 0 auto; /* Center align */
+        padding: 20px; /* Add padding for spacing */
+    }
+    
+    h2 {
+        color: #343a40; /* Darker color for headers */
+        text-align: center; /* Center the main title */
+    }
+    
+    h1 {
+       /* color: #007bff;  Bright color for the schedule title */
+       /* border-bottom: 2px solid #007bff;  Underline for emphasis */
+        padding-bottom: 10px; /* Space below the title */
+    }
+    
+    .table {
+        background-color: #ffffff; /* White background for table */
+        border-radius: 8px; /* Rounded corners */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+    }
+    
+    .table th {
+        /*background-color: #007bff;  Header background */
+        color: #000000; /* Header text color */
+        padding: 12px; /* Padding for header cells */
+    }
+    
+    .table td {
+        padding: 10px; /* Padding for data cells */
+        vertical-align: middle; /* Center align vertically */
+    }
+    
+    .table-striped tbody tr:nth-of-type(odd) {
+        background-color: #f2f2f2; /* Alternate row color */
+    }
+    
+    .btn {
+        transition: background-color 0.3s; /* Smooth transition for button hover */
+    }
+    
+    {% comment %} .btn:hover {
+        background-color: #0056b3; /* Darker shade on hover */
+    } {% endcomment %}
+    
+    @media (max-width: 768px) {
+        .container {
+            padding: 10px; /* Reduced padding on smaller screens */
+        }
+    
+        h1, h2 {
+            font-size: 1.5rem; /* Smaller font size on mobile */
+        }
+    
+        .table {
+            font-size: 0.9rem; /* Adjust font size for better readability */
+        }
+    }
+    
+</style>
+{% endblock %}
