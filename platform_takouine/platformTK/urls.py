@@ -88,6 +88,8 @@ urlpatterns = [
     path('schedule-list/', views.schedule_list, name='schedule_list'),
     path('add-schedule/', views.add_schedule, name='add_schedule'),
     path('list-classes/', views.list_classes, name='list_classes'),
+    path('edit_schedule/<int:schedule_id>/', views.edit_schedule, name='edit_schedule'),
+    path('delete_schedule/<int:schedule_id>/', views.delete_schedule, name='delete_schedule'),
     path('view-students-in-class/<int:class_id>/', views.view_students_in_class, name='view_students_in_class'),
 
 

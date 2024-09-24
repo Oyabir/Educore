@@ -717,14 +717,16 @@ def update_profil_prof(request):
 
 
 
-
+from django.utils import timezone
+from django.db.models import OuterRef, Subquery, Sum
+from datetime import timedelta
 
 @login_required(login_url='login')
 @allowedUsers(allowedGroups=['Prof'])
 def group_detail(request, code_group):
     group = get_object_or_404(Groups, code_group=code_group)
     schedules = group.schedules.all()
-    # Subquery to get pointsG for memberships related to the specific group
+
     memberships_subquery = Membership.objects.filter(
         group=group,
         etudiant=OuterRef('pk')
@@ -732,12 +734,34 @@ def group_detail(request, code_group):
         total_points=Sum('pointsG')
     ).values('total_points')
     
-    # Annotate each student with the total pointsG from the subquery
     students = group.etudiants.annotate(
         pointsG=Subquery(memberships_subquery, output_field=models.IntegerField())
     ).order_by('-pointsG') 
-    
-    return render(request, "platformTK/Prof/group_detail.html", {"group": group, "students": students,'schedules': schedules})
+
+    today = timezone.now().date()
+    # Calculate the start and end of the current week
+    start_of_week = today - timedelta(days=today.weekday())  # Monday of the current week
+    end_of_week = start_of_week + timedelta(days=6)  # Sunday of the current week
+
+    # Get the birthdays that fall within the current week
+    birthday_students = students.filter(
+        date_de_naissance__month__in=[start_of_week.month, end_of_week.month],
+        date_de_naissance__day__gte=start_of_week.day,
+        date_de_naissance__day__lte=end_of_week.day
+    ).distinct()
+
+    # Create a single birthday message listing all names
+    birthday_messages = []
+    if birthday_students.exists():
+        names = [f"{student.prenom} {student.nom}" for student in birthday_students]  # Include both prenom and nom
+        birthday_messages.append("Takouine Smart vous souhaite un joyeux anniversaire, " + ", ".join(names) + "!")
+
+    return render(request, "platformTK/Prof/group_detail.html", {
+        "group": group,
+        "students": students,
+        "schedules": schedules,
+        "birthday_messages": birthday_messages,  # Pass the list with a single message
+    })
 
 
 
@@ -876,61 +900,98 @@ def subtract_points(request, student_id, group_id):
 
 
 
+from django.shortcuts import get_object_or_404, render
+from django.utils import timezone
 
 def view_attendance(request, group_id, schedule_id):
     group = get_object_or_404(Groups, id=group_id)
     schedule = get_object_or_404(Schedule, id=schedule_id)
-    classes = schedule.classes.all()  # Get all classes related to the schedule
-    
+
+    # Get the current date
+    today = timezone.now().date()
+
+    # Filter classes that have been added on or before today
+    classes_today_or_older = schedule.classes.filter(date_added__lte=today).order_by('-date_added')
+
     attendance_records = []
-    
-    for class_instance in classes:
+
+    # Fetch attendance records for the relevant classes
+    for class_instance in classes_today_or_older:
         records = Attendance.objects.filter(class_instance=class_instance, schedule=schedule)
         attendance_records.append({
             'class_instance': class_instance,
             'records': records
         })
 
+    # Get the professor's name
+    prof_name = schedule.classes.first().prof if schedule.classes.exists() else None
+
     return render(request, 'platformTK/Prof/view_attendance.html', {
         'group': group,
         'schedule': schedule,
-        'attendance_records': attendance_records
+        'attendance_records': attendance_records,
+        'prof_name': prof_name  # Pass the professor's name to the template
     })
 
 
 
 
+from django.db import IntegrityError
+from django.utils import timezone
+
+from django.contrib.auth.decorators import login_required
+from django.db import IntegrityError
+from django.utils import timezone
+from django.contrib import messages
+from django.shortcuts import get_object_or_404, render, redirect
+
+
+@login_required  # Ensure the user is logged in
 def mark_attendance(request, group_id, schedule_id):
     group = get_object_or_404(Groups, id=group_id)
     schedule = get_object_or_404(Schedule, id=schedule_id)
 
-    # Get current date in a formatted string
-    current_date = timezone.now().strftime('%Y-%m-%d')  # Example format: '2023-09-23'
-    
-    # Fetch existing classes
-    classes = schedule.classes.all()
+    # Get current date
+    current_date = timezone.now().date()
+    formatted_date = current_date.strftime('%Y-%m-%d')  # Example format: '2023-09-23'
 
-    # Create classes if they don't exist using the schedule name and current date
-    if not classes.exists():  # If no classes are linked, create them
-        class_name = f"{schedule.day_of_week} Class on {current_date}"  # Example using the schedule's day
-        Class.objects.create(schedule=schedule, name=class_name)
-        classes = schedule.classes.all()  # Re-fetch after creation
-        messages.success(request, "New class created for this schedule.")
+    # Generate a class name based on the schedule's day of the week and current date
+    class_name = f"{schedule.day_of_week} Class on {formatted_date}"
+
+    # Check if a class with the same name exists for this schedule
+    existing_class = schedule.classes.filter(name=class_name).first()
+
+    # Create the class if it does not exist
+    if not existing_class:
+        try:
+            new_class = Class.objects.create(schedule=schedule, name=class_name, prof=request.user.prof)
+            messages.success(request, f"New class '{class_name}' created for this schedule.")
+        except IntegrityError:
+            messages.error(request, f"Class '{class_name}' already exists.")
+            new_class = schedule.classes.filter(name=class_name).first()  # Fetch the existing class
     else:
-        messages.info(request, "Classes already exist for this schedule.")
-
+        new_class = existing_class  # Use the existing class if it's already created
+    
     # Handle POST request for marking attendance
     if request.method == 'POST':
-        for class_instance in classes:
-            for etudiant in group.etudiants.all():
-                is_present = request.POST.get(f'present_{class_instance.id}_{etudiant.id}', 'off') == 'on'
-                Attendance.objects.create(
+        for etudiant in group.etudiants.all():
+            # Check if an attendance record already exists for this student, schedule, and class_instance
+            present_status = request.POST.get(f'present_{new_class.id}_{etudiant.id}', 'off') == 'on'
+            try:
+                attendance, created = Attendance.objects.get_or_create(
                     student=etudiant,
                     group=group,
                     schedule=schedule,
-                    class_instance=class_instance,
-                    is_present=is_present
+                    class_instance=new_class,
+                    defaults={'is_present': present_status}
                 )
+                if not created:
+                    # If the attendance already exists, update the presence status
+                    attendance.is_present = present_status
+                    attendance.save()
+            except IntegrityError:
+                messages.error(request, f"Attendance already exists for {etudiant.prenom} {etudiant.nom} in {new_class.name}.")
+
         messages.success(request, "Attendance marked successfully.")
         return redirect('group_detail', code_group=group.code_group)
 
@@ -938,12 +999,8 @@ def mark_attendance(request, group_id, schedule_id):
     return render(request, 'platformTK/Prof/mark_attendance.html', {
         'group': group,
         'schedule': schedule,
-        'classes': classes
+        'classes': [new_class]  # Only the new or most recent class is passed to the template
     })
-
-
-
-
 
 
 
@@ -986,9 +1043,38 @@ def schedule_list(request):
 
 
 
+def edit_schedule(request, schedule_id):
+    schedule = get_object_or_404(Schedule, id=schedule_id)
+
+    if request.method == 'POST':
+        schedule.day_of_week = request.POST.get('day_of_week')
+        schedule.start_time = request.POST.get('start_time')
+        schedule.end_time = request.POST.get('end_time')
+        schedule.save()
+        return redirect('schedule_list')
+
+    groups = Groups.objects.all()  # Get all groups to populate the form
+    return render(request, 'platformTK/SuperAdmin/edit_schedule.html', {
+        'schedule': schedule,
+        'groups': groups,
+    })
+
+def delete_schedule(request, schedule_id):
+    schedule = get_object_or_404(Schedule, id=schedule_id)
+
+    if request.method == 'POST':
+        schedule.delete()
+        return redirect('schedule_list')
+
+    return render(request, 'platformTK/SuperAdmin/delete_schedule.html', {
+        'schedule': schedule,
+    })
+
+
 def list_classes(request):
     classes = Class.objects.all()  # Fetch all classes
     return render(request, 'platformTK/SuperAdmin/list_classes.html', {'classes': classes})
+
 
 
 
@@ -1000,11 +1086,16 @@ def view_students_in_class(request, class_id):
     # Get attendance records for the class
     attendance_records = Attendance.objects.filter(class_instance=class_instance)
 
+    # Get the professor for the class
+    professor = class_instance.prof  # Assuming there's a prof field in your Class model
+
     return render(request, 'platformTK/SuperAdmin/view_students_in_class.html', {
         'class_instance': class_instance,
         'students': students,
-        'attendance_records': attendance_records
+        'attendance_records': attendance_records,
+        'professor': professor  # Pass the professor's information to the template
     })
+
 
 
 

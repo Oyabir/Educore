@@ -6,40 +6,50 @@
     {% include 'platformTK/Prof/navbar.html' %}
 
     <div class="container">
-        <h2>Attendance for {{ schedule.day_of_week }} at {{ schedule.start_time }}</h2>
+        <h2>
+            Registres de présence pour {{ schedule.day_of_week }} 
+            {% if prof_name %}
+            Avec Prof {{ prof_name.prenom|capitalize_first }} {{ prof_name.nom|capitalize_first }}
+            {% else %}
+            Avec Prof (Aucune information disponible)
+            {% endif %}
+        </h2>
+    
+        {% if attendance_records %}
+            {% for item in attendance_records %}
+                <h3>Class: {{ item.class_instance.name }}</h3>
+                <table class="attendance-table">
+                    <thead>
+                        <tr>
+                            <th>Nom de l'étudiant</th>
+                            <th>Statut de présence</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for attendance in item.records %}
+                            <tr>
+                                <td>{{ attendance.student.prenom|capitalize_first }} {{ attendance.student.nom|capitalize_first }}</td>
+                                <td>
+                                    {% if attendance.is_present %}
+                                        <span class="status present">Present</span>
+                                    {% else %}
+                                        <span class="status absent">Absent</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="2">Aucune présence enregistrée pour ce cours.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% endfor %}
+        {% else %}
+            <p>Aucun registre de présence disponible pour aujourd'hui.</p>
+        {% endif %}
+    </div>  
 
-        {% for item in attendance_records %}
-            <h3>Class: {{ item.class_instance.name }}</h3>
-            <table class="attendance-table">
-                <thead>
-                    <tr>
-                        <th>Student Name</th>
-                        <th>Attendance Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for attendance in item.records %}
-                        <tr>
-                            <td>{{ attendance.student.prenom|capitalize_first }} {{ attendance.student.nom|capitalize_first }}</td>
-                            <td>
-                                {% if attendance.is_present %}
-                                    <span class="status present">Present</span>
-                                {% else %}
-                                    <span class="status absent">Absent</span>
-                                {% endif %}
-                            </td>
-                        </tr>
-                    {% empty %}
-                        <tr>
-                            <td colspan="2">No attendance recorded for this class.</td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        {% empty %}
-            <p>No classes available for this schedule.</p>
-        {% endfor %}
-    </div>
 
     <style>
         {% comment %} body {
@@ -104,6 +114,9 @@
         p {
             text-align: center; /* Center text for empty states */
             color: #666; /* Gray text color */
+        }
+        .mt-5 {
+            margin-top: 16rem !important;
         }
     </style>
 {% endblock %}

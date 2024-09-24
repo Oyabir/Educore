@@ -291,13 +291,20 @@ class Schedule(models.Model):
 
 
 
+def generate_class_code():
+    unique_id = str(uuid.uuid4()).replace('-', '')[:8]  # Generates a unique 8-character string
+    return f"class-{unique_id}"
+
+
 class Class(models.Model):
     schedule = models.ForeignKey(Schedule, related_name='classes', on_delete=models.CASCADE)
     name = models.CharField(max_length=255)
     date_added = models.DateField(auto_now_add=True, null=True, blank=True)
+    prof = models.ForeignKey(prof, related_name='classes', on_delete=models.SET_NULL, null=True)
+    class_code = models.CharField(max_length=20, unique=True, default=generate_class_code)  # Unique class code field
 
     def __str__(self):
-        return f"{self.name} for {self.schedule}"
+        return f"{self.name} for {self.schedule} - Prof: {self.prof} - Code: {self.class_code}"
 
 
 

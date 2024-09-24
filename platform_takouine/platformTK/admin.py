@@ -100,6 +100,10 @@ class AttendanceAdmin(admin.ModelAdmin):
     ordering = ('date', 'group', 'student')
 
 
-
-admin.site.register(Class),
+@admin.register(Class)
+class ClassAdmin(admin.ModelAdmin):
+    list_display = ('name', 'schedule', 'date_added')  # Fields to display in the list view
+    search_fields = ('name','date_added')  # Fields to search
+    list_filter = ('schedule', 'date_added')  # Fields to filter by
+    readonly_fields = ('date_added',)
 
