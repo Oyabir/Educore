@@ -1,0 +1,98 @@
+{% extends "platformTK/Prof/HomeBase.html" %}
+{% load static %}
+{% load custom_filters %}
+
+
+{% block content %}
+    {% include 'platformTK/Prof/navbar.html' %}
+
+    <div class="container">
+        <h2>Takouine Smart vous souhaite un Joyeux Anniversaire</h2>
+        <br>
+        {% if birthday_students %}
+        <div class="row g-4">
+            {% for student in birthday_students %}
+            <div class="col-lg-4 col-md-6 wow fadeInUp" data-wow-delay="0.1s">
+                <div class="classes-item">
+                    <div class="bg-light rounded-circle w-75 mx-auto p-3">
+                        <img class="img-fluid rounded-circle" src="img/classes-1.jpg" alt="">
+                    </div>
+                    <div class="bg-light rounded p-4 pt-5 mt-n5">
+                        <a class="d-block text-center h3 mt-3 mb-4" href="">{{ student.prenom|capitalize_first }} {{ student.nom|capitalize_first }}</a>
+                        <div class="d-flex align-items-center justify-content-between mb-4">
+                            <div class="d-flex align-items-center">
+                                {% if student.avatar %}
+                                <img class="rounded-circle flex-shrink-0" src="{{ student.avatar.url }}" alt="" style="width: 55px; height: 55px;">
+                                {% else %}
+                                <img class="rounded-circle flex-shrink-0" src="{% static 'img/user.jpg' %}" alt="" style="width: 55px; height: 55px;">
+                                {% endif %}
+                                <div class="ms-3">
+                                    <h6 class="text-primary mb-1" style="color: #30bb96 !important;">{{ student.prenom|capitalize_first }} {{ student.nom|capitalize_first }}</h6>
+                                    <small>{{ student.EtudiantCode }}</small><br>
+                                    <small>Date de Naissance: {{ student.date_de_naissance }}</small>
+                                </div> 
+                            </div>
+                            {% comment %} <span class="bg-primary text-white rounded-pill py-2 px-3" style="background-color: #176b90 !important;">
+                                ${{ memberships_dict|get_item:student.id }}
+                            </span> {% endcomment %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        
+        
+        <!-- Audio file for birthday song -->
+        <audio id="birthday-sound" src="{% static 'happy-birthday-in-english-male-15023.mp3' %}" autoplay></audio>
+        
+        {% else %}
+            <p>Aucun étudiant n'a d'anniversaire cette semaine.</p>
+        {% endif %}
+       
+    </div>
+    <br>
+     <!-- Return button -->
+     <a href="{% url 'group_detail' code_group=group.code_group %}"style="width: 187px;" class="btn btn-primary">Retour au groupe</a>
+    <script>
+        // Automatically play the birthday song when the page loads
+        const birthdaySound = document.getElementById('birthday-sound');
+        if (birthdaySound) {
+            birthdaySound.play();
+        }
+    </script>
+
+    <style>
+        .btn-custom {
+            background-color: #176b90;
+            border-color: #ffffff;
+            margin-bottom: 5px;
+            padding: 10px 20px;
+            font-size: 1.1rem;
+            border-radius: 10px;
+            transition: background-color 0.3s ease;
+        }
+        
+        .btn-custom:hover {
+            background-color: #135a74;
+            border-color: #ffffff;
+        }
+        
+        .btn-custom-alt {
+            background-color: #f39c12;
+            border-color: #ffffff;
+            margin-bottom: 5px;
+            padding: 10px 20px;
+            font-size: 1.1rem;
+            border-radius: 10px;
+            transition: background-color 0.3s ease;
+        }
+        
+        .btn-custom-alt:hover {
+            background-color: #e67e22;
+            border-color: #ffffff;
+        }
+        .mt-5 {
+            margin-top: 16rem !important;
+        }
+    </style>
+{% endblock %}

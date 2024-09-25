@@ -1,0 +1,97 @@
+.birthday-message {
+    background: linear-gradient(145deg, #176b90, #ffffff); /* Bright and cheerful colors */
+    border-radius: 20px;
+    padding: 40px;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    animation: bounceIn 0.5s ease-out;
+}
+
+.birthday-text {
+    font-size: 48px; /* Large, readable text */
+    color: #ffffff; /* White text */
+    margin-bottom: 20px;
+    animation: textColorChange 1.5s infinite alternate; /* Animation for fun effect */
+}
+
+.subtext {
+    font-size: 24px;
+    color: #ffffff;
+    margin-bottom: 30px;
+}
+
+.close-button {
+    background-color: #176b90; /* Bright pink button */
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 18px;
+    transition: background-color 0.3s ease;
+}
+
+.close-button:hover {
+    background-color: #176b90; /* Darker pink on hover */
+}
+
+@keyframes bounceIn {
+    0% { transform: scale(0); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+@keyframes textColorChange {
+    0% { color: #ffffff; }
+    100% { color: #070606; }
+}
+.button-pair {
+    display: flex;
+    gap: 10px;  /* Adds space between the buttons */
+    margin-bottom: 15px;  /* Adds space between button rows */
+}
+                        
+.btn-custom {
+    background-color: #176b90;
+    border-color: #ffffff;
+    color: #ffffff;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    flex: 1;  /* Ensures buttons take equal width */
+}
+                        
+.btn-custom-alt {
+    background-color: #ff6f59;
+    border-color: #ffffff;
+    color: #ffffff;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    flex: 1;  /* Ensures buttons take equal width */
+}
+                        
+.btn-custom:hover, .btn-custom-alt:hover {
+    transform: translateY(-2px);
+}
+                        
+.btn-custom:active, .btn-custom-alt:active {
+    transform: translateY(1px);
+}
+                        
+.mb-2 {
+    margin-bottom: 10px;
+}
+                        
+.mb-4 {
+    margin-bottom: 30px;
+}
+.btn:hover {
+    color: #f5f7f9;
+}

@@ -1,40 +1,112 @@
 {% extends "platformTK/SuperAdmin/HomeBase.html" %}
 {% load static %}
+{% load custom_filters %}
+
 
 {% block content %}
 {% include 'platformTK/SuperAdmin/navbar.html' %}
     <div class="container mt-5">
-    <h2>List of All Classes</h2>
+    <h2>Liste de toutes les classes</h2>
+    <br>
+    <div class="mb-4">
+        <form method="GET" action="{% url 'list_classes' %}" class="d-flex">
+            <input type="date" name="date" value="{{ filter_date }}" class="form-control me-2" style="height: 42px;">
+            <select name="group" class="form-control me-2" style="height: 42px;">
+                <option value="">Sélectionner le groupe</option>
+                {% for group in groups %}
+                    <option value="{{ group.id }}" {% if group.id|stringformat:"d" == filter_group %}selected{% endif %}>{{ group.name }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" style="height: 42px;" class="btn btn-primary">Filtrer</button>&nbsp;
+            <a href="{% url 'list_classes' %}" style="height: 42px;" class="btn btn-secondary" style="height: 42px;">Annuler</a>
+        </form>
+    </div>
 
     <div class="container py-5">
         {% comment %} <h1 class="mb-4">Schedule List</h1> {% endcomment %}
         <table class="table table-striped">
         <thead>
             <tr>
-                <th>Class Name</th>
+                <th>Nom de la classe</th>
+                <th>Groupe</th>
+                <th>Professeur</th>
+                <th>Code de la classe</th>
                 <th>Actions</th>
-            </tr>
+            </tr>            
         </thead>
         <tbody>
             {% for class_instance in classes %}
                 <tr>
                     <td>{{ class_instance.name }}</td>
+                    <td>{{ class_instance.schedule.group.name }}</td>
+                    <td >{{ class_instance.prof.prenom|capitalize_first }} {{ class_instance.prof.nom|capitalize_first }}</td>
+                    <td>{{ class_instance.class_code }}</td>
                     <td>
-                        <a href="{% url 'view_students_in_class' class_instance.id %}" class="btn btn-primary">
-                            View Students
+                        <a href="{% url 'view_students_in_class' class_instance.class_code %}" class="btn btn-primary">
+                            Voir les étudiants
                         </a>
                     </td>
                 </tr>
             {% empty %}
                 <tr>
-                    <td colspan="2">No classes available.</td>
+                    <td colspan="2">Aucune classe disponible.</td>
                 </tr>
             {% endfor %}
         </tbody>
     </table>
+    <!-- Pagination Controls -->
+<div class="d-flex justify-content-center mt-4">
+    <nav>
+        <ul class="pagination">
+            {% if classes.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1">Première</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ classes.previous_page_number }}">Précédente</a>
+                </li>
+            {% endif %}
+            {% for num in classes.paginator.page_range %}
+                <li class="page-item {% if num == classes.number %}active{% endif %}">
+                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                </li>
+            {% endfor %}
+            {% if classes.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ classes.next_page_number }}">Suivante</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ classes.paginator.num_pages }}">Dernière</a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+</div>
 </div>
 
 <style>
+        .page-item.active .page-link {
+            z-index: 3;
+            color: #fff;
+            background-color: #176b90;
+            border-color: #176b90;
+        }
+        .page-link {
+            color: #176b90;
+        }
+    
+        .modal-header {
+        background-color: #30bb96;
+        }
+        .btn-primary {
+            background-color: #176b90;
+            color: #ffffff;
+        }
+
+        .btn-primary:hover {
+            background-color: #176b90;
+        }
+
     .container {
         max-width: 1200px; /* Limit container width */
         margin: 0 auto; /* Center align */

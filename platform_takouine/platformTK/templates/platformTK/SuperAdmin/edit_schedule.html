@@ -1,0 +1,45 @@
+{% extends "platformTK/SuperAdmin/HomeBase.html" %}
+{% load static %}
+
+{% block content %}
+{% include 'platformTK/SuperAdmin/navbar.html' %}
+
+<div class="container mt-5">
+<h2>Edit Schedule</h2>
+<form method="post">
+    {% csrf_token %}
+    <div class="form-group">
+        <label for="group">Group:</label>
+        <select name="group" id="group" class="form-control">
+            {% for group in groups %}
+                <option value="{{ group.id }}" {% if group.id == schedule.group.id %}selected{% endif %}>
+                    {{ group.name }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="day_of_week">Day of Week:</label>
+        <select name="day_of_week" id="day_of_week" class="form-control">
+            <option value="Monday" {% if schedule.day_of_week == "Monday" %}selected{% endif %}>Monday</option>
+            <option value="Tuesday" {% if schedule.day_of_week == "Tuesday" %}selected{% endif %}>Tuesday</option>
+            <option value="Wednesday" {% if schedule.day_of_week == "Wednesday" %}selected{% endif %}>Wednesday</option>
+            <option value="Thursday" {% if schedule.day_of_week == "Thursday" %}selected{% endif %}>Thursday</option>
+            <option value="Friday" {% if schedule.day_of_week == "Friday" %}selected{% endif %}>Friday</option>
+            <option value="Saturday" {% if schedule.day_of_week == "Saturday" %}selected{% endif %}>Saturday</option>
+            <option value="Sunday" {% if schedule.day_of_week == "Sunday" %}selected{% endif %}>Sunday</option>
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="start_time">Start Time:</label>
+        <input type="time" name="start_time" id="start_time" value="{{ schedule.start_time|time:"H:i" }}" class="form-control">
+    </div>
+    <div class="form-group">
+        <label for="end_time">End Time:</label>
+        <input type="time" name="end_time" id="end_time" value="{{ schedule.end_time|time:"H:i" }}" class="form-control">
+    </div>    
+    <br>
+    <button type="submit" class="btn btn-success">Update Schedule</button>
+</form>
+</div>
+{% endblock %}

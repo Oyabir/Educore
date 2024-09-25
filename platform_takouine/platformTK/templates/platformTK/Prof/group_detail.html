@@ -3,6 +3,7 @@
 {% load custom_filters %}
 
 {% block content %}
+<link rel="stylesheet" href="{% static 'css/group_detail.css' %}">
     {% include 'platformTK/Prof/navbar.html' %}
 
     <div class="container-xxl py-5">
@@ -70,58 +71,6 @@
 {% endif %}
 
 
-    <style>
-.birthday-message {
-    background: linear-gradient(145deg, #176b90, #ffffff); /* Bright and cheerful colors */
-    border-radius: 20px;
-    padding: 40px;
-    text-align: center;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-    animation: bounceIn 0.5s ease-out;
-}
-
-.birthday-text {
-    font-size: 48px; /* Large, readable text */
-    color: #ffffff; /* White text */
-    margin-bottom: 20px;
-    animation: textColorChange 1.5s infinite alternate; /* Animation for fun effect */
-}
-
-.subtext {
-    font-size: 24px;
-    color: #ffffff;
-    margin-bottom: 30px;
-}
-
-.close-button {
-    background-color: #176b90; /* Bright pink button */
-    color: #fff;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 10px;
-    cursor: pointer;
-    font-size: 18px;
-    transition: background-color 0.3s ease;
-}
-
-.close-button:hover {
-    background-color: #176b90; /* Darker pink on hover */
-}
-
-@keyframes bounceIn {
-    0% { transform: scale(0); }
-    50% { transform: scale(1.1); }
-    100% { transform: scale(1); }
-}
-
-@keyframes textColorChange {
-    0% { color: #ffffff; }
-    100% { color: #070606; }
-}
-
-
-    </style>
-    
     <br>
         <div class="row">
             <!-- Group Information -->
@@ -132,20 +81,31 @@
                         <p><strong>Date:</strong>{{ group.date_created }}</p>
                         <p><strong>Lieu:</strong> Takouine Smart Center</p>
                         <p><strong>Participants:</strong> {{ group.etudiants.count }}</p>
-                        <a href="{% url 'Répartition_points' code_group=group.code_group %}" class="btn btn-primary" style=" background-color: #176b90;border-color: #ffffff; margin-bottom: 5px">
-                            Répartition des points
-                        </a>
-                        <br>
-                        {% for schedule in schedules %}
-                        <a href="{% url 'mark_attendance' group.id schedule.id %}" class="btn btn-primary" style="background-color: #176b90; border-color: #ffffff;margin-bottom: 5px">
-                            Marquer la présence pour {{ schedule.day_of_week }} at {{ schedule.start_time }}
-                        </a>
-                        <a href="{% url 'view_attendance' group.id schedule.id %}" class="btn btn-primary" style="margin-bottom: 5px" >
-                            Voir la participation pour {{ schedule.day_of_week }} at {{ schedule.start_time }}
-                        </a>
-
-                    {% endfor %}
-
+                        <div class="button-group mb-4">
+                            <div class="button-pair">
+                                <!-- Répartition des points button -->
+                                <a href="{% url 'Répartition_points' code_group=group.code_group %}" class="btn btn-custom mb-2">
+                                    Répartition des points
+                                </a>
+                                <a href="{% url 'birthday_list' code_group=group.code_group %}" class="btn btn-custom-alt mb-2">
+                                    Happy Birthday
+                                </a>
+                                
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="button-group mb-4">
+                            {% for schedule in schedules %}
+                                <div class="button-pair">
+                                    <a href="{% url 'mark_attendance' group.id schedule.id %}" class="btn btn-custom mb-2">
+                                        Marquer la présence pour {{ schedule.day_of_week }} à {{ schedule.start_time }}
+                                    </a>
+                                    <a href="{% url 'view_attendance' group.id schedule.id %}" class="btn btn-custom-alt mb-2">
+                                        Voir la participation pour {{ schedule.day_of_week }} à {{ schedule.start_time }}
+                                    </a>
+                                </div>
+                            {% endfor %}
+                        </div>
                         {% comment %} <a href="" class="btn btn-dark rounded-pill py-sm-3 px-sm-5 animated slideInRight">Recompation</a> {% endcomment %}
                     </div>
                 </div>

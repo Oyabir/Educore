@@ -41,6 +41,7 @@ urlpatterns = [
 
     path('mark-attendance/<int:group_id>/<int:schedule_id>/', views.mark_attendance, name='mark_attendance'),
     path('view-attendance/<int:group_id>/<int:schedule_id>/', views.view_attendance, name='view_attendance'),
+    path('group/<str:code_group>/birthday/',views.birthday_list, name='birthday_list'),
 
     
     
@@ -90,7 +91,7 @@ urlpatterns = [
     path('list-classes/', views.list_classes, name='list_classes'),
     path('edit_schedule/<int:schedule_id>/', views.edit_schedule, name='edit_schedule'),
     path('delete_schedule/<int:schedule_id>/', views.delete_schedule, name='delete_schedule'),
-    path('view-students-in-class/<int:class_id>/', views.view_students_in_class, name='view_students_in_class'),
+    path('view-students-in-class/<str:class_code>/', views.view_students_in_class, name='view_students_in_class'),
 
 
     

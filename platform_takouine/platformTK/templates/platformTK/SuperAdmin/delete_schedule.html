@@ -1,0 +1,16 @@
+{% comment %} {% extends "platformTK/SuperAdmin/HomeBase.html" %}
+{% load static %}
+
+{% block content %}
+{% include 'platformTK/SuperAdmin/navbar.html' %}
+
+<div class="container mt-5">
+    <h2>Delete Schedule</h2>
+    <p>Are you sure you want to delete the schedule for {{ schedule.group.name }} on {{ schedule.day_of_week }}?</p>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Delete</button>
+        <a href="{% url 'schedule_list' %}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %} {% endcomment %}

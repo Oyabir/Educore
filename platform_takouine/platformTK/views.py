@@ -738,32 +738,35 @@ def group_detail(request, code_group):
         pointsG=Subquery(memberships_subquery, output_field=models.IntegerField())
     ).order_by('-pointsG') 
 
-    today = timezone.now().date()
-    # Calculate the start and end of the current week
-    start_of_week = today - timedelta(days=today.weekday())  # Monday of the current week
-    end_of_week = start_of_week + timedelta(days=6)  # Sunday of the current week
+    return render(request, "platformTK/Prof/group_detail.html", {
+        "group": group,
+        "students": students,
+        "schedules": schedules,
+    })
 
-    # Get the birthdays that fall within the current week
+
+
+@login_required(login_url='login')
+@allowedUsers(allowedGroups=['Prof'])
+def birthday_list(request, code_group):
+    group = get_object_or_404(Groups, code_group=code_group)
+    students = group.etudiants.all()
+
+    today = timezone.now().date()
+    start_of_week = today - timedelta(days=today.weekday())  # Start of the current week (Monday)
+    end_of_week = start_of_week + timedelta(days=6)  # End of the current week (Sunday)
+
+    # Filter students who have a birthday this week
     birthday_students = students.filter(
         date_de_naissance__month__in=[start_of_week.month, end_of_week.month],
         date_de_naissance__day__gte=start_of_week.day,
         date_de_naissance__day__lte=end_of_week.day
     ).distinct()
 
-    # Create a single birthday message listing all names
-    birthday_messages = []
-    if birthday_students.exists():
-        names = [f"{student.prenom} {student.nom}" for student in birthday_students]  # Include both prenom and nom
-        birthday_messages.append("Takouine Smart vous souhaite un joyeux anniversaire, " + ", ".join(names) + "!")
-
-    return render(request, "platformTK/Prof/group_detail.html", {
-        "group": group,
-        "students": students,
-        "schedules": schedules,
-        "birthday_messages": birthday_messages,  # Pass the list with a single message
+    return render(request, 'platformTK/Prof/birthday_list.html', {
+        'group': group,
+        'birthday_students': birthday_students,
     })
-
-
 
 
 @login_required(login_url='login')
@@ -902,6 +905,7 @@ def subtract_points(request, student_id, group_id):
 
 from django.shortcuts import get_object_or_404, render
 from django.utils import timezone
+from django.db.models import Max
 
 def view_attendance(request, group_id, schedule_id):
     group = get_object_or_404(Groups, id=group_id)
@@ -910,13 +914,21 @@ def view_attendance(request, group_id, schedule_id):
     # Get the current date
     today = timezone.now().date()
 
-    # Filter classes that have been added on or before today
-    classes_today_or_older = schedule.classes.filter(date_added__lte=today).order_by('-date_added')
+    # Check if there are classes for today
+    classes_today = schedule.classes.filter(date_added=today)
+
+    if classes_today.exists():
+        # Fetch attendance records for today
+        classes_to_show = classes_today
+    else:
+        # If no classes today, get the most recent class before today
+        last_class_before_today = schedule.classes.filter(date_added__lt=today).order_by('-date_added').first()
+        classes_to_show = [last_class_before_today] if last_class_before_today else []
 
     attendance_records = []
 
     # Fetch attendance records for the relevant classes
-    for class_instance in classes_today_or_older:
+    for class_instance in classes_to_show:
         records = Attendance.objects.filter(class_instance=class_instance, schedule=schedule)
         attendance_records.append({
             'class_instance': class_instance,
@@ -936,14 +948,13 @@ def view_attendance(request, group_id, schedule_id):
 
 
 
-from django.db import IntegrityError
-from django.utils import timezone
 
 from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
 from django.utils import timezone
 from django.contrib import messages
 from django.shortcuts import get_object_or_404, render, redirect
+import locale
 
 
 @login_required  # Ensure the user is logged in
@@ -951,12 +962,16 @@ def mark_attendance(request, group_id, schedule_id):
     group = get_object_or_404(Groups, id=group_id)
     schedule = get_object_or_404(Schedule, id=schedule_id)
 
+    locale.setlocale(locale.LC_TIME, 'fr_FR.UTF-8')  # Ensure your system supports this locale
+
     # Get current date
     current_date = timezone.now().date()
     formatted_date = current_date.strftime('%Y-%m-%d')  # Example format: '2023-09-23'
 
+    day_name = current_date.strftime('%A').capitalize()  # This will give you the full name of the day (e.g., 'lundi')
+    
     # Generate a class name based on the schedule's day of the week and current date
-    class_name = f"{schedule.day_of_week} Class on {formatted_date}"
+    class_name = f"{day_name} Class on {formatted_date}"
 
     # Check if a class with the same name exists for this schedule
     existing_class = schedule.classes.filter(name=class_name).first()
@@ -1059,6 +1074,7 @@ def edit_schedule(request, schedule_id):
         'groups': groups,
     })
 
+
 def delete_schedule(request, schedule_id):
     schedule = get_object_or_404(Schedule, id=schedule_id)
 
@@ -1071,15 +1087,47 @@ def delete_schedule(request, schedule_id):
     })
 
 
+
+
 def list_classes(request):
-    classes = Class.objects.all()  # Fetch all classes
-    return render(request, 'platformTK/SuperAdmin/list_classes.html', {'classes': classes})
+    # Get filtering parameters
+    filter_date = request.GET.get('date')
+    filter_group_id = request.GET.get('group')
+
+    # Start with all classes
+    classes = Class.objects.all().order_by('-date_added')
+
+    # Filter by group if provided
+    if filter_group_id:
+        # Get classes that have attendance records for the specified group
+        classes = classes.filter(attendances__group_id=filter_group_id).distinct()
+
+    # Filter by date if provided
+    if filter_date:
+        classes = classes.filter(date_added=filter_date)
+
+    # Pagination
+    paginator = Paginator(classes, 10)  # Show 10 classes per page
+    page_number = request.GET.get('page', 1)  # Get the page number from the query parameters
+    paginated_classes = paginator.get_page(page_number)  # Get the classes for the current page
+
+    # Get groups for the filter dropdown
+    groups = Groups.objects.all()  # Adjust based on your group model
+
+    return render(request, 'platformTK/SuperAdmin/list_classes.html', {
+        'classes': paginated_classes,
+        'groups': groups,  # Pass groups to the template for filtering
+        'filter_date': filter_date,  # Pass the filter date to retain in the form
+        'filter_group': filter_group_id,  # Pass the filter group ID to retain in the form
+    })
 
 
 
 
-def view_students_in_class(request, class_id):
-    class_instance = get_object_or_404(Class, id=class_id)
+
+def view_students_in_class(request, class_code):
+    # Fetch the class instance using the class_code instead of class_id
+    class_instance = get_object_or_404(Class, class_code=class_code)
     group = class_instance.schedule.group  # Access the group through the class's schedule
     students = group.etudiants.all()  # Get all students in the group
 
@@ -1095,6 +1143,7 @@ def view_students_in_class(request, class_id):
         'attendance_records': attendance_records,
         'professor': professor  # Pass the professor's information to the template
     })
+
 
 
 
