@@ -4,19 +4,19 @@
 {% block content %}
 {% include 'platformTK/SuperAdmin/navbar.html' %}
 <div class="container mt-5">
-    <h2>Schedule List</h2> <br><br>
-    <a href="{% url 'add_schedule' %}" class="btn btn-primary">Add Schedule</a>
-    <a href="{% url "list_classes" %}" class="btn btn-primary">List Classes</a>
+    <h2>Liste des emploi du temps</h2> <br>
+    <a href="{% url 'add_schedule' %}" class="btn btn-primary">Ajouter emploi du temps</a>
+    <a href="{% url "list_classes" %}" class="btn btn-primary">Liste des classes scolaires</a>
     <div class="container py-2">
         <table class="table table-striped">
         <thead>
             <tr>
-                <th>Group</th>
-                <th>Day of Week</th>
-                <th>Start Time</th>
-                <th>End Time</th>
+                <th>Groupe</th>
+                <th>Jour de la Semaine</th>
+                <th>Heure de Début</th>
+                <th>Heure de Fin</th>
                 <th>Actions</th>
-            </tr>
+            </tr>            
             </thead>
             <tbody>
                 {% for schedule in schedules %}
@@ -26,13 +26,13 @@
                     <td>{{ schedule.start_time }}</td>
                     <td>{{ schedule.end_time }}</td>
                     <td>
-                        <a href="{% url 'edit_schedule' schedule.id %}" class="btn btn-warning">Edit</a>
-                        <a href="#" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal" data-schedule-id="{{ schedule.id }}">Delete</a>
+                        <a href="{% url 'edit_schedule' schedule.id %}" class="btn btn-warning" style="width: 114px;margin-bottom: 10px;">Modifier</a>
+                        <a href="#" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal" data-schedule-id="{{ schedule.id }}">Supprimer</a>
                     </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="7">No schedules available.</td>
+                    <td colspan="7" class="text-center">Aucun emploi du temps disponible.</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -44,15 +44,15 @@
         <div class="modal-dialog" style="min-width: 1000px;" >
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
+                    <h5 class="modal-title" id="deleteModalLabel">Confirmer la suppression</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    Are you sure you want to delete this schedule?
+                    Êtes-vous sûr de vouloir supprimer cet emploi du temps ?
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <a id="confirmDeleteBtn" href="#" class="btn btn-danger">Delete</a>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <a id="confirmDeleteBtn" href="#" class="btn btn-danger">Supprimer</a>
                 </div>
             </div>
         </div>
@@ -96,9 +96,7 @@
         .btn-primary:hover {
             background-color: #176b90;
         }
-    </style>
-    
-<style>
+ 
     .container {
         max-width: 1200px; /* Limit container width */
         margin: 0 auto; /* Center align */

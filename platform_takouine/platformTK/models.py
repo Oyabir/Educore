@@ -275,20 +275,19 @@ class Membership(models.Model):
 class Schedule(models.Model):
     group = models.ForeignKey('Groups', related_name='schedules', on_delete=models.CASCADE)
     day_of_week = models.CharField(max_length=9, choices=[
-        ('Monday', 'Monday'),
-        ('Tuesday', 'Tuesday'),
-        ('Wednesday', 'Wednesday'),
-        ('Thursday', 'Thursday'),
-        ('Friday', 'Friday'),
-        ('Saturday', 'Saturday'),
-        ('Sunday', 'Sunday')
+        ('Lundi', 'Lundi'),
+        ('Mardi', 'Mardi'),
+        ('Mercredi', 'Mercredi'),
+        ('Jeudi', 'Jeudi'),
+        ('Vendredi', 'Vendredi'),
+        ('Samedi', 'Samedi'),
+        ('Dimanche', 'Dimanche')
     ])
     start_time = models.TimeField()
     end_time = models.TimeField()
 
     def __str__(self):
         return f"{self.group.name} - {self.day_of_week}: {self.start_time} - {self.end_time}"
-
 
 
 def generate_class_code():

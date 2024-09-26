@@ -32,11 +32,11 @@
     </script>
 
     <div class="container">
-        <h1 class="mb-4">Add Schedule</h1>
+        <h2 class="mb-4">Ajouter un emploi du temps</h2>
         <form method="post">
             {% csrf_token %}
             <div class="form-group">
-                <label for="group">Group</label>
+                <label for="group">Groupe</label>
                 <select name="group" id="group" class="form-control">
                     {% for group in groups %}
                         <option value="{{ group.id }}">{{ group.name }}</option>
@@ -44,27 +44,47 @@
                 </select>
             </div>
             <div class="form-group">
-                <label for="day_of_week">Day of Week</label>
+                <label for="day_of_week">Jour de la semaine</label>
                 <select name="day_of_week" id="day_of_week" class="form-control">
-                    <option value="Monday">Monday</option>
-                    <option value="Tuesday">Tuesday</option>
-                    <option value="Wednesday">Wednesday</option>
-                    <option value="Thursday">Thursday</option>
-                    <option value="Friday">Friday</option>
-                    <option value="Saturday">Saturday</option>
-                    <option value="Sunday">Sunday</option>
+                    <option value="Monday">Lundi</option>
+                    <option value="Tuesday">Mardi</option>
+                    <option value="Wednesday">Mercredi</option>
+                    <option value="Thursday">Jeudi</option>
+                    <option value="Friday">Vendredi</option>
+                    <option value="Saturday">Samedi</option>
+                    <option value="Sunday">Dimanche</option>
                 </select>
             </div>
             <div class="form-group">
-                <label for="start_time">Start Time</label>
+                <label for="start_time">Heure de début</label>
                 <input type="time" name="start_time" id="start_time" class="form-control" required>
             </div>
             <div class="form-group">
-                <label for="end_time">End Time</label>
+                <label for="end_time">Heure de fin</label>
                 <input type="time" name="end_time" id="end_time" class="form-control" required>
             </div>
             <br>
-            <button type="submit" class="btn btn-primary">Add Schedule</button>
+            <button type="submit" class="btn btn-primary">Ajouter un emploi du temps</button>
         </form>
     </div>
+
+    <style>
+        body{
+            background-color: #ffffff;
+        }
+        .btn-primary {
+            background-color: #176b90;
+            color: #ffffff;
+        }
+
+        .btn-primary:hover {
+            background-color: #176b90;
+        }
+
+        h2 {
+            color: #343a40; /* Darker color for headers */
+            text-align: center; /* Center the main title */
+        }
+ 
+    </style>
     {% endblock %}

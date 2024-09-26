@@ -38,7 +38,7 @@
 
 
 
-    {% if birthday_messages %}
+    {% comment %} {% if birthday_messages %}
     <!-- Display birthday message if it exists -->
     <div class="birthday-message-container">
         <div class="birthday-message">
@@ -68,7 +68,7 @@
             birthdayMessageContainer.style.display = 'none';
         });
     </script>
-{% endif %}
+{% endif %} {% endcomment %}
 
 
     <br>
@@ -115,29 +115,29 @@
         <div class="col-lg-6 mb-4">
             <div class="card students-list-card">
                 <div class="card-body">
-                    <h2 class="card-title">Students in this Group</h2>
+                    <h2 class="card-title">Étudiants dans ce groupe</h2>
                     <table class="table table-striped">
                         <thead>
                             <tr>
                                 <th>#</th>
-                                <th>Name</th>
-                                <th>Group</th>
-                                {% comment %} <th>Phone Number</th> {% endcomment %}
+                                <th>Nom et Prénom</th>
+                                <th>Groupe</th>
+                                {% comment %} <th>Numéro de téléphone</th> {% endcomment %}
                                 <th>Points</th> 
-                            </tr>
+                            </tr>                            
                         </thead>
                         <tbody>
                             {% for student in students %}
                             <tr>
                                 <td>{{ forloop.counter }}</td>
-                                <td>{{ student.prenom|capitalize_first }} {{ student.nom|capitalize_first }}</td>
+                                <td> {{ student.nom|capitalize_first }} {{ student.prenom|capitalize_first }}</td>
                                 {% comment %} <td>{{ student.email }}</td> {% endcomment %}
                                 <td>{{ group.name }}</td>
                                 <td>{{ student.pointsG }}</td> 
                             </tr>
                             {% empty %}
                             <tr>
-                                <td colspan="5" class="text-center">No students found in this group.</td>
+                                <td colspan="5" class="text-center">Aucun étudiant trouvé dans ce groupe.</td>
                             </tr>
                             {% endfor %}
                         </tbody>
