@@ -5,6 +5,34 @@
 {% include 'platformTK/Etudiant/navbar.html' %}
 
 <div class="container-xxl py-3">
+    {% if messages %}
+    <div class="container">
+        {% for message in messages %}
+            {% if message.tags == 'error' %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endif %}
+            {% if message.tags == 'success' %}
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <script>
+        setTimeout(function() {
+            var messageContainer = document.getElementById('message-container');
+            if (messageContainer) {
+                messageContainer.style.display = 'none';
+            }
+        }, 5000); 
+    </script>
+    
     <div class="text-center mb-5">
         <h1 class="mb-3">Mes commandes</h1>
         <p class="lead">Voici la liste de vos commandes, {{ etudiant.prenom|capitalize_first}}.</p>
@@ -14,11 +42,9 @@
     <!-- Search Form -->
     <div class="row mb-4">
         <form method="GET" class="row mb-4">
-            <!-- Search by commande_code -->
             <div class="col-md-6 mb-2">
                 <input type="text" name="commande_code" class="form-control" placeholder="Rechercher par code de commande..." value="{{ commande_code_query }}">
             </div>
-            <!-- Filter by status -->
             <div class="col-md-4 mb-2">
                 <select name="status" class="form-select">
                     <option value="">Tous les statuts</option>
@@ -28,7 +54,6 @@
                 </select>
             </div>
 
-            <!-- Submit button -->
             <div class="col-md-2 mb-2">
                 <button type="submit" class="btn btn-primary w-100" style="margin-bottom: 4px;background-color: #176b90;border-color: #176b90;">Rechercher</button>
                 <a href="{% url 'list_commandes' %}" class="btn btn-secondary w-100">Annuler</a>
@@ -81,7 +106,7 @@
         </div>
     </div>
 
-    <!-- Pagination Controls -->
+    <!-- Pagination -->
     <div class="d-flex justify-content-center mt-4">
         <nav>
             <ul class="pagination">

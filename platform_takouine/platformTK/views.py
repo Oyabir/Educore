@@ -77,7 +77,7 @@ def is_birthday(etudiant):
 @login_required(login_url='login')
 @allowedUsers(allowedGroups=['Etudiants'])
 def homeEtudiant(request):
-    etudiant = request.user.etudiant  # Assuming you're getting the logged-in student
+    etudiant = request.user.etudiant
     today = timezone.now().date()
 
     # Check if it's the student's birthday
@@ -85,9 +85,9 @@ def homeEtudiant(request):
 
     # Show the birthday message only once per login on the birthday
     if birthday_message and request.session.get('birthday_message_shown') != str(today):
-        request.session['birthday_message_shown'] = str(today)  # Store the date when the message is shown
+        request.session['birthday_message_shown'] = str(today) 
     else:
-        birthday_message = False  # Don't show the message again on the same day
+        birthday_message = False
         
     try:
         etudiant = Etudiant.objects.get(user=request.user)
@@ -99,7 +99,7 @@ def homeEtudiant(request):
 
     competitions = Competitions.objects.filter(sections__in=sections).distinct()
 
-    # Prepare competition data
+
     competition_section_data = []
     for competition in competitions:
         for section in sections.filter(competition=competition):
@@ -123,7 +123,6 @@ def homeEtudiant(request):
         group = membership.group
         etudiant_pointsG = membership.pointsG
 
-        # Get all memberships in the group with ordered by pointsG
         memberships_in_group = Membership.objects.filter(group=group).order_by('-pointsG')
 
         # Calculate the rank of the student in this specific group
@@ -153,7 +152,6 @@ def homeEtudiant(request):
 def Store(request):
     etudiant = get_object_or_404(Etudiant, user=request.user)
     
-    # Get query parameters for filtering
     category_id = request.GET.get('category')
     name_query = request.GET.get('name')
     
@@ -165,12 +163,12 @@ def Store(request):
     if name_query and name_query != "None":  
         products = products.filter(name__icontains=name_query) 
     
-    # Pagination (6 products per page)
+    # Pagination
     paginator = Paginator(products, 6)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     
-    # Get all categories for filter dropdown
+    
     categories = Category.objects.all()
     
     context = {
@@ -230,11 +228,10 @@ def purchase_product(request, slug):
     etudiant = get_object_or_404(Etudiant, user=request.user)
 
     if etudiant.points >= product.price:
-        # Deduct points
         etudiant.points -= int(product.price)
         etudiant.save()
 
-        # add the purchase in the Commande table with status 'Pending'
+        # add the purchase in the Commande
         Commande.objects.create(
             etudiant=etudiant,
             product=product,
@@ -246,7 +243,7 @@ def purchase_product(request, slug):
     else:
         messages.error(request, 'You do not have enough points to purchase this product.')
 
-    return redirect('Store') 
+    return redirect('list_commandes') 
 
 
 
@@ -260,14 +257,14 @@ def list_commandes(request):
     commande_code_query = request.GET.get('commande_code', '')
     status_query = request.GET.get('status', '')
 
-    # Filter commandes by commande_code and status
-    commandes = Commande.objects.filter(etudiant=etudiant)
-    if commande_code_query:
-        commandes = commandes.filter(commande_code__icontains=commande_code_query)
-    if status_query:
-        commandes = commandes.filter(status=status_query)
 
-    # Paginate results
+    commandes = Commande.objects.filter(etudiant=etudiant).order_by('-date_ordered')
+    if commande_code_query:
+        commandes = commandes.filter(commande_code__icontains=commande_code_query).order_by('-date_ordered')
+    if status_query:
+        commandes = commandes.filter(status=status_query).order_by('-date_ordered')
+
+    # Paginate
     paginator = Paginator(commandes, 10)  
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -300,7 +297,6 @@ def my_competitions(request):
         competition_section_data = []
         for competition in competitions:
             for section in sections.filter(competition=competition):
-                # Calculate rank for the section within its competition
                 section_rank = Sections.objects.filter(
                     competition=competition, 
                     points__gt=section.points
@@ -338,10 +334,8 @@ def my_groups(request):
         group = membership.group
         etudiant_pointsG = membership.pointsG
         
-        # Get all memberships in the group with ordered by pointsG 
         memberships_in_group = Membership.objects.filter(group=group).order_by('-pointsG')
         
-        # Calculate the rank of the student in this specific group
         rank = list(memberships_in_group).index(membership) + 1
         
         group_data.append({
@@ -370,10 +364,10 @@ def homeProf(request):
         groups = Groups.objects.filter(profs=current_prof)
         competitions = Competitions.objects.filter(prof=current_prof)
         
-        # Get the top 3 groups based on their total points
+        # Get the top 3 groups
         top_groups = sorted(groups, key=lambda group: group.total_points(), reverse=True)[:3]
         
-        # Aggregate points for each competition and sort them to get the top 3
+        # The the top 3 competition
         competitions_with_points = competitions.annotate(total_points=Sum('sections__points'))
         top_competitions = competitions_with_points.order_by('-total_points')[:3]
         
@@ -442,7 +436,7 @@ def add_competition(request):
     if request.method == 'POST':
         name = request.POST.get('name')
         number_of_sections = request.POST.get('number_of_sections')
-        selected_group = request.POST.get('group')  # Get selected group
+        selected_group = request.POST.get('group')
 
         # Validate input
         if name and number_of_sections and selected_group:
@@ -457,7 +451,6 @@ def add_competition(request):
                         group=selected_group,  
                         prof=current_prof  
                     )
-                    # Redirect to the add_section view with the new competition's ID
                     return redirect('add_section', competition_id=competition.id)
             except (ValueError, Groups.DoesNotExist):
                 pass
@@ -475,10 +468,8 @@ def add_section(request, competition_id):
     
     all_students = competition.group.etudiants.all()
 
-    # Get students already assigned to any section in this competition
     assigned_students = Etudiant.objects.filter(sections__competition=competition).distinct()
 
-    # Exclude assigned students from the list of available students
     available_students = all_students.exclude(id__in=assigned_students.values_list('id', flat=True))
 
     current_sections_count = competition.sections.count()
@@ -487,28 +478,22 @@ def add_section(request, competition_id):
         section_name = request.POST.get('section_name')
         selected_students_str = request.POST.get('students') 
 
-        # Clean the string to remove any trailing comma and split into a list of IDs
         selected_students = list(map(int, selected_students_str.strip(',').split(',')))
 
         if current_sections_count < competition.number_of_sections:
             if section_name:
-                # Create the new section for the competition
                 section = Sections.objects.create(
                     competition=competition,
                     section_name=section_name
                 )
 
-                # Add selected students to the section
                 section.etudiants.set(selected_students)
                 section.save()
 
-                # Redirect back to the same page to add more sections if needed
                 return redirect('add_section', competition_id=competition.id)
         else:
-            # Build the competition_sections URL
             competition_sections_url = reverse('competition_sections', args=[competition.id])
 
-            # Display an error message with a link to the competition sections page
             error_message = f"You cannot add more sections than the allowed number. <a href='{competition_sections_url}'>Go to Competition Sections</a>"
             return render(request, 'platformTK/Prof/add_section.html', {
                 'competition': competition,
@@ -545,17 +530,14 @@ def finish_competition(request, competition_id):
     
     top_sections = competition.sections.all().order_by('-points')[:3]
     
-    # Points distribution for 1st, 2nd, and 3rd places
     points_distribution = [10, 5, 1]
     
-    # Award points to the etudiants in each of the top 3 sections
     for index, section in enumerate(top_sections):
-        points_to_add = points_distribution[index]  # Points based on rank (1st, 2nd, 3rd)
+        points_to_add = points_distribution[index]
         for etudiant in section.etudiants.all():
             etudiant.points = (etudiant.points or 0) + points_to_add 
             etudiant.save() 
 
-    # Mark the competition as finished
     competition.is_finished = True
     competition.save()
 
@@ -639,14 +621,13 @@ def StoreProf(request):
     search_query = request.GET.get('name', '')
     category_id = request.GET.get('category', '')
 
-    # Filter products by name and category
     products = Product.objects.all()
     if search_query:
         products = products.filter(name__icontains=search_query)
     if category_id:
         products = products.filter(category_id=category_id)
 
-    # Pagination (6 products per page)
+    # Pagination
     paginator = Paginator(products, 6)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -690,7 +671,6 @@ def update_profil_prof(request):
         numéro_de_téléphone = request.POST.get('phone')
         avatar = request.FILES.get('avatar')
 
-        # Validate and update the prof instance
         if prenom and nom and email:
             prof_instance.prenom = prenom
             prof_instance.nom = nom
@@ -720,6 +700,7 @@ def update_profil_prof(request):
 from django.utils import timezone
 from django.db.models import OuterRef, Subquery, Sum
 from datetime import timedelta
+
 
 @login_required(login_url='login')
 @allowedUsers(allowedGroups=['Prof'])
@@ -756,7 +737,7 @@ def birthday_list(request, code_group):
     start_of_week = today - timedelta(days=today.weekday())  # Start of the current week (Monday)
     end_of_week = start_of_week + timedelta(days=6)  # End of the current week (Sunday)
 
-    # Filter students who have a birthday this week
+
     birthday_students = students.filter(
         date_de_naissance__month__in=[start_of_week.month, end_of_week.month],
         date_de_naissance__day__gte=start_of_week.day,
@@ -767,6 +748,7 @@ def birthday_list(request, code_group):
         'group': group,
         'birthday_students': birthday_students,
     })
+
 
 
 @login_required(login_url='login')
@@ -784,7 +766,6 @@ def Répartition_points(request, code_group):
         pointsG = memberships_dict.get(student.id, 0)
         students_with_points.append((student, pointsG))
 
-    # Sort students by pointsG
     students_with_points = sorted(students_with_points, key=lambda x: x[1], reverse=True)
 
     # Extract sorted students and their pointsG
@@ -811,6 +792,7 @@ def Répartition_points(request, code_group):
     })
     
     
+
 
 #Another way for do this
 
@@ -903,12 +885,13 @@ def subtract_points(request, student_id, group_id):
 
 
 
-from django.shortcuts import get_object_or_404, render
-from django.utils import timezone
+
 from django.db.models import Max
 
-def view_attendance(request, group_id, schedule_id):
-    group = get_object_or_404(Groups, id=group_id)
+@login_required(login_url='login')
+@allowedUsers(allowedGroups=['Prof'])
+def view_attendance(request, code_group, schedule_id):
+    group = get_object_or_404(Groups, code_group=code_group)
     schedule = get_object_or_404(Schedule, id=schedule_id)
 
     # Get the current date
@@ -918,16 +901,13 @@ def view_attendance(request, group_id, schedule_id):
     classes_today = schedule.classes.filter(date_added=today)
 
     if classes_today.exists():
-        # Fetch attendance records for today
         classes_to_show = classes_today
     else:
-        # If no classes today, get the most recent class before today
         last_class_before_today = schedule.classes.filter(date_added__lt=today).order_by('-date_added').first()
         classes_to_show = [last_class_before_today] if last_class_before_today else []
 
     attendance_records = []
 
-    # Fetch attendance records for the relevant classes
     for class_instance in classes_to_show:
         records = Attendance.objects.filter(class_instance=class_instance, schedule=schedule)
         attendance_records.append({
@@ -935,45 +915,39 @@ def view_attendance(request, group_id, schedule_id):
             'records': records
         })
 
-    # Get the professor's name
     prof_name = schedule.classes.first().prof if schedule.classes.exists() else None
 
     return render(request, 'platformTK/Prof/view_attendance.html', {
         'group': group,
         'schedule': schedule,
         'attendance_records': attendance_records,
-        'prof_name': prof_name  # Pass the professor's name to the template
+        'prof_name': prof_name 
     })
 
 
 
 
-
-from django.contrib.auth.decorators import login_required
 from django.db import IntegrityError
-from django.utils import timezone
-from django.contrib import messages
-from django.shortcuts import get_object_or_404, render, redirect
 import locale
 
 
-@login_required  # Ensure the user is logged in
-def mark_attendance(request, group_id, schedule_id):
-    group = get_object_or_404(Groups, id=group_id)
+@login_required(login_url='login')
+@allowedUsers(allowedGroups=['Prof'])
+def mark_attendance(request, code_group, schedule_id):
+    group = get_object_or_404(Groups, code_group=code_group)
     schedule = get_object_or_404(Schedule, id=schedule_id)
 
-    locale.setlocale(locale.LC_TIME, 'fr_FR.UTF-8')  # Ensure your system supports this locale
+    locale.setlocale(locale.LC_TIME, 'fr_FR.UTF-8')
 
-    # Get current date
+
     current_date = timezone.now().date()
-    formatted_date = current_date.strftime('%Y-%m-%d')  # Example format: '2023-09-23'
+    formatted_date = current_date.strftime('%Y-%m-%d')
 
-    day_name = current_date.strftime('%A').capitalize()  # This will give you the full name of the day (e.g., 'lundi')
+    day_name = current_date.strftime('%A').capitalize()
     
-    # Generate a class name based on the schedule's day of the week and current date
-    class_name = f"{day_name} Class on {formatted_date}"
+    # Generate a class name
+    class_name = f"{day_name} Cours du {formatted_date}"
 
-    # Check if a class with the same name exists for this schedule
     existing_class = schedule.classes.filter(name=class_name).first()
 
     # Create the class if it does not exist
@@ -983,14 +957,12 @@ def mark_attendance(request, group_id, schedule_id):
             messages.success(request, f"New class '{class_name}' created for this schedule.")
         except IntegrityError:
             messages.error(request, f"Class '{class_name}' already exists.")
-            new_class = schedule.classes.filter(name=class_name).first()  # Fetch the existing class
+            new_class = schedule.classes.filter(name=class_name).first()
     else:
-        new_class = existing_class  # Use the existing class if it's already created
+        new_class = existing_class
     
-    # Handle POST request for marking attendance
     if request.method == 'POST':
         for etudiant in group.etudiants.all():
-            # Check if an attendance record already exists for this student, schedule, and class_instance
             present_status = request.POST.get(f'present_{new_class.id}_{etudiant.id}', 'off') == 'on'
             try:
                 attendance, created = Attendance.objects.get_or_create(
@@ -1001,7 +973,6 @@ def mark_attendance(request, group_id, schedule_id):
                     defaults={'is_present': present_status}
                 )
                 if not created:
-                    # If the attendance already exists, update the presence status
                     attendance.is_present = present_status
                     attendance.save()
             except IntegrityError:
@@ -1010,11 +981,10 @@ def mark_attendance(request, group_id, schedule_id):
         messages.success(request, "Attendance marked successfully.")
         return redirect('group_detail', code_group=group.code_group)
 
-    # Render the attendance form
     return render(request, 'platformTK/Prof/mark_attendance.html', {
         'group': group,
         'schedule': schedule,
-        'classes': [new_class]  # Only the new or most recent class is passed to the template
+        'classes': [new_class]
     })
 
 
@@ -1027,8 +997,8 @@ def homeSuperAdmin(requset):
 
 
 
-
-
+@login_required(login_url='login')
+@allowedUsers(allowedGroups=['SuperAdmin'])
 def add_schedule(request):
     if request.method == 'POST':
         group_id = request.POST.get('group')
@@ -1036,7 +1006,6 @@ def add_schedule(request):
         start_time = request.POST.get('start_time')
         end_time = request.POST.get('end_time')
 
-        # Create a new Schedule instance
         schedule = Schedule(
             group_id=group_id,
             day_of_week=day_of_week,
@@ -1044,20 +1013,24 @@ def add_schedule(request):
             end_time=end_time
         )
         schedule.save()
-        return redirect('schedule_list')  # Redirect to the list of schedules or another page
+        return redirect('schedule_list')
 
-    # For GET request, fetch all groups to display in the form
     groups = Groups.objects.all()
     return render(request, 'platformTK/SuperAdmin/add_schedule.html', {'groups': groups})
 
 
 
+@login_required(login_url='login')
+@allowedUsers(allowedGroups=['SuperAdmin'])
 def schedule_list(request):
-    schedules = Schedule.objects.all()  # Fetch all schedules
+    schedules = Schedule.objects.all().order_by('-date_added')
     return render(request, 'platformTK/SuperAdmin/schedule_list.html', {'schedules': schedules})
 
 
 
+
+@login_required(login_url='login')
+@allowedUsers(allowedGroups=['SuperAdmin'])
 def edit_schedule(request, schedule_id):
     schedule = get_object_or_404(Schedule, id=schedule_id)
 
@@ -1068,13 +1041,16 @@ def edit_schedule(request, schedule_id):
         schedule.save()
         return redirect('schedule_list')
 
-    groups = Groups.objects.all()  # Get all groups to populate the form
+    groups = Groups.objects.all()
     return render(request, 'platformTK/SuperAdmin/edit_schedule.html', {
         'schedule': schedule,
         'groups': groups,
     })
 
 
+
+@login_required(login_url='login')
+@allowedUsers(allowedGroups=['SuperAdmin'])
 def delete_schedule(request, schedule_id):
     schedule = get_object_or_404(Schedule, id=schedule_id)
 
@@ -1088,60 +1064,54 @@ def delete_schedule(request, schedule_id):
 
 
 
-
+@login_required(login_url='login')
+@allowedUsers(allowedGroups=['SuperAdmin'])
 def list_classes(request):
-    # Get filtering parameters
     filter_date = request.GET.get('date')
     filter_group_id = request.GET.get('group')
 
-    # Start with all classes
     classes = Class.objects.all().order_by('-date_added')
 
-    # Filter by group if provided
+
     if filter_group_id:
-        # Get classes that have attendance records for the specified group
         classes = classes.filter(attendances__group_id=filter_group_id).distinct()
 
-    # Filter by date if provided
     if filter_date:
         classes = classes.filter(date_added=filter_date)
 
     # Pagination
-    paginator = Paginator(classes, 10)  # Show 10 classes per page
-    page_number = request.GET.get('page', 1)  # Get the page number from the query parameters
-    paginated_classes = paginator.get_page(page_number)  # Get the classes for the current page
+    paginator = Paginator(classes, 10)
+    page_number = request.GET.get('page', 1)
+    paginated_classes = paginator.get_page(page_number)
 
-    # Get groups for the filter dropdown
-    groups = Groups.objects.all()  # Adjust based on your group model
+    groups = Groups.objects.all()
 
     return render(request, 'platformTK/SuperAdmin/list_classes.html', {
         'classes': paginated_classes,
-        'groups': groups,  # Pass groups to the template for filtering
-        'filter_date': filter_date,  # Pass the filter date to retain in the form
-        'filter_group': filter_group_id,  # Pass the filter group ID to retain in the form
+        'groups': groups,
+        'filter_date': filter_date,
+        'filter_group': filter_group_id,
     })
 
 
 
 
-
+@login_required(login_url='login')
+@allowedUsers(allowedGroups=['SuperAdmin'])
 def view_students_in_class(request, class_code):
-    # Fetch the class instance using the class_code instead of class_id
     class_instance = get_object_or_404(Class, class_code=class_code)
-    group = class_instance.schedule.group  # Access the group through the class's schedule
-    students = group.etudiants.all()  # Get all students in the group
+    group = class_instance.schedule.group
+    students = group.etudiants.all()
 
-    # Get attendance records for the class
     attendance_records = Attendance.objects.filter(class_instance=class_instance)
 
-    # Get the professor for the class
-    professor = class_instance.prof  # Assuming there's a prof field in your Class model
+    professor = class_instance.prof
 
     return render(request, 'platformTK/SuperAdmin/view_students_in_class.html', {
         'class_instance': class_instance,
         'students': students,
         'attendance_records': attendance_records,
-        'professor': professor  # Pass the professor's information to the template
+        'professor': professor
     })
 
 
@@ -1151,11 +1121,9 @@ def view_students_in_class(request, class_code):
 @login_required(login_url='login')
 @allowedUsers(allowedGroups=['SuperAdmin'])
 def add_groupe(request):
-    
     name_filter = request.GET.get('name', '')
     code_group_filter = request.GET.get('code_group', '')
 
-    # Apply filters
     etudiants = Etudiant.objects.all()
     profs = prof.objects.all()
     groups = Groups.objects.order_by('-date_created')
@@ -1184,12 +1152,10 @@ def add_groupe(request):
 @login_required(login_url='login')
 @allowedUsers(allowedGroups=['SuperAdmin'])
 def add_student(request):
-    
     prenom_filter = request.GET.get('prenom', '')
     nom_filter = request.GET.get('nom', '')
     etudiant_code_filter = request.GET.get('etudiant_code', '')
 
-    # Apply filters
     etudiants = Etudiant.objects.order_by('-date_created')
 
     if prenom_filter:
@@ -1204,7 +1170,6 @@ def add_student(request):
     page_number = request.GET.get('page', 1)
     paginated_etudiants = paginator.get_page(page_number)
 
-    # Get all groups and profs
     groups = Groups.objects.all()
     profs = prof.objects.all()
 
@@ -1230,7 +1195,6 @@ def group_list(request):
         prof_ids_str = request.POST.get('profs', '')
 
         try:
-            # Convert the comma-separated strings into lists of integers
             student_ids = [int(id) for id in student_ids_str.split(',') if id.isdigit()]
             prof_ids = [int(id) for id in prof_ids_str.split(',') if id.isdigit()]
 
@@ -1246,7 +1210,7 @@ def group_list(request):
             group.profs.set(profs)
             group.save()
 
-            # Create Membership records for each student added to the group, with pointsG initialized to 0
+            # Create Membership
             for student in students:
                 Membership.objects.create(etudiant=student, group=group, pointsG=0)
 
@@ -1312,12 +1276,10 @@ def delete_group(request):
 def add_profs_etudiants(request, group_id):
     group = get_object_or_404(Groups, id=group_id)
 
-    # Filter professors and students not already in the group
     professors = prof.objects.exclude(id__in=group.profs.values_list('id', flat=True))
     etudiants = Etudiant.objects.exclude(id__in=group.etudiants.values_list('id', flat=True))
 
     if request.method == 'POST':
-        # Get selected IDs from POST request
         selected_profs = request.POST.get('profs', '')
         selected_etudiants = request.POST.get('etudiants', '')
 
@@ -1325,11 +1287,9 @@ def add_profs_etudiants(request, group_id):
         prof_ids = [int(prof_id) for prof_id in selected_profs.split(',') if prof_id.isdigit()]
         etudiant_ids = [int(etudiant_id) for etudiant_id in selected_etudiants.split(',') if etudiant_id.isdigit()]
 
-        # Add valid professors and students to the group
         group.profs.add(*prof_ids)
         group.etudiants.add(*etudiant_ids)
 
-        # For each student added, create a Membership entry
         for etudiant_id in etudiant_ids:
             etudiant = Etudiant.objects.get(id=etudiant_id)
             Membership.objects.get_or_create(etudiant=etudiant, group=group)
@@ -1351,7 +1311,6 @@ def delete_profs_etudiants(request, group_id):
     group = get_object_or_404(Groups, id=group_id)
     
     if request.method == 'POST':
-        # Get selected IDs from POST request
         selected_profs = request.POST.getlist('profs')
         selected_etudiants = request.POST.getlist('etudiants')
 
@@ -1359,11 +1318,10 @@ def delete_profs_etudiants(request, group_id):
         prof_ids = [int(prof_id) for prof_id in selected_profs if prof_id.isdigit()]
         etudiant_ids = [int(etudiant_id) for etudiant_id in selected_etudiants if etudiant_id.isdigit()]
 
-        # Remove professors and students from the group
         group.profs.remove(*prof_ids)
         group.etudiants.remove(*etudiant_ids)
 
-        # Delete Membership entries for the removed students (make sure to filter by both group and etudiant)
+        # Delete Membership
         for etudiant_id in etudiant_ids:
             Membership.objects.filter(etudiant_id=etudiant_id, group=group).delete()
 
@@ -1396,7 +1354,7 @@ def add_etudiant(request):
         avatar = request.FILES.get('avatar')
         group_id = request.POST.get('group')
 
-        # Check if required fields are provided
+        # Check if required fields
         if not username or not password or not prenom or not nom or not date_de_naissance or not email:
             return render(request, "platformTK/SuperAdmin/add_student.html", {
                 'error': 'Please fill in all required fields.',
@@ -1404,10 +1362,8 @@ def add_etudiant(request):
             })
 
         try:
-            # Create a new user for the student
             user = User.objects.create_user(username=username, password=password)
 
-            # Create the Etudiant object
             etudiant = Etudiant.objects.create(
                 user=user,
                 prenom=prenom,
@@ -1418,15 +1374,12 @@ def add_etudiant(request):
                 avatar=avatar
             )
 
-            # Assign the student to the selected group if a group is provided
             if group_id:
                 group = Groups.objects.get(id=group_id)
                 group.etudiants.add(etudiant)
 
-                # Also add the student to the Membership model with the initial points (0)
                 Membership.objects.create(etudiant=etudiant, group=group, pointsG=0)
 
-            # Add the student to the 'Etudiants' group (Django's Group model for permissions)
             group = Group.objects.get(name="Etudiants")
             user.groups.add(group)
 
@@ -1440,6 +1393,7 @@ def add_etudiant(request):
             })
 
     return render(request, "platformTK/SuperAdmin/add_student.html", {'groups': groups})
+
 
 
 
@@ -1464,26 +1418,20 @@ def update_etudiant(request):
         if 'avatar' in request.FILES:
             etudiant.avatar = request.FILES['avatar']
 
-        # Handle group assignment (for ManyToManyField)
-        group_ids = request.POST.getlist('groups')  # Can select multiple groups
+        group_ids = request.POST.getlist('groups')
         selected_groups = Groups.objects.filter(id__in=group_ids)
 
         try:
-            # Save etudiant details
             etudiant.save()
 
-            # Update the many-to-many relationship with selected groups
             etudiant.groups.set(selected_groups)
 
-            # Update Membership entries
             existing_memberships = Membership.objects.filter(etudiant=etudiant)
 
-            # Remove memberships for groups that are no longer selected
             for membership in existing_memberships:
                 if membership.group not in selected_groups:
                     membership.delete()
 
-            # Add new memberships for groups that are newly selected
             for group in selected_groups:
                 membership, created = Membership.objects.get_or_create(etudiant=etudiant, group=group)
                 if created:
@@ -1531,7 +1479,6 @@ def add_students_from_file(request):
             messages.error(request, 'No file uploaded.')
             return render(request, "platformTK/SuperAdmin/add_student.html")
 
-        # Handle only .xlsx files
         if file.name.endswith('.xlsx'):
             try:
                 df = pd.read_excel(file)
@@ -1555,7 +1502,6 @@ def add_students_from_file(request):
                         continue
 
                     try:
-                        # Create the user and student
                         user = User.objects.create_user(username=username, password=password)
                         Etudiant.objects.create(
                             user=user,
@@ -1567,7 +1513,6 @@ def add_students_from_file(request):
                             avatar=avatar
                         )
 
-                        # Add the user to the 'Etudiants' group
                         try:
                             group = Group.objects.get(name="Etudiants")
                             user.groups.add(group)
@@ -1620,7 +1565,6 @@ def add_prof(request):
     page_number = request.GET.get('page', 1)
     paginated_profs = paginator.get_page(page_number)
 
-    # Get all groups and etudiants
     groups = Groups.objects.all()
     etudiants = Etudiant.objects.all()
 
@@ -1655,14 +1599,12 @@ def prof_list(request):
         username = request.POST.get('username')
         password = request.POST.get('password')
 
-        # Validate the inputs
         if not (prenom and nom and date_de_naissance and email and username and password):
             return render(request, 'platformTK/SuperAdmin/add_prof.html', {
                 'error': 'Please fill in all required fields.',
                 'groups': groups,
             })
 
-        # Check if the username already exists
         if User.objects.filter(username=username).exists():
             return render(request, 'platformTK/SuperAdmin/add_prof.html', {
                 'error': 'Username already exists.',
@@ -1670,11 +1612,9 @@ def prof_list(request):
             })
 
         try:
-            # Create the user object
             # user = User.objects.create_user(username=username, password=password, email=email)
             user = User.objects.create_user(username=username, password=password)
 
-            # Create the prof instance
             new_prof = prof.objects.create(
                 user=user,
                 prenom=prenom,
@@ -1732,7 +1672,6 @@ def update_prof(request, prof_id):
         if request.FILES.get('avatar'):
             professor.avatar = request.FILES['avatar']
 
-        # Update the groups the professor belongs to
         group_ids = request.POST.getlist('groups') 
         selected_groups = Groups.objects.filter(id__in=group_ids)
 
@@ -1892,7 +1831,6 @@ def store_admin(request):
     name_filter = request.GET.get('name', '')
     category_filter = request.GET.get('category', '')
 
-    # Apply filters
     products = Product.objects.order_by('-date_added')
     
     if name_filter:
@@ -1905,7 +1843,6 @@ def store_admin(request):
     page_number = request.GET.get('page', 1)
     paginated_products = paginator.get_page(page_number)
 
-    # Get all categories
     categories = Category.objects.all()
 
     return render(request, "platformTK/SuperAdmin/store_admin.html", {
@@ -1914,9 +1851,8 @@ def store_admin(request):
         'name_filter': name_filter,
         'category_filter': category_filter,
     })
-    
-    
-    
+
+
 
 
 @login_required(login_url='login')
@@ -2007,7 +1943,6 @@ def commandes_admin(request):
     commande_code_filter = request.GET.get('commande_code', '')
     status_filter = request.GET.get('status', '')
 
-    # Apply filters
     commandes = Commande.objects.order_by('-date_ordered')
     
     if commande_code_filter:
@@ -2200,7 +2135,7 @@ def dashboard(request):
 
     # Prepare data for the doughnut chart
     chart_data = {
-        'labels': ['Pending', 'Completed', 'Cancelled'],  # Replace with actual labels
+        'labels': ['Pending', 'Completed', 'Cancelled'],
         'data': [
             Commande.objects.filter(status='Pending').count(),
             Commande.objects.filter(status='Completed').count(),
@@ -2258,7 +2193,7 @@ def dashboard(request):
         'previous_avg_etudiant_points': previous_avg_etudiant_points,
         'total_orders': total_orders,
         'commandes_data': commandes_data,
-        'chart_data': chart_data_json,  # Pass chart data to the template
+        'chart_data': chart_data_json,
         'top_prof_data': top_prof_data,
     }
     return render(request, 'platformTK/dashboard.html', context)

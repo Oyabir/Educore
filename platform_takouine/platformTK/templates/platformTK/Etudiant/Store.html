@@ -34,7 +34,6 @@
     </script>
 
     <div class="container">
-        <!-- Filters and Search -->
         <form method="GET" class="row mb-4">
             <!-- Search by name -->
             <div class="col-md-6 mb-2">
@@ -52,7 +51,6 @@
                     {% endfor %}
                 </select>
             </div>
-            <!-- Submit button -->
             <div class="col-md-2 mb-2">
                 <button type="submit" class="btn btn-primary w-100" style="margin-bottom: 4px;background-color: #176b90;border-color: #176b90;">Filtrer</button>
                 <a href="{% url 'Store' %}" class="btn btn-secondary w-100">Annuler</a>
@@ -89,7 +87,7 @@
             {% endif %}
         </div>
 
-        <!-- Pagination Controls -->
+        <!-- Pagination -->
         <div class="d-flex justify-content-center mt-4">
         <nav>
             <ul class="pagination">

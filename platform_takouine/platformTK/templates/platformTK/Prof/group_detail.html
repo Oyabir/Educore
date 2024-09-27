@@ -27,13 +27,12 @@
     {% endif %}
     
     <script>
-        // Automatically hide the messages after 5 seconds
         setTimeout(function() {
             var messageContainer = document.getElementById('message-container');
             if (messageContainer) {
                 messageContainer.style.display = 'none';
             }
-        }, 5000);  // 5000ms = 5 seconds
+        }, 5000);
     </script>
 
 
@@ -97,10 +96,10 @@
                         <div class="button-group mb-4">
                             {% for schedule in schedules %}
                                 <div class="button-pair">
-                                    <a href="{% url 'mark_attendance' group.id schedule.id %}" class="btn btn-custom mb-2">
+                                    <a href="{% url 'mark_attendance' group.code_group schedule.id %}" class="btn btn-custom mb-2">
                                         Marquer la présence pour {{ schedule.day_of_week }} à {{ schedule.start_time }}
                                     </a>
-                                    <a href="{% url 'view_attendance' group.id schedule.id %}" class="btn btn-custom-alt mb-2">
+                                    <a href="{% url 'view_attendance' code_group=schedule.group.code_group schedule_id=schedule.id %}" class="btn btn-custom-alt mb-2">
                                         Voir la participation pour {{ schedule.day_of_week }} à {{ schedule.start_time }}
                                     </a>
                                 </div>

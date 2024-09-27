@@ -26,13 +26,12 @@
 {% endif %}
 
 <script>
-    // Automatically hide the messages after 5 seconds
     setTimeout(function() {
         var messageContainer = document.getElementById('message-container');
         if (messageContainer) {
             messageContainer.style.display = 'none';
         }
-    }, 5000);  // 5000ms = 5 seconds
+    }, 5000);
 </script>
 
     <!-- File Upload Form -->
@@ -235,14 +234,12 @@
         document.getElementById("edit_prenom").value = prenom;
         document.getElementById("edit_nom").value = nom;
         
-        // Ensure the date is in YYYY-MM-DD format
         let formattedDate = date_de_naissance ? new Date(date_de_naissance).toISOString().split('T')[0] : '';
         document.getElementById("edit_date_de_naissance").value = formattedDate;
         
         document.getElementById("edit_email").value = email;
         document.getElementById("edit_numéro_de_téléphone").value = numéro_de_téléphone;
         
-        // Handle avatar preview
         let avatarPreview = document.getElementById("current_avatar");
         if (avatar_url) {
             avatarPreview.innerHTML = `<img src="${avatar_url}" style="width: 100px; height: 100px;" alt="Current Avatar">`;
@@ -250,16 +247,13 @@
             avatarPreview.innerHTML = 'No Avatar';
         }
         
-        // Set selected groups for the etudiant
         let groupSelect = document.getElementById("edit_group");
         let groupOptions = groupSelect.options;
     
-        // Clear all previous selections
         for (let i = 0; i < groupOptions.length; i++) {
             groupOptions[i].selected = false;
         }
     
-        // Mark the etudiant's groups as selected
         group_ids.forEach(group_id => {
             for (let i = 0; i < groupOptions.length; i++) {
                 if (groupOptions[i].value == group_id) {
@@ -355,7 +349,6 @@
         document.getElementById("groupModal").style.display = "none";
     }
 
-    // Close modal when clicking outside of it
     window.onclick = function(event) {
         if (event.target == document.getElementById("groupModal")) {
             closeModal();
@@ -416,7 +409,6 @@
         document.getElementById("groupModal").style.display = "none";
     }
 
-    // Close modal when clicking outside of it
     window.onclick = function(event) {
         if (event.target == document.getElementById("groupModal")) {
             closeModal();

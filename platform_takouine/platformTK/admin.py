@@ -85,7 +85,7 @@ class CategoryAdmin(admin.ModelAdmin):
 
 @admin.register(Schedule)
 class ScheduleAdmin(admin.ModelAdmin):
-    list_display = ('group', 'day_of_week', 'start_time', 'end_time')
+    list_display = ('group', 'day_of_week', 'start_time', 'end_time','date_added')
     list_filter = ('group', 'day_of_week')
     search_fields = ('group__name',)
     ordering = ('group', 'day_of_week', 'start_time')

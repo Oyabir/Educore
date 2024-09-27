@@ -26,13 +26,12 @@
 {% endif %}
 
 <script>
-    // Automatically hide the messages after 5 seconds
     setTimeout(function() {
         var messageContainer = document.getElementById('message-container');
         if (messageContainer) {
             messageContainer.style.display = 'none';
         }
-    }, 5000);  // 5000ms = 5 seconds
+    }, 5000);
 </script>
 
 
@@ -98,7 +97,7 @@
         </table>
     </div>
 
-    <!-- Pagination Controls -->
+    <!-- Pagination -->
     <div class="d-flex justify-content-center mt-4">
         <nav>
             <ul class="pagination">
@@ -176,14 +175,12 @@
 </div>
 
 <script>
-    // Open the delete confirmation modal
     function openDeleteModal(groupId, groupName) {
         document.getElementById('deleteGroupId').value = groupId;
         document.getElementById('groupName').textContent = groupName;
         document.getElementById('deleteGroupModal').style.display = 'block';
     }
 
-    // Close the delete confirmation modal
     function closeDeleteModal() {
         document.getElementById('deleteGroupModal').style.display = 'none';
     }
@@ -454,7 +451,6 @@
 
 
 
-<!-- CSS for Scrollable Containers -->
 <style>
     /* CSS for Full Width Modal */
     .modal {

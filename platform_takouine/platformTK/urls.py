@@ -39,8 +39,8 @@ urlpatterns = [
     path('update_points/<int:student_id>/<int:group_id>/', views.update_points, name='update_points'),
     path('subtract_points/<int:student_id>/<int:group_id>/', views.subtract_points, name='subtract_points'),
 
-    path('mark-attendance/<int:group_id>/<int:schedule_id>/', views.mark_attendance, name='mark_attendance'),
-    path('view-attendance/<int:group_id>/<int:schedule_id>/', views.view_attendance, name='view_attendance'),
+    path('mark-attendance/<str:code_group>/<int:schedule_id>/', views.mark_attendance, name='mark_attendance'),
+    path('view-attendance/<str:code_group>/<int:schedule_id>/', views.view_attendance, name='view_attendance'),
     path('group/<str:code_group>/birthday/',views.birthday_list, name='birthday_list'),
 
     

@@ -8,24 +8,21 @@
 
 <div class="container-xxl py-3">
     <div class="container">
-        <!-- Search Form -->
         <form method="GET" class="row mb-4">
-            <!-- Search by name -->
             <div class="col-md-6 mb-2">
                 <input type="text" name="name" class="form-control" placeholder="Search for products by name..." value="{{ name_query }}">
                 </div>
                 <!-- Filter by category -->
-            <div class="col-md-4 mb-2">
-                <select name="category" class="form-select">
-                    <option value="">All Categories</option>
-                    {% for category in categories %}
-                        <option value="{{ category.id }}" {% if category.id|stringformat:"s" == selected_category %}selected{% endif %}>
-                            {{ category.name }}
-                        </option>
-                    {% endfor %}
-                </select>
-            </div>
-                <!-- Submit button -->
+                <div class="col-md-4 mb-2">
+                    <select name="category" class="form-select">
+                        <option value="">All Categories</option>
+                        {% for category in categories %}
+                            <option value="{{ category.id }}" {% if category.id|stringformat:"s" == selected_category %}selected{% endif %}>
+                                {{ category.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
             <div class="col-md-2 mb-2">
                 <button type="submit" class="btn btn-primary w-100" style="margin-bottom: 4px;background-color: #176b90;border-color: #176b90;">Search</button>
                 <a href="{% url 'StoreProf' %}" class="btn btn-secondary w-100">Cancel</a>
@@ -67,7 +64,7 @@
             {% endif %}
         </div>
 
-        <!-- Pagination Controls -->
+        <!-- Pagination -->
         <div class="d-flex justify-content-center mt-4">
             <nav>
                 <ul class="pagination">

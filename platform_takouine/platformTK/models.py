@@ -285,6 +285,7 @@ class Schedule(models.Model):
     ])
     start_time = models.TimeField()
     end_time = models.TimeField()
+    date_added = models.DateTimeField(auto_now_add=True, null=True, blank=True)
 
     def __str__(self):
         return f"{self.group.name} - {self.day_of_week}: {self.start_time} - {self.end_time}"
