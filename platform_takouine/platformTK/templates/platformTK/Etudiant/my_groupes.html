@@ -24,7 +24,7 @@
                                 <tr>
                                     <th>#</th>
                                     <th>Nom du Groupe</th>
-                                    <th>Description</th>
+                                    {% comment %} <th>Description</th> {% endcomment %}
                                     <th>Vos Points</th>
                                     <th>Votre Rang</th>
                                     <th>Total d'Étudiants</th>
@@ -35,7 +35,7 @@
                                 <tr>
                                     <td>{{ forloop.counter }}</td>
                                     <td>{{ data.group.name }}</td>
-                                    <td class="d-none d-md-table-cell" style="width: 309px;">{{ data.group.description }}</td>
+                                    {% comment %} <td class="d-none d-md-table-cell" style="width: 309px;">{{ data.group.description }}</td> {% endcomment %}
                                     <td>{{ data.points }}</td>
                                     <td>{{ data.rank }}/{{ data.total_students }}</td>
                                     <td>{{ data.total_students }}</td>

@@ -1,6 +1,6 @@
 {% extends "platformTK/Prof/HomeBase.html" %}
-
 {% load static %}
+{% load custom_filters %}
 
 {% block content %}
     {% include 'platformTK/Prof/navbar.html' %}
@@ -25,98 +25,126 @@
         <div class="alert alert-danger">
             {{ error_message|safe }}
         </div>
-    {% endif %}
-    
-
-    <h2>Add Section to {{ competition.name }}</h2>
-    <form action="{% url 'add_section' competition.id %}" method="post">
-        {% csrf_token %}
-        <div class="mb-3">
-            <label for="sectionName" class="form-label">Section Name</label>
-            <input type="text" class="form-control" id="sectionName" name="section_name" placeholder="Enter section name" required>
-        </div>
-
-        <!-- Row for Student List and Selected Students -->
-        <div class="row">
-            <!-- Student Search and List -->
-            <div class="col-md-6 mb-3">
-                <label for="studentSearch" class="form-label">Search Students</label>
-                <div class="input-group">
-                    <input type="text" class="form-control" id="studentSearch" placeholder="Search students..." oninput="filterList('student')">
-                </div>
-                <div class="card mt-3 p-2 scrollable-container" id="studentList">
-                    {% for etudiant in students %}
-                    <div data-id="{{ etudiant.id }}" class="student-item">
-                        {{ etudiant.prenom }} {{ etudiant.nom }}
-                        <button type="button" class="btn btn-danger btn-sm" onclick="addStudent({{ etudiant.id }}, '{{ etudiant.prenom }} {{ etudiant.nom }}')" style="background-color: #007bff;border-color: #007bff;">Add</button>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-
-            <!-- Selected Students -->
-            <div class="col-md-6 mt-2 mb-3">
-                <label class="form-label">Selected Students</label>
-                <div id="selectedStudents" class="scrollable-list border rounded p-2"></div>
-                <input type="hidden" id="students" name="students">
-            </div>
-        </div>
-    <button type="submit" class="btn btn-primary">Add Section</button>
-    </form>
-</div>
-
-{% endif %}
-
-
-<script>
-    function filterList(type) {
-        var input, filter, items, i, txtValue;
-        if (type === 'student') {
-            input = document.getElementById('studentSearch');
-            items = document.querySelectorAll('#studentList .student-item');
-        }
+        {% endif %}
         
-        filter = input.value.toLowerCase();
-    
-        // Loop through all list items, and hide those who don't match the search query
-        for (i = 0; i < items.length; i++) {
-            txtValue = items[i].textContent || items[i].innerText;
-            if (txtValue.toLowerCase().indexOf(filter) > -1) {
-                items[i].style.display = "";
+        <h2>Add Section to {{ competition.name }}</h2>
+        <form action="{% url 'add_section' competition.id %}" method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="sectionType" class="form-label">Choose Section Creation Type</label>
+                <select id="sectionType" name="section_type" class="form-select" required>
+                    <option value="manual">Manual</option>
+                    <option value="automatic">Automatic</option>
+                </select>
+            </div>
+        
+            <div id="manualSection">  {% comment %}style="display: none;" {% endcomment %}
+                <div class="mb-3">
+                    <label for="sectionName" class="form-label">Section Name</label>
+                    <input type="text" class="form-control" id="sectionName" name="section_name" placeholder="Enter section name">
+                </div>
+        
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="studentSearch" class="form-label">Search Students</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="studentSearch" placeholder="Search students..." oninput="filterList('student')">
+                        </div>
+                        <div class="card mt-3 p-2 scrollable-container" id="studentList">
+                            {% for etudiant in students %}
+                            <div data-id="{{ etudiant.id }}" class="student-item">
+                                {{ etudiant.prenom|capitalize_first }} {{ etudiant.nom|capitalize_first }}
+                                <button type="button" class="btn btn-danger btn-sm" onclick="addStudent({{ etudiant.id }}, '{{ etudiant.prenom }} {{ etudiant.nom }}')" style="background-color: #007bff;border-color: #007bff;">Add</button>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+        
+                    <div class="col-md-6 mt-2 mb-3">
+                        <label class="form-label">Selected Students</label>
+                        <div id="selectedStudents" class="scrollable-list border rounded p-2"></div>
+                        <input type="hidden" id="students" name="students">
+                    </div>
+                </div>
+            </div>
+        
+            <button type="submit" class="btn btn-primary">Add Section</button>
+        </form>
+    </div>
+    {% endif %}
+
+    <script>
+        document.getElementById('sectionType').addEventListener('change', function() {
+            const manualSection = document.getElementById('manualSection');
+            const sectionNameInput = document.getElementById('sectionName');
+        
+            if (this.value === 'manual') {
+                manualSection.style.display = 'block';
+                sectionNameInput.required = true; // Make it required
+                sectionNameInput.value = ''; // Clear value when showing
             } else {
-                items[i].style.display = "none";
+                manualSection.style.display = 'none';
+                sectionNameInput.required = false; // Remove required
+                sectionNameInput.value = ''; // Clear value when hiding
+            }
+        });
+        
+        document.querySelector('form').addEventListener('submit', function(event) {
+            const manualSection = document.getElementById('manualSection');
+            const sectionNameInput = document.getElementById('sectionName');
+        
+            // Prevent submission if the section is manual and the input is empty
+            if (manualSection.style.display !== 'none' && sectionNameInput.value.trim() === '') {
+                event.preventDefault(); // Prevent form submission
+                sectionNameInput.focus(); // Focus on the input
+            }
+        });
+        
+        
+
+        function filterList(type) {
+            var input, filter, items, i, txtValue;
+            if (type === 'student') {
+                input = document.getElementById('studentSearch');
+                items = document.querySelectorAll('#studentList .student-item');
+            }
+
+            filter = input.value.toLowerCase();
+            for (i = 0; i < items.length; i++) {
+                txtValue = items[i].textContent || items[i].innerText;
+                items[i].style.display = txtValue.toLowerCase().indexOf(filter) > -1 ? "" : "none";
             }
         }
-    }
-    
-    function addStudent(id, name) {
-        var selectedStudents = document.getElementById('selectedStudents');
-        var input = document.getElementById('students');
-        var existingStudent = selectedStudents.querySelector(`[data-id='${id}']`);
-        
-        if (!existingStudent) {
-            var student = document.createElement('div');
-            student.setAttribute('data-id', id);
-            student.classList.add('d-flex', 'justify-content-between', 'align-items-center', 'mb-2');
-            student.innerHTML = name + 
-                ' <button type="button" class="btn btn-danger btn-sm" onclick="removeItem(this, \'student\', ' + id + ')">Remove</button>';
-            selectedStudents.appendChild(student);
-            input.value += id + ',';
-        }
-    }
-    
-    function removeItem(button, type, id) {
-        button.parentElement.remove();
-        var input = document.getElementById(type === 'student' ? 'students' : 'profs');
-        input.value = input.value.replace(id + ',', '');
-    }
-    
-</script>
 
-<style>
-    .container-fluid{
-        margin-top: 16rem !important;
-    }
-</style>
+        function addStudent(id, name) {
+            var selectedStudents = document.getElementById('selectedStudents');
+            var input = document.getElementById('students');
+            var existingStudent = selectedStudents.querySelector(`[data-id='${id}']`);
+        
+            if (!existingStudent) {
+                // Capitalize the first letter and make the rest lowercase
+                var capitalizedName = name.charAt(0).toUpperCase() + name.slice(1).toLowerCase();
+                var student = document.createElement('div');
+                student.setAttribute('data-id', id);
+                student.classList.add('d-flex', 'justify-content-between', 'align-items-center', 'mb-2');
+                student.innerHTML = capitalizedName + 
+                    ' <button type="button" class="btn btn-danger btn-sm" onclick="removeItem(this, \'student\', ' + id + ')">Remove</button>';
+                selectedStudents.appendChild(student);
+                input.value += id + ',';
+            }
+        }        
+
+        function removeItem(button, type, id) {
+            button.parentElement.remove();
+            var input = document.getElementById(type === 'student' ? 'students' : 'profs');
+            input.value = input.value.replace(id + ',', '');
+        }
+    </script>
+
+    <style>
+        .container-fluid {
+            margin-top: 16rem !important;
+        }
+    </style>
 
 {% endblock %}

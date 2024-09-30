@@ -9,7 +9,7 @@
         <div class="row justify-content-center">
             <div class="col-lg-6 mb-4 text-center">
                 <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCompetitionModal">
-                    Add New Competition
+                    Ajouter une nouvelle compétition
                 </button>
             </div>
 
@@ -23,9 +23,9 @@
                                 <th>#</th>
                                 <th>Nom</th>
                                 <th>Date</th>
-                                <th>Lieu</th>
-                                <th>Show</th>
-                                <th>section</th>
+                                <th>Participants</th>
+                                {% comment %} <th>Groupes</th> {% endcomment %}
+                                <th>Afficher</th>                                
                             </tr>
                         </thead>
                         <tbody>
@@ -35,9 +35,8 @@
                                 <td>{{competition.name}}</td>
                                 <td>{{competition.date_created}}</td>
                                 <td>{{competition.number_of_sections}}</td>
-                                <td><a href="{% url 'add_section' competition.id %}">Show</a></td>
-                                <td><a href="{% url 'competition_sections' competition.id %}">View Sections</a></td>
-
+                                {% comment %} <td><a href="{% url 'add_section' competition.id %}">Voir les Groupes</a></td> {% endcomment %}
+                                <td><a href="{% url 'competition_sections' competition.id %}">Afficher le competition</a></td>
                             </tr>
                            {% endfor %}
                         </tbody>
@@ -52,30 +51,30 @@
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="addCompetitionModalLabel">Add New Competition</h5>
+                    <h5 class="modal-title" id="addCompetitionModalLabel">Ajouter une nouvelle compétition</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <form action="{% url 'add_competition' %}" method="post">
                         {% csrf_token %}
                         <div class="mb-3">
-                            <label for="compName" class="form-label">Competition Name</label>
-                            <input type="text" class="form-control" id="compName" name="name" placeholder="Enter competition name" required>
+                            <label for="compName" class="form-label">Nom du compétition</label>
+                            <input type="text" class="form-control" id="compName" name="name" placeholder="Entrez le nom du compétition" required>
                         </div>
                         <div class="mb-3">
-                            <label for="compParticipants" class="form-label">Number of Sections</label>
-                            <input type="number" class="form-control" id="compParticipants" name="number_of_sections" placeholder="Enter number of sections" required>
+                            <label for="compParticipants" class="form-label">Nombre de groupes</label>
+                            <input type="number" class="form-control" id="compParticipants" name="number_of_sections" placeholder="Entrez le nombre de groupes" required>
                         </div>
                         <div class="mb-3">
-                            <label for="group" class="form-label">Select Group</label>
+                            <label for="group" class="form-label">Sélectionner le groupe</label>
                             <select class="form-control" id="group" name="group" required>
-                                <option value="" disabled selected>Select a group</option>
+                                <option value="" disabled selected>Sélectionnez un groupe</option>
                                 {% for group in groups %}
                                     <option value="{{ group.id }}">{{ group.name }}</option>
                                 {% endfor %}
                             </select>
                         </div>
-                        <button type="submit" class="btn btn-primary">Add Competition</button>
+                        <button type="submit" class="btn btn-primary">Ajouter une compétition</button>
                     </form>
                 </div>
             </div>
@@ -106,6 +105,20 @@
         a:hover {
             color: #30bb96;
         }
+
+
+        @media only screen and (max-width: 768px) {
+            .mt-5 {
+                margin-top: 12rem !important;
+            }
+        }
+
+        @media only screen and (max-width: 430px) {
+            .mt-5 {
+                margin-top: 18rem !important;
+            }
+        }
+
     </style>
 
 

@@ -290,6 +290,9 @@
                 <div class="mb-3">
                     <label for="username" class="form-label">Nom d'utilisateur</label>
                     <input type="text" class="form-control" id="username" name="username" required>
+                    <br>
+                    <button type="button" class="btn btn-secondary" onclick="openUsernamePopup()">Générer Nom d'utilisateur</button>
+
                 </div>
                 <div class="mb-3">
                     <label for="password" class="form-label">Mot de passe</label>
@@ -338,6 +341,70 @@
         </div>
     </div>
 </div>
+
+<!-- Popup for Username Generation -->
+<div id="usernamePopup" class="modal" style="display: none;">
+    <div class="modal-content" style="margin: 3% auto;">
+        <div class="modal-header">
+            <span class="close" onclick="closeUsernamePopup()">&times;</span>
+            <h2>Générer Nom d'utilisateur</h2>
+        </div>
+        <div class="modal-body">
+            <div class="mb-3">
+                <label for="popup_prenom" class="form-label">Prénom</label>
+                <input type="text" class="form-control" id="popup_prenom" required>
+            </div>
+            <div class="mb-3">
+                <label for="popup_nom" class="form-label">Nom</label>
+                <input type="text" class="form-control" id="popup_nom" required>
+            </div>
+            <div class="text-center">
+                <button class="btn btn-primary" onclick="generateUsername()">Générer</button>
+            </div>
+            <div id="generatedUsername" class="mt-3"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openUsernamePopup() {
+        document.getElementById('usernamePopup').style.display = 'block';
+    }
+    
+    function closeUsernamePopup() {
+        document.getElementById('usernamePopup').style.display = 'none';
+    }
+    
+    function generateUsername() {
+        const prenom = document.getElementById('popup_prenom').value;
+        const nom = document.getElementById('popup_nom').value;
+    
+        if (prenom && nom) {
+            // Get the first two characters of the first name and capitalize the first character
+            const firstNamePart = prenom.charAt(0).toUpperCase() + prenom.substring(1, 2).toLowerCase();
+    
+            // Keep the first two characters of the last name as-is (original form)
+            const lastNamePart = nom.substring(0, 2);
+    
+            // Generate a random number between 1000 and 9999
+            const randomNumber = Math.floor(1000 + Math.random() * 9000);
+    
+            // Combine parts to form the username
+            const username = `${firstNamePart}${lastNamePart}TK${randomNumber}`;
+    
+            // Set the generated username to the input field in the main modal
+            document.getElementById('username').value = username;
+    
+            // Display the generated username in the popup
+            document.getElementById('generatedUsername').innerText = `Nom d'utilisateur généré: ${username}`;
+        } else {
+            alert("Veuillez remplir les champs Prénom et Nom.");
+        }
+    }
+    
+    
+</script>
+
 
 
 <script>

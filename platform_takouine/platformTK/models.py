@@ -146,18 +146,22 @@ class Groups(models.Model):
 
 
 
+# def generate_competitions_code():
+#     unique_id = str(uuid.uuid4()).replace('-', '')[:8]  # Generate a unique ID
+#     return f"COM-{unique_id}"
+
+
 
 class Competitions(models.Model):
     name = models.CharField(max_length=100)
-    number_of_sections = models.PositiveIntegerField()  # Number of sections for the competition
+    number_of_sections = models.PositiveIntegerField()
     group = models.ForeignKey('Groups', related_name='competitions', on_delete=models.SET_NULL, null=True, blank=True)  # Set null on delete
     date_created = models.DateTimeField(auto_now_add=True, null=True, blank=True)
-    is_finished = models.BooleanField(default=False)  # New field to track if competition is finished
+    is_finished = models.BooleanField(default=False)
     prof = models.ForeignKey('Prof', related_name='competitions', on_delete=models.SET_NULL, null=True, blank=True)  # Set null on delete
 
     def __str__(self):
         return self.name
-
 
 
 

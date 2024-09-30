@@ -1,6 +1,6 @@
 {% extends "platformTK/Prof/HomeBase.html" %}
-
 {% load static %}
+{% load custom_filters %}
 
 {% block content %}
 
@@ -51,7 +51,7 @@
                                     <div class="ms-3">
                                         <h6 class="text-primary mb-1" style="color: #30bb96 !important;">
                                             {% for student in section.etudiants.all|slice:":3" %}
-                                                {{ student.prenom }} {{ student.nom }}{% if not forloop.last %}, {% endif %}
+                                            {{ student.nom|capitalize_first }} {{ student.prenom|capitalize_first }} {% if not forloop.last %}, {% endif %}
                                             {% endfor %}
                                             {% if section.etudiants.count > 3 %}
                                                 ... <!-- Add ellipsis or any indicator that there are more students -->

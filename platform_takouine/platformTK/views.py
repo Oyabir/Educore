@@ -460,53 +460,72 @@ def add_competition(request):
 
 
 
+import random
 
 @login_required(login_url='login')
 @allowedUsers(allowedGroups=['Prof'])
 def add_section(request, competition_id):
     competition = get_object_or_404(Competitions, id=competition_id)
     
+    # Keep all_students as a QuerySet instead of converting to list
     all_students = competition.group.etudiants.all()
-
-    assigned_students = Etudiant.objects.filter(sections__competition=competition).distinct()
-
-    available_students = all_students.exclude(id__in=assigned_students.values_list('id', flat=True))
-
     current_sections_count = competition.sections.count()
 
+    # Fetch assigned students for the competition
+    assigned_students = Etudiant.objects.filter(sections__competition=competition).distinct()
+
+    # Determine available students who are not already assigned to a section
+    available_students = all_students.exclude(id__in=assigned_students.values_list('id', flat=True))
+    
     if request.method == 'POST':
-        section_name = request.POST.get('section_name')
-        selected_students_str = request.POST.get('students') 
+        section_type = request.POST.get('section_type')
+        
+        if section_type == 'manual':
+            section_name = request.POST.get('section_name')
+            selected_students_str = request.POST.get('students')
+            selected_students = list(map(int, selected_students_str.strip(',').split(','))) if selected_students_str else []
 
-        selected_students = list(map(int, selected_students_str.strip(',').split(',')))
-
-        if current_sections_count < competition.number_of_sections:
-            if section_name:
+            if current_sections_count < competition.number_of_sections:
+                if section_name:
+                    section = Sections.objects.create(
+                        competition=competition,
+                        section_name=section_name
+                    )
+                    section.etudiants.set(selected_students)
+                    section.save()
+                    return redirect('add_section', competition_id=competition.id)
+                
+        elif section_type == 'automatic':
+            random.shuffle(list(all_students)) 
+            num_sections = competition.number_of_sections - current_sections_count
+            
+            students_per_section = len(all_students) // num_sections if num_sections > 0 else 0
+            remainder = len(all_students) % num_sections
+            
+            index = 0
+            for i in range(num_sections):
+                section_name = f"Group {current_sections_count + i + 1}"
                 section = Sections.objects.create(
                     competition=competition,
                     section_name=section_name
                 )
-
-                section.etudiants.set(selected_students)
+                
+                num_students = students_per_section + (1 if i < remainder else 0)
+                section_students = all_students[index:index + num_students]
+                section.etudiants.set(section_students)
                 section.save()
+                
+                index += num_students
 
-                return redirect('add_section', competition_id=competition.id)
-        else:
-            competition_sections_url = reverse('competition_sections', args=[competition.id])
-
-            error_message = f"You cannot add more sections than the allowed number. <a href='{competition_sections_url}'>Go to Competition Sections</a>"
-            return render(request, 'platformTK/Prof/add_section.html', {
-                'competition': competition,
-                'students': available_students,
-                'error_message': error_message,
-                'current_sections_count': current_sections_count,
-            })
+            return redirect('competition_sections', competition_id=competition.id)
 
     return render(request, 'platformTK/Prof/add_section.html', {
         'competition': competition,
-        'students': available_students,  
+        'students': available_students,  # Pass the filtered available students
         'current_sections_count': current_sections_count,
     })
+
+
 
 
 
