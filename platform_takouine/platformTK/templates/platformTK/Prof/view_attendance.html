@@ -9,20 +9,23 @@
         <h2>
             Registres de présence pour {{ schedule.day_of_week }} 
             {% if prof_name %}
-            Avec Prof {{ prof_name.prenom|capitalize_first }} {{ prof_name.nom|capitalize_first }}
+                Avec Prof {{ prof_name.prenom|capitalize_first }} {{ prof_name.nom|capitalize_first }}
             {% else %}
-            Avec Prof (Aucune information disponible)
+                Avec Prof (Aucune information disponible)
             {% endif %}
         </h2>
-    
+
         {% if attendance_records %}
             {% for item in attendance_records %}
                 <h3>Class: {{ item.class_instance.name }}</h3>
-                <table class="attendance-table">
+                <table class="table table-bordered attendance-table">
                     <thead>
                         <tr>
                             <th>Nom de l'étudiant</th>
                             <th>Statut de présence</th>
+                            <th>Sérieux</th>
+                            <th>Discipline</th>
+                            <th>Enthousiasme</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -31,15 +34,36 @@
                                 <td>{{ attendance.student.prenom|capitalize_first }} {{ attendance.student.nom|capitalize_first }}</td>
                                 <td>
                                     {% if attendance.is_present %}
-                                        <span class="status present">Present</span>
+                                        <span class="status present">Présent</span>
                                     {% else %}
                                         <span class="status absent">Absent</span>
                                     {% endif %}
                                 </td>
+                                <td>
+                                    {% if attendance.seriousness is not None %}
+                                        {{ attendance.seriousness }} / 5
+                                    {% else %}
+                                    Non défini
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if attendance.discipline is not None %}
+                                        {{ attendance.discipline }} / 5
+                                    {% else %}
+                                    Non défini
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if attendance.enthusiasm is not None %}
+                                        {{ attendance.enthusiasm }} / 5
+                                    {% else %}
+                                    Non défini
+                                    {% endif %}
+                                </td>                                
                             </tr>
                         {% empty %}
                             <tr>
-                                <td colspan="2">Aucune présence enregistrée pour ce cours.</td>
+                                <td colspan="5">Aucune présence enregistrée pour ce cours.</td>
                             </tr>
                         {% endfor %}
                     </tbody>
@@ -48,7 +72,7 @@
         {% else %}
             <p>Aucun registre de présence disponible pour aujourd'hui.</p>
         {% endif %}
-    </div>  
+    </div>
 
 
     <style>

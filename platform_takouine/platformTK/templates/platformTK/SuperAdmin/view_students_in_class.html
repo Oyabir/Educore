@@ -12,11 +12,18 @@
     {% endif %}
 </h2>
 
-<table>
+<a href="{% url 'download_students_attendance_pdf' class_instance.class_code %}" class="btn btn-primary mb-3">
+    Télécharger le PDF
+</a>
+
+<table class="table table-bordered">
     <thead>
         <tr>
             <th>Nom de l'Étudiant</th>
             <th>Statut de Présence</th>
+            <th>Sérieux</th>
+            <th>Discipline</th>
+            <th>Enthousiasme</th>
         </tr>        
     </thead>
     <tbody>
@@ -36,14 +43,42 @@
                         {% endif %}
                     {% endwith %}
                 </td>
+                <td>
+                    {% with attendance_record=attendance_records|get:student %} 
+                        {% if attendance_record %}
+                            {{ attendance_record.seriousness|default:"Non défini" }} / 5
+                        {% else %}
+                            Non défini
+                        {% endif %}
+                    {% endwith %}
+                </td>
+                <td>
+                    {% with attendance_record=attendance_records|get:student %} 
+                        {% if attendance_record %}
+                            {{ attendance_record.discipline|default:"Non défini" }} / 5
+                        {% else %}
+                            Non défini
+                        {% endif %}
+                    {% endwith %}
+                </td>
+                <td>
+                    {% with attendance_record=attendance_records|get:student %} 
+                        {% if attendance_record %}
+                            {{ attendance_record.enthusiasm|default:"Non défini" }} / 5
+                        {% else %}
+                            Non défini
+                        {% endif %}
+                    {% endwith %}
+                </td>
             </tr>
         {% empty %}
             <tr>
-                <td colspan="2" class="text-center">Aucun étudiant dans cette classe.</td>
+                <td colspan="5" class="text-center">Aucun étudiant dans cette classe.</td>
             </tr>
         {% endfor %}
     </tbody>
 </table>
+</div>
 
 <style>
     body{

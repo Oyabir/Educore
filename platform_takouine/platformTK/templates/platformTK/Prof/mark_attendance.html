@@ -4,28 +4,80 @@
 
 {% block content %}
     {% include 'platformTK/Prof/navbar.html' %}
-    <div class="container">
-        <h2>Marquer la présence pour {{ schedule.day_of_week }}</h2>
-    
+    <div class="container mt-5">
+        <h2 class="mb-4 text-center">Marquer la présence pour {{ schedule.day_of_week }}</h2>
+
         <form method="post">
             {% csrf_token %}
             {% for class_instance in classes %}
-                <h3>Class: {{ class_instance.name }}</h3>
-                {% for etudiant in group.etudiants.all %}
-                    <div class="mb-3 attendance-entry">
-                        <label>{{ etudiant.prenom|capitalize_first }} {{ etudiant.nom|capitalize_first  }}</label>
-                        <input type="checkbox" name="present_{{ class_instance.id }}_{{ etudiant.id }}">
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="mb-0">Class: {{ class_instance.name }}</h4>
                     </div>
-                {% endfor %}
+                    <div class="card-body">
+                        <div class="row">
+                            {% for etudiant in group.etudiants.all %}
+                                <div class="col-md-6 mb-4">
+                                    <div class="attendance-entry p-3 border rounded">
+                                        <h5>{{ etudiant.prenom|capitalize_first }} {{ etudiant.nom|capitalize_first }}</h5>
+
+                                        <div class="form-check mb-3">
+                                            <input type="checkbox" class="form-check-input" name="present_{{ class_instance.id }}_{{ etudiant.id }}" id="present_{{ class_instance.id }}_{{ etudiant.id }}" style="margin-left: -37px;">
+                                            <label class="form-check-label" for="present_{{ class_instance.id }}_{{ etudiant.id }}" style="margin-right: 16px;margin-top: 3.5px;margin-left: -10px;">Présent</label>
+                                        </div>
+
+                                        <!-- Seriousness Dropdown -->
+                                        <div class="form-group mb-3" style="margin-right: 5px;width: 144px;">
+                                            <select name="seriousness_{{ class_instance.id }}_{{ etudiant.id }}" class="form-control">
+                                                <option value="" selected>Sérieux</option>
+                                                <option value="1">1 - Very Poor</option>
+                                                <option value="2">2 - Poor</option>
+                                                <option value="3">3 - Average</option>
+                                                <option value="4">4 - Good</option>
+                                                <option value="5">5 - Excellent</option>
+                                            </select>
+                                        </div>
+
+                                        <!-- Discipline Dropdown -->
+                                        <div class="form-group mb-3" style="margin-right: 5px;width: 144px;">
+                                            <select name="discipline_{{ class_instance.id }}_{{ etudiant.id }}" class="form-control">
+                                                <option value="" selected>Discipline</option>
+                                                <option value="1">1 - Very Poor</option>
+                                                <option value="2">2 - Poor</option>
+                                                <option value="3">3 - Average</option>
+                                                <option value="4">4 - Good</option>
+                                                <option value="5">5 - Excellent</option>
+                                            </select>
+                                        </div>
+
+                                        <!-- Enthusiasm Dropdown -->
+                                        <div class="form-group mb-3" style="margin-right: 5px;width: 144px;">
+                                            <select name="enthusiasm_{{ class_instance.id }}_{{ etudiant.id }}" class="form-control">
+                                                <option value="" selected>Enthousiasme</option>
+                                                <option value="1">1 - Very Poor</option>
+                                                <option value="2">2 - Poor</option>
+                                                <option value="3">3 - Average</option>
+                                                <option value="4">4 - Good</option>
+                                                <option value="5">5 - Excellent</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
             {% endfor %}
-            <button type="submit">Soumettre la présence</button>
+            <div class="text-center">
+                <button type="submit" class="btn btn-success btn-lg">Soumettre la présence et les commentaires</button>
+            </div>
         </form>
     </div>
-    
+
     <style>
     
         .container {
-            max-width: 1000px; /* Limit container width */
+            max-width: 1307px; /* Limit container width */
             margin: 30px auto; /* Center align */
             padding: 30px; /* Generous padding for space */
             {% comment %} background-color: #ffffff; /* White background */

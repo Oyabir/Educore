@@ -29,7 +29,7 @@
                                 <div class="ms-3">
                                     <h6 class="text-primary mb-1" style="color: #30bb96 !important;">{{ student.prenom|capitalize_first }} {{ student.nom|capitalize_first }}</h6>
                                     <small>{{ student.EtudiantCode }}</small><br>
-                                    <small>Date de Naissance: {{ student.date_de_naissance }}</small>
+                                    {% comment %} <small>Date de Naissance: {{ student.date_de_naissance }}</small> {% endcomment %}
                                 </div> 
                             </div>
                             {% comment %} <span class="bg-primary text-white rounded-pill py-2 px-3" style="background-color: #176b90 !important;">

@@ -919,6 +919,7 @@ def view_attendance(request, code_group, schedule_id):
     # Check if there are classes for today
     classes_today = schedule.classes.filter(date_added=today)
 
+    # Get the classes to show (today's classes or the last class before today)
     if classes_today.exists():
         classes_to_show = classes_today
     else:
@@ -934,7 +935,10 @@ def view_attendance(request, code_group, schedule_id):
             'records': records
         })
 
-    prof_name = schedule.classes.first().prof if schedule.classes.exists() else None
+    if classes_to_show:
+        prof_name = classes_to_show[0].prof 
+    else:
+        prof_name = None
 
     return render(request, 'platformTK/Prof/view_attendance.html', {
         'group': group,
@@ -949,7 +953,6 @@ def view_attendance(request, code_group, schedule_id):
 from django.db import IntegrityError
 import locale
 
-
 @login_required(login_url='login')
 @allowedUsers(allowedGroups=['Prof'])
 def mark_attendance(request, code_group, schedule_id):
@@ -957,7 +960,6 @@ def mark_attendance(request, code_group, schedule_id):
     schedule = get_object_or_404(Schedule, id=schedule_id)
 
     locale.setlocale(locale.LC_TIME, 'fr_FR.UTF-8')
-
 
     current_date = timezone.now().date()
     formatted_date = current_date.strftime('%Y-%m-%d')
@@ -983,21 +985,35 @@ def mark_attendance(request, code_group, schedule_id):
     if request.method == 'POST':
         for etudiant in group.etudiants.all():
             present_status = request.POST.get(f'present_{new_class.id}_{etudiant.id}', 'off') == 'on'
+            
+            # Get values for seriousness, discipline, enthusiasm and set to None if not selected
+            seriousness = request.POST.get(f'seriousness_{new_class.id}_{etudiant.id}') or None
+            discipline = request.POST.get(f'discipline_{new_class.id}_{etudiant.id}') or None
+            enthusiasm = request.POST.get(f'enthusiasm_{new_class.id}_{etudiant.id}') or None
+
             try:
                 attendance, created = Attendance.objects.get_or_create(
                     student=etudiant,
                     group=group,
                     schedule=schedule,
                     class_instance=new_class,
-                    defaults={'is_present': present_status}
+                    defaults={
+                        'is_present': present_status,
+                        'seriousness': seriousness,
+                        'discipline': discipline,
+                        'enthusiasm': enthusiasm
+                    }
                 )
                 if not created:
                     attendance.is_present = present_status
+                    attendance.seriousness = seriousness
+                    attendance.discipline = discipline
+                    attendance.enthusiasm = enthusiasm
                     attendance.save()
             except IntegrityError:
                 messages.error(request, f"Attendance already exists for {etudiant.prenom} {etudiant.nom} in {new_class.name}.")
-
-        messages.success(request, "Attendance marked successfully.")
+        
+        messages.success(request, "Attendance and feedback marked successfully.")
         return redirect('group_detail', code_group=group.code_group)
 
     return render(request, 'platformTK/Prof/mark_attendance.html', {
@@ -1122,6 +1138,7 @@ def view_students_in_class(request, class_code):
     group = class_instance.schedule.group
     students = group.etudiants.all()
 
+    # Fetch attendance records for the specific class instance
     attendance_records = Attendance.objects.filter(class_instance=class_instance)
 
     professor = class_instance.prof
@@ -1132,6 +1149,40 @@ def view_students_in_class(request, class_code):
         'attendance_records': attendance_records,
         'professor': professor
     })
+
+
+
+from django.http import HttpResponse
+from django.template.loader import render_to_string
+from xhtml2pdf import pisa
+
+@login_required(login_url='login')
+@allowedUsers(allowedGroups=['SuperAdmin'])
+def download_students_attendance_pdf(request, class_code):
+    class_instance = get_object_or_404(Class, class_code=class_code)
+    group = class_instance.schedule.group
+    students = group.etudiants.all()
+    attendance_records = Attendance.objects.filter(class_instance=class_instance)
+    professor = class_instance.prof
+
+    # Render the HTML template to a string
+    html_string = render_to_string('platformTK/SuperAdmin/pdf_students_attendance.html', {
+        'class_instance': class_instance,
+        'students': students,
+        'attendance_records': attendance_records,
+        'professor': professor
+    })
+
+    # Create a PDF response
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="{class_instance.name}_{class_instance.prof.prenom}_{class_instance.schedule.group.name}_présence.pdf"'
+    
+    # Use xhtml2pdf to convert the HTML string to PDF
+    pisa_status = pisa.CreatePDF(html_string, dest=response)
+    if pisa_status.err:
+        return HttpResponse('We had some errors while generating the PDF.')
+
+    return response
 
 
 

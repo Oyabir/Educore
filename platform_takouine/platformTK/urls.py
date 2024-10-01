@@ -92,6 +92,7 @@ urlpatterns = [
     path('edit_schedule/<int:schedule_id>/', views.edit_schedule, name='edit_schedule'),
     path('delete_schedule/<int:schedule_id>/', views.delete_schedule, name='delete_schedule'),
     path('view-students-in-class/<str:class_code>/', views.view_students_in_class, name='view_students_in_class'),
+    path('class/<str:class_code>/download/', views.download_students_attendance_pdf, name='download_students_attendance_pdf'),
 
 
     
