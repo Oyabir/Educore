@@ -41,7 +41,7 @@
     
     <!-- Delete Confirmation Modal -->
     <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
-        <div class="modal-dialog" style="min-width: 1000px;" >
+        <div class="modal-dialog" style="min-width: 1000px;">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="deleteModalLabel">Confirmer la suppression</h5>
@@ -52,7 +52,10 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                    <a id="confirmDeleteBtn" href="#" class="btn btn-danger">Supprimer</a>
+                    <form method="POST" id="deleteForm">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">Supprimer</button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -62,18 +65,14 @@
         document.addEventListener('DOMContentLoaded', function() {
             var deleteModal = document.getElementById('deleteModal');
             deleteModal.addEventListener('show.bs.modal', function (event) {
-                // Button that triggered the modal
                 var button = event.relatedTarget;
-                // Extract info from data-* attributes
                 var scheduleId = button.getAttribute('data-schedule-id');
-                // Get the confirmation delete button in the modal
-                var confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
-                // Update the confirmation button's href to the delete URL
-                confirmDeleteBtn.href = "{% url 'delete_schedule' 0 %}".replace('0', scheduleId);
+                var deleteForm = document.getElementById('deleteForm');
+                deleteForm.action = "{% url 'delete_schedule' 0 %}".replace('0', scheduleId);
             });
         });
     </script>
-        
+
     <style>
         .page-item.active .page-link {
             z-index: 3;

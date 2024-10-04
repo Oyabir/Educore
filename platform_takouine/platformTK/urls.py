@@ -115,6 +115,8 @@ urlpatterns = [
     path('update-profile/', views.update_profile, name='update_profile'),
     path('my_competitions/', views.my_competitions, name='my_competitions'),
     path('my_groups/', views.my_groups, name='my_groups'),
+    path('change-password/', views.change_password, name='change_password'),
+
 
 
 

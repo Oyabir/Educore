@@ -220,6 +220,42 @@ def update_profile(request):
     return render(request, 'platformTK/Etudiant/profile.html', {'etudiant': etudiant})
 
 
+from django.contrib.auth import update_session_auth_hash
+from django.contrib import messages
+from django.contrib.auth.models import User
+
+@login_required(login_url='login')
+@allowedUsers(allowedGroups=['Etudiants'])
+def change_password(request):
+    etudiant = get_object_or_404(Etudiant, user=request.user)
+    if request.method == 'POST':
+        # Get the current password, new password, and confirm password from the request
+        current_password = request.POST.get('current_password')
+        new_password = request.POST.get('new_password')
+        confirm_password = request.POST.get('confirm_password')
+
+        # Check if the current password is valid
+        user = get_object_or_404(User, username=request.user.username)
+        if user.check_password(current_password):
+            if new_password == confirm_password:
+                # Change the password
+                user.set_password(new_password)
+                user.save()
+                update_session_auth_hash(request, user)  # Keep the user logged in
+                messages.success(request, 'Mot de passe changé avec succès !')
+                return redirect('profile')
+            else:
+                messages.error(request, 'Les nouveaux mots de passe ne correspondent pas.')
+        else:
+            messages.error(request, 'Le mot de passe actuel est incorrect.')
+            
+    context = {
+        'etudiant': etudiant,
+    }
+    return render(request, 'platformTK/Etudiant/change_password.html',context)
+
+
+
 
 @login_required(login_url='login')
 @allowedUsers(allowedGroups=['Etudiants'])
@@ -1093,9 +1129,8 @@ def delete_schedule(request, schedule_id):
         schedule.delete()
         return redirect('schedule_list')
 
-    return render(request, 'platformTK/SuperAdmin/delete_schedule.html', {
-        'schedule': schedule,
-    })
+    return render(request, 'platformTK/SuperAdmin/schedule_list.html')
+
 
 
 
