@@ -18,15 +18,15 @@
 
     {% if competition.is_finished %}
     <div class="text-center">
-       <h1>This Competition is over .......</h1>
-       <img class="gold-medal" src="{% static "img/—Pngtree—close icon isolated on abstract_5233789.png" %}" alt="" style="width: 100px;">
+        <h1>Cette compétition est terminée .......</h1>
+        <img class="gold-medal" src="{% static "img/—Pngtree—close icon isolated on abstract_5233789.png" %}" alt="" style="width: 100px;">
     </div>
     
     <div class="text-center">
         <form action="{% url 'rank_competition' competition_id=competition.id %}" method="post">
             {% csrf_token %}
             <button type="submit" class="btn btn-primary" style="background-color: #176b90;border-color: #007bff;">
-                Rank Competition
+                Classer la compétition
             </button>
         </form>
     </div>
@@ -36,7 +36,7 @@
     <div class="container-xxl py-5">
         <div class="container">
             <div class="text-center mx-auto mb-5 wow fadeInUp" data-wow-delay="0.1s" style="max-width: 600px;">
-                <h1 class="mb-3">Sections in {{ competition.name }}</h1>
+                <h1 class="mb-3">Groupe dans {{ competition.name }}</h1>
             </div>
             <br>
             <div class="row g-4">
@@ -100,24 +100,24 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="addItemModalLabel">Add Points</h5>
+                    <h5 class="modal-title" id="addItemModalLabel">Ajouter des points</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <form id="addPointsForm">
                         {% csrf_token %}
                         <div class="mb-3">
-                            <label for="amountToAdd" class="form-label">Select Amount</label>
+                            <label for="amountToAdd" class="form-label">Sélectionner le montant</label>
                             <select class="form-select" id="amountToAdd" required>
-                                <option value="">Select an amount</option>
+                                <option value="">Sélectionner un montant</option>
                                 <option value="1">$1</option>
                                 <option value="5">$5</option>
                                 <option value="10">$10</option>
                             </select>
                         </div>
                         <input type="hidden" id="sectionIdAdd" name="sectionId">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="submit" class="btn btn-primary">Save changes</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                        <button type="submit" class="btn btn-primary">Sauvegarder les modifications</button>
                     </form>
                 </div>
             </div>
@@ -129,24 +129,24 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="minusItemModalLabel">Subtract Points</h5>
+                    <h5 class="modal-title" id="minusItemModalLabel">Soustraire des points</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <form id="minusPointsForm">
                         {% csrf_token %}
                         <div class="mb-3">
-                            <label for="amountToSubtract" class="form-label">Select Amount</label>
+                            <label for="amountToSubtract" class="form-label">Sélectionner le montant</label>
                             <select class="form-select" id="amountToSubtract" required>
-                                <option value="">Select an amount</option>
+                                <option value="">Sélectionner le montant</option>
                                 <option value="1">-$1</option>
                                 <option value="5">-$5</option>
                                 <option value="10">-$10</option>
                             </select>
                         </div>
                         <input type="hidden" id="sectionIdMinus" name="sectionId">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="submit" class="btn btn-primary">Save changes</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                        <button type="submit" class="btn btn-primary">Sauvegarder les modifications</button>
                     </form>
                 </div>
             </div>

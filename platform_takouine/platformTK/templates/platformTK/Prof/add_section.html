@@ -9,11 +9,11 @@
     <div class="container">
         {% if current_sections_count >= competition.number_of_sections %}
         <div class="alert alert-success">
-            "Now you cannot add more sections than the allowed number. <a href="{% url 'competition_sections' competition.id %}">Go to Competition Sections</a>
+            "Vous ne pouvez désormais plus ajouter de groupes que le nombre autorisé. <a href="{% url 'competition_sections' competition.id %}">Accéder aux groupes de compétition</a>
         </div>
         <div class="center-container">
             <a href="{% url 'competition_sections' competition.id %}">
-                <button type="button" class="btn btn-primary">Go to competition is finished</button>
+                <button type="button" class="btn btn-primary">Aller à la compétition terminée</button>
             </a>
         </div>
         {% endif %}
@@ -27,48 +27,47 @@
         </div>
         {% endif %}
         
-        <h2>Add Section to {{ competition.name }}</h2>
+        <h2>Ajouter un groupe à {{ competition.name }}</h2>
         <form action="{% url 'add_section' competition.id %}" method="post">
             {% csrf_token %}
             <div class="mb-3">
-                <label for="sectionType" class="form-label">Choose Section Creation Type</label>
+                <label for="sectionType" class="form-label">Choisir le type de création de groupe</label>
                 <select id="sectionType" name="section_type" class="form-select" required>
-                    <option value="manual">Manual</option>
-                    <option value="automatic">Automatic</option>
+                    <option value="manual">Manuel</option>
+                    <option value="automatic">Automatique</option>
                 </select>
             </div>
         
             <div id="manualSection">  {% comment %}style="display: none;" {% endcomment %}
                 <div class="mb-3">
-                    <label for="sectionName" class="form-label">Section Name</label>
-                    <input type="text" class="form-control" id="sectionName" name="section_name" placeholder="Enter section name">
+                    <label for="sectionName" class="form-label">Nom du groupe</label>
+                    <input type="text" class="form-control" id="sectionName" name="section_name" placeholder="Entrez le nom du groupe">
                 </div>
         
                 <div class="row">
                     <div class="col-md-6 mb-3">
-                        <label for="studentSearch" class="form-label">Search Students</label>
+                        <label for="studentSearch" class="form-label">Rechercher des étudiants</label>
                         <div class="input-group">
-                            <input type="text" class="form-control" id="studentSearch" placeholder="Search students..." oninput="filterList('student')">
+                            <input type="text" class="form-control" id="studentSearch" placeholder="Rechercher des étudiants..." oninput="filterList('student')">
                         </div>
                         <div class="card mt-3 p-2 scrollable-container" id="studentList">
                             {% for etudiant in students %}
                             <div data-id="{{ etudiant.id }}" class="student-item">
                                 {{ etudiant.prenom|capitalize_first }} {{ etudiant.nom|capitalize_first }}
-                                <button type="button" class="btn btn-danger btn-sm" onclick="addStudent({{ etudiant.id }}, '{{ etudiant.prenom }} {{ etudiant.nom }}')" style="background-color: #007bff;border-color: #007bff;">Add</button>
+                                <button type="button" class="btn btn-danger btn-sm" onclick="addStudent({{ etudiant.id }}, '{{ etudiant.prenom }} {{ etudiant.nom }}')" style="background-color: #007bff;border-color: #007bff;">Ajouter</button>
                             </div>
                             {% endfor %}
                         </div>
                     </div>
         
                     <div class="col-md-6 mt-2 mb-3">
-                        <label class="form-label">Selected Students</label>
+                        <label class="form-label">Étudiants sélectionnés</label>
                         <div id="selectedStudents" class="scrollable-list border rounded p-2"></div>
                         <input type="hidden" id="students" name="students">
                     </div>
                 </div>
             </div>
-        
-            <button type="submit" class="btn btn-primary">Add Section</button>
+            <button type="submit" class="btn btn-primary">Ajouter une section</button>
         </form>
     </div>
     {% endif %}
@@ -128,7 +127,7 @@
                 student.setAttribute('data-id', id);
                 student.classList.add('d-flex', 'justify-content-between', 'align-items-center', 'mb-2');
                 student.innerHTML = capitalizedName + 
-                    ' <button type="button" class="btn btn-danger btn-sm" onclick="removeItem(this, \'student\', ' + id + ')">Remove</button>';
+                    ' <button type="button" class="btn btn-danger btn-sm" onclick="removeItem(this, \'student\', ' + id + ')">Supprimer</button>';
                 selectedStudents.appendChild(student);
                 input.value += id + ',';
             }

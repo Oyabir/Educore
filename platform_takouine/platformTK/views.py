@@ -220,6 +220,7 @@ def update_profile(request):
     return render(request, 'platformTK/Etudiant/profile.html', {'etudiant': etudiant})
 
 
+
 from django.contrib.auth import update_session_auth_hash
 from django.contrib import messages
 from django.contrib.auth.models import User
@@ -447,7 +448,7 @@ def competitions_list(request):
     try:
         current_prof = prof.objects.get(user=request.user)
         groups = Groups.objects.filter(profs=current_prof)
-        competitions = Competitions.objects.filter(prof=current_prof)
+        competitions = Competitions.objects.filter(prof=current_prof).order_by("-date_created")
         
     except prof.DoesNotExist:
         groups = Groups.objects.none()
@@ -495,7 +496,6 @@ def add_competition(request):
 
 
 
-
 import random
 
 @login_required(login_url='login')
@@ -503,7 +503,7 @@ import random
 def add_section(request, competition_id):
     competition = get_object_or_404(Competitions, id=competition_id)
     
-    # Keep all_students as a QuerySet instead of converting to list
+    # Keep all_students as a QuerySet
     all_students = competition.group.etudiants.all()
     current_sections_count = competition.sections.count()
 
@@ -530,30 +530,35 @@ def add_section(request, competition_id):
                     section.etudiants.set(selected_students)
                     section.save()
                     return redirect('add_section', competition_id=competition.id)
-                
+
         elif section_type == 'automatic':
-            random.shuffle(list(all_students)) 
             num_sections = competition.number_of_sections - current_sections_count
             
-            students_per_section = len(all_students) // num_sections if num_sections > 0 else 0
-            remainder = len(all_students) % num_sections
-            
-            index = 0
-            for i in range(num_sections):
-                section_name = f"Group {current_sections_count + i + 1}"
-                section = Sections.objects.create(
-                    competition=competition,
-                    section_name=section_name
-                )
+            if num_sections > 0:
+                available_students_list = list(available_students)  # Convert to list for manipulation
+                random.shuffle(available_students_list)  # Shuffle the list of available students
                 
-                num_students = students_per_section + (1 if i < remainder else 0)
-                section_students = all_students[index:index + num_students]
-                section.etudiants.set(section_students)
-                section.save()
+                students_per_section = len(available_students_list) // num_sections
+                remainder = len(available_students_list) % num_sections
                 
-                index += num_students
+                index = 0
+                for i in range(num_sections):
+                    section_name = f"Group {current_sections_count + i + 1}"
+                    section = Sections.objects.create(
+                        competition=competition,
+                        section_name=section_name
+                    )
 
-            return redirect('competition_sections', competition_id=competition.id)
+                    num_students = students_per_section + (1 if i < remainder else 0)
+                    
+                    # Randomly select a unique set of students for the section
+                    section_students = available_students_list[index:index + num_students]  # Select students
+                    section.etudiants.set(section_students)  # Set students to the section
+                    section.save()
+
+                    index += num_students  # Move index forward for the next selection
+
+                return redirect('competition_sections', competition_id=competition.id)
 
     return render(request, 'platformTK/Prof/add_section.html', {
         'competition': competition,
@@ -749,6 +754,47 @@ def update_profil_prof(request):
         'Prof': prof_instance,
     }
     return render(request, "platformTK/Prof/Profil.html", context)
+
+
+
+from django.contrib.auth.models import User
+from .models import prof 
+
+@login_required(login_url='login')
+@allowedUsers(allowedGroups=['Prof'])
+def change_password_prof(request):
+    # Get the Prof instance for the current user
+    prof_instance = get_object_or_404(prof, user=request.user)
+
+    if request.method == 'POST':
+        # Get the current password, new password, and confirm password from the request
+        current_password = request.POST.get('current_password')
+        new_password = request.POST.get('new_password')
+        confirm_password = request.POST.get('confirm_password')
+
+        # Get the User instance
+        user = get_object_or_404(User, username=request.user.username)
+
+        # Check if the current password is valid
+        if user.check_password(current_password):
+            if new_password == confirm_password:
+                # Change the password
+                user.set_password(new_password)
+                user.save()
+                update_session_auth_hash(request, user)  # Keep the user logged in
+                messages.success(request, 'Mot de passe changé avec succès !')
+                return redirect('Profil')
+            else:
+                messages.error(request, 'Les nouveaux mots de passe ne correspondent pas.')
+        else:
+            messages.error(request, 'Le mot de passe actuel est incorrect.')
+
+    context = {
+        'Prof': prof_instance,  
+    }
+    return render(request, 'platformTK/Prof/change_password_prof.html', context)
+
+
 
 
 

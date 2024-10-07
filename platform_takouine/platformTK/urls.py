@@ -43,6 +43,8 @@ urlpatterns = [
     path('view-attendance/<str:code_group>/<int:schedule_id>/', views.view_attendance, name='view_attendance'),
     path('group/<str:code_group>/birthday/',views.birthday_list, name='birthday_list'),
 
+    path('change-password-prof/', views.change_password_prof, name='change_password_prof'),
+
     
     
     path('homeSuperAdmin/', views.homeSuperAdmin, name='homeSuperAdmin'),
@@ -62,6 +64,10 @@ urlpatterns = [
     path('store_admin/update/<str:product_code>/', views.update_product, name='update_product'),
     path('store_admin/delete/<str:product_code>/', views.delete_product, name='delete_product'),
     path('commandes_admin/', views.commandes_admin, name='commandes_admin'),
+
+
+
+
 
 
     path('edit-group/', views.edit_group, name='edit_group'),
