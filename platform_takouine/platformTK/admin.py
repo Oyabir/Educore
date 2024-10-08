@@ -21,8 +21,16 @@ class ProfAdmin(admin.ModelAdmin):
     readonly_fields = ('date_created',)
     
     
+class ParentsAdmin(admin.ModelAdmin):
+    list_display = ('prenom', 'nom', 'email', 'ParentsCode', 'date_created')
+    search_fields = ('prenom', 'nom', 'email', 'ParentsCode')
+    readonly_fields = ('ParentsCode', 'date_created')
+
+# Register the Parents model in the admin
+admin.site.register(Parents, ParentsAdmin) 
     
-    
+
+
     
 @admin.register(Competitions)
 class CompetitionsAdmin(admin.ModelAdmin):

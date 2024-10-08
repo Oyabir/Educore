@@ -59,6 +59,11 @@ urlpatterns = [
     
     path('upload_prof_from_file/', views.upload_prof_from_file, name='upload_prof_from_file'),
     
+    path('list_parents/', views.list_parents, name='list_parents'),
+    path('add-parent/', views.add_parent, name='add_parent'),
+
+
+    
     path('store_admin/', views.store_admin, name='store_admin'),
     path('add_product/', views.add_product, name='add_product'),
     path('store_admin/update/<str:product_code>/', views.update_product, name='update_product'),
@@ -126,6 +131,9 @@ urlpatterns = [
 
 
 
+
+
+    path('homeParents/', views.homeParents, name='homeParents'),
 
 
 

@@ -1,0 +1,314 @@
+{% extends "platformTK/SuperAdmin/HomeBase.html" %}
+{% load static %}
+{% load custom_filters %}
+
+{% block content %}
+{% include 'platformTK/SuperAdmin/navbar.html' %}
+
+<div class="container mt-5">
+    {% if messages %}
+    <div id="message-container">
+        {% for message in messages %}
+            {% if message.tags == 'error' %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endif %}
+            {% if message.tags == 'success' %}
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <script>
+        setTimeout(function() {
+            var messageContainer = document.getElementById('message-container');
+            if (messageContainer) {
+                messageContainer.style.display = 'none';
+            }
+        }, 5000);
+    </script>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-center">Parents</h2>
+        <button class="btn btn-primary" style="background-color: #176b90;" onclick="openModal()">Ajouter un Parent</button>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>Nom d'utilisateur</th>
+                    <th>Nom et Prénom</th>
+                    <th>Téléphone</th>
+                    <th>Avatar</th>
+                    <th>Code Parents</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for parent in parents %}
+                <tr>
+                    <td>{{ parent.user.username }}</td>
+                    <td>{{ parent.nom|capitalize_first }} {{ parent.prenom|capitalize_first }}</td>
+                    <td>{{ parent.numéro_de_téléphone }}</td>
+                    <td>
+                        {% if parent.avatar %}
+                            <img src="{{ parent.avatar.url }}" style="width: 48px; height: 48px;" alt="Avatar">
+                        {% else %}
+                            <img src="{% static 'img/single-father-and-son-free-vector.jpg' %}" style="width: 48px; height: 48px;" alt="Avatar">
+                        {% endif %}
+                    </td>
+                    <td>{{ parent.ParentsCode }}</td>
+                    <td>
+                        <button class="btn btn-warning btn-sm" style="width: 114px; margin-bottom: 10px;" onclick="openEditModal('{{ parent.id }}', '{{ parent.user.username }}', '{{ parent.prenom }}', '{{ parent.nom }}', '{{ parent.date_de_naissance|date:'Y-m-d' }}', '{{ parent.email }}', '{{ parent.numéro_de_téléphone }}', {% if parent.avatar %}'{{ parent.avatar.url }}'{% else %}''{% endif %}, [{% for group in parent.groups.all %} '{{ group.id }}', {% endfor %}])">Modifier</button>
+                        <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal{{ parent.id }}">Supprimer</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="modal" id="addParentModal" tabindex="-1" aria-labelledby="addParentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" style="max-width: 1123px;">
+        <div class="modal-content" style="margin-top: -56px;">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="addParentModalLabel">Ajouter un Parent</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="{% url 'add_parent' %}" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <!-- User Details -->
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Nom d'utilisateur</label>
+                        <input type="text" class="form-control" id="username" name="username" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Mot de passe</label>
+                        <input type="password" class="form-control" id="password" name="password" required>
+                    </div>
+
+                    <!-- Parent Details -->
+                    <div class="mb-3">
+                        <label for="prenom" class="form-label">Prénom</label>
+                        <input type="text" class="form-control" id="prenom" name="prenom" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="nom" class="form-label">Nom</label>
+                        <input type="text" class="form-control" id="nom" name="nom" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email (facultatif)</label>
+                        <input type="email" class="form-control" id="email" name="email">
+                    </div>
+                    <div class="mb-3">
+                        <label for="phone" class="form-label">Téléphone</label>
+                        <input type="text" class="form-control" id="phone" name="phone">
+                    </div>
+
+                    <!-- Search Input -->
+                    <div class="mb-3">
+                        <label for="etudiantSearch" class="form-label">Recherche d'Étudiant</label>
+                        <input type="text" id="etudiantSearch" class="form-control" placeholder="Rechercher par prénom ou nom" onkeyup="filterEtudiants()">
+                    </div>
+
+                    <!-- Etudiant List with Add Buttons -->
+                    <div class="mb-3">
+                        <label for="etudiants" class="form-label">Étudiants associés</label>
+                        <div style="max-height: 200px; overflow-y: auto;">
+                            <div class="list-group" id="etudiantList">
+                                {% for etudiant in etudiants %}
+                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                        {{ etudiant.prenom }} {{ etudiant.nom }}
+                                        <button type="button" class="btn btn-primary btn-sm add-etudiant" data-id="{{ etudiant.id }}">Ajouter</button>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Selected Etudiants List -->
+                    <div class="mb-3">
+                        <label for="selectedEtudiants" class="form-label">Étudiants sélectionnés</label>
+                        <ul class="list-group" id="selectedEtudiants">
+                            <!-- Selected Etudiants will be appended here -->
+                        </ul>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="avatar" class="form-label">Avatar (facultatif)</label>
+                        <input type="file" class="form-control" id="avatar" name="avatar" accept="image/*">
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                        <button type="submit" class="btn btn-primary" style="background-color: #176b90;">Ajouter</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function filterEtudiants() {
+        const input = document.getElementById('etudiantSearch');
+        const filter = input.value.toLowerCase();
+        const etudiantList = document.getElementById('etudiantList');
+        const etudiants = etudiantList.getElementsByClassName('list-group-item');
+
+        for (let i = 0; i < etudiants.length; i++) {
+            const etudiantItem = etudiants[i];
+            const textValue = etudiantItem.textContent || etudiantItem.innerText;
+
+            if (textValue.toLowerCase().indexOf(filter) > -1) {
+                etudiantItem.style.display = ""; // Show the item
+            } else {
+                etudiantItem.style.display = "none"; // Hide the item
+            }
+        }
+    }
+</script>
+
+
+    
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('etudiantSearch');
+        const etudiantList = document.getElementById('etudiantList');
+        const items = etudiantList.getElementsByTagName('li');
+        const selectedEtudiantList = document.getElementById('selectedEtudiants');
+    
+        etudiantList.addEventListener('click', function(event) {
+            if (event.target.classList.contains('add-etudiant')) {
+                const etudiantId = event.target.getAttribute('data-id');
+                const etudiantName = event.target.parentElement.textContent.trim();
+    
+                // Create a new list item for the selected student
+                const listItem = document.createElement('li');
+                listItem.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-center');
+                listItem.textContent = etudiantName;
+    
+                // Create a remove button for the selected student
+                const removeButton = document.createElement('button');
+                removeButton.classList.add('btn', 'btn-danger', 'btn-sm', 'float-end');
+                removeButton.textContent = 'Retirer';
+                removeButton.addEventListener('click', function() {
+                    selectedEtudiantList.removeChild(listItem);
+                });
+    
+                listItem.appendChild(removeButton);
+                selectedEtudiantList.appendChild(listItem);
+            }
+        });
+    });
+    
+    function openModal() {
+        var modal = new bootstrap.Modal(document.getElementById('addParentModal'));
+        modal.show();
+    }
+    
+</script>
+
+
+
+<style>
+    /* Custom Scrollbar */
+    #etudiantList::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    #etudiantList::-webkit-scrollbar-track {
+        background: #f1f1f1;
+    }
+
+    #etudiantList::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 4px;
+    }
+
+    #etudiantList::-webkit-scrollbar-thumb:hover {
+        background: #555;
+    }
+</style>
+
+
+<style>
+    /* CSS for Full Width Modal */
+    .modal {
+        display: none; /* Hidden by default */
+        position: fixed; /* Stay in place */
+        {% comment %} z-index: 1; /* Sit on top */ {% endcomment %}
+        left: 0;
+        top: 0;
+        width: 100%; /* Full width */
+        height: 100%; /* Full height */
+        overflow: auto; /* Enable scroll if needed */
+        background-color: rgba(0,0,0,0.4); /* Black background with opacity */
+    }
+    
+    .modal-content {
+        background-color: #fefefe;
+        margin: 15% auto; /* 15% from the top and centered */
+        padding: 20px;
+        border: 1px solid #888;
+        width: 100%; /* Width of modal content */
+        max-width: 1000px; /* Max width */
+        border-radius: 5px;
+    }
+    
+    .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+    }
+    
+    .close:hover,
+    .close:focus {
+        color: black;
+        text-decoration: none;
+        cursor: pointer;
+    }
+    
+    .bg-primary {
+        background-color: #30bb96 !important; 
+    }
+    
+</style>
+
+
+
+<style>
+    .page-item.active .page-link {
+        z-index: 3;
+        color: #fff;
+        background-color: #176b90;
+        border-color: #176b90;
+    }
+    .page-link {
+        color: #176b90;
+    }
+
+    .modal-header {
+    background-color: #30bb96;
+    }
+    .btn-primary {
+        background-color: #176b90;
+        color: #ffffff;
+    }
+</style>
+
+
+
+{% endblock %}

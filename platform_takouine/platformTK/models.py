@@ -88,6 +88,42 @@ class prof(models.Model):
 
 
 
+
+
+
+def generate_Parents_code():
+    unique_id = str(uuid.uuid4()).replace('-', '')[:8]  
+    return f"TK-PAR-{unique_id}"
+
+
+class Parents(models.Model):
+    user = models.OneToOneField(User, null=True, on_delete=models.CASCADE)
+    prenom = models.CharField(max_length=50)
+    nom = models.CharField(max_length=50)
+    email = models.EmailField(null=True, blank=True)  # Email is optional
+    numéro_de_téléphone = models.CharField(max_length=15, blank=True, null=True)
+    avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)  # Adjust the upload path as needed
+    slugParents = models.SlugField(blank=True, null=True)
+    date_created = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    ParentsCode = models.CharField(max_length=100, null=True, blank=True, default=generate_Parents_code)
+
+    # Add ManyToManyField for Etudiant relationship
+    etudiants = models.ManyToManyField('Etudiant', blank=True, related_name='parents')
+
+    def save(self, *args, **kwargs):
+        if not self.slugParents:
+            self.slugParents = slugify(self.user.username)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.prenom} {self.nom}"
+
+
+
+
+
+
+
 def generate_group_code():
     unique_id = str(uuid.uuid4()).replace('-', '')[:8]  # Generate a unique ID
     return f"GRP-{unique_id}"

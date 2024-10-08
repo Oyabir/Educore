@@ -50,6 +50,8 @@ def login_view(request):
                 return redirect('/homeProf')
             elif request.user.groups.filter(name='SuperAdmin').exists():
                 return redirect('/add_groupe')
+            elif request.user.groups.filter(name='Parents').exists():
+                return redirect('/homeParents')
         else:
             messages.error(request, 'Invalid username or password.')
     return render(request, "platformTK/login.html")
@@ -389,6 +391,12 @@ def my_groups(request):
     
     return render(request, 'platformTK/Etudiant/my_groupes.html', context)
 
+
+
+@login_required(login_url='login')
+@allowedUsers(allowedGroups=['Parents'])
+def homeParents(request):
+    return render(request, "platformTK/Parents/homeParents.html")
 
 
 
@@ -763,11 +771,9 @@ from .models import prof
 @login_required(login_url='login')
 @allowedUsers(allowedGroups=['Prof'])
 def change_password_prof(request):
-    # Get the Prof instance for the current user
     prof_instance = get_object_or_404(prof, user=request.user)
 
     if request.method == 'POST':
-        # Get the current password, new password, and confirm password from the request
         current_password = request.POST.get('current_password')
         new_password = request.POST.get('new_password')
         confirm_password = request.POST.get('confirm_password')
@@ -775,13 +781,11 @@ def change_password_prof(request):
         # Get the User instance
         user = get_object_or_404(User, username=request.user.username)
 
-        # Check if the current password is valid
         if user.check_password(current_password):
             if new_password == confirm_password:
-                # Change the password
                 user.set_password(new_password)
                 user.save()
-                update_session_auth_hash(request, user)  # Keep the user logged in
+                update_session_auth_hash(request, user)
                 messages.success(request, 'Mot de passe changé avec succès !')
                 return redirect('Profil')
             else:
@@ -1972,6 +1976,73 @@ def upload_prof_from_file(request):
 
 
 
+
+@login_required(login_url='login')
+@allowedUsers(allowedGroups=['SuperAdmin'])
+def list_parents(request):
+    parents = Parents.objects.all().order_by('-date_created')
+    # Fetch all etudiants to populate the selection options
+    etudiants = Etudiant.objects.all()
+    
+    return render(request, 'platformTK/SuperAdmin/list_parents.html', {
+        'parents': parents, 
+        'etudiants': etudiants,
+    })
+
+
+
+from django.core.files.storage import FileSystemStorage
+
+@login_required(login_url='login')
+@allowedUsers(allowedGroups=['SuperAdmin'])
+def add_parent(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        prenom = request.POST.get('prenom')
+        nom = request.POST.get('nom')
+        email = request.POST.get('email')
+        phone = request.POST.get('phone')
+        avatar = request.FILES.get('avatar')
+        etudiant_ids = request.POST.getlist('etudiants')  # Get the list of selected etudiants
+
+        # Check if username exists
+        if User.objects.filter(username=username).exists():
+            messages.error(request, 'Un utilisateur avec ce nom existe déjà.')
+            return redirect('list_parents')
+
+        # Check if email exists
+        if email and Parents.objects.filter(email=email).exists():
+            messages.error(request, 'Un parent avec cet email existe déjà.')
+            return redirect('list_parents')
+
+        # Create a new User
+        user = User.objects.create_user(username=username, password=password)
+
+        # Create a new Parents object
+        parent = Parents(
+            user=user,
+            prenom=prenom,
+            nom=nom,
+            email=email if email else None,
+            numéro_de_téléphone=phone,
+            avatar=avatar if avatar else None,
+        )
+        parent.save()
+
+        # Assign etudiants to the parent
+        if etudiant_ids:
+            parent.etudiants.set(etudiant_ids)
+
+        # Assign the user to the 'Parents' group
+        parents_group, created = Group.objects.get_or_create(name='Parents')
+        user.groups.add(parents_group)
+
+        messages.success(request, 'Parent ajouté avec succès.')
+        return redirect('list_parents')
+
+    
+    return render(request, 'platformTK/SuperAdmin/add_parent.html')
 
 
 
