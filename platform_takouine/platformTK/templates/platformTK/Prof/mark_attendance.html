@@ -19,22 +19,22 @@
                             {% for etudiant in group.etudiants.all %}
                                 <div class="col-md-6 mb-4">
                                     <div class="attendance-entry p-3 border rounded">
-                                        <h5>{{ etudiant.prenom|capitalize_first }} {{ etudiant.nom|capitalize_first }}</h5>
+                                        <h5 style="width: 144px;">{{ etudiant.prenom|capitalize_first }} {{ etudiant.nom|capitalize_first }}</h5>
 
                                         <div class="form-check mb-3">
-                                            <input type="checkbox" class="form-check-input" name="present_{{ class_instance.id }}_{{ etudiant.id }}" id="present_{{ class_instance.id }}_{{ etudiant.id }}" style="margin-left: -37px;">
-                                            <label class="form-check-label" for="present_{{ class_instance.id }}_{{ etudiant.id }}" style="margin-right: 16px;margin-top: 3.5px;margin-left: -10px;">Présent</label>
+                                            <input type="checkbox" class="form-check-input" name="present_{{ class_instance.id }}_{{ etudiant.id }}" id="present_{{ class_instance.id }}_{{ etudiant.id }}" style="margin-left: -22px; margin-top: 6px;">
+                                            <label class="form-check-label" for="present_{{ class_instance.id }}_{{ etudiant.id }}" style="margin-right: 16px;margin-top: 5.5px;margin-left: 12px;">Présent</label>
                                         </div>
 
                                         <!-- Seriousness Dropdown -->
                                         <div class="form-group mb-3" style="margin-right: 5px;width: 144px;">
-                                            <select name="seriousness_{{ class_instance.id }}_{{ etudiant.id }}" class="form-control">
-                                                <option value="" selected>Sérieux</option>
-                                                <option value="1">1 - Very Poor</option>
-                                                <option value="2">2 - Poor</option>
-                                                <option value="3">3 - Average</option>
-                                                <option value="4">4 - Good</option>
-                                                <option value="5">5 - Excellent</option>
+                                            <select name="participation_{{ class_instance.id }}_{{ etudiant.id }}" class="form-control">
+                                                <option value="" selected>participation</option>
+                                                <option value="1">1</option>
+                                                <option value="2">2</option>
+                                                <option value="3">3</option>
+                                                <option value="4">4</option>
+                                                <option value="5">5</option>
                                             </select>
                                         </div>
 
@@ -42,25 +42,15 @@
                                         <div class="form-group mb-3" style="margin-right: 5px;width: 144px;">
                                             <select name="discipline_{{ class_instance.id }}_{{ etudiant.id }}" class="form-control">
                                                 <option value="" selected>Discipline</option>
-                                                <option value="1">1 - Very Poor</option>
-                                                <option value="2">2 - Poor</option>
-                                                <option value="3">3 - Average</option>
-                                                <option value="4">4 - Good</option>
-                                                <option value="5">5 - Excellent</option>
+                                                <option value="1">1</option>
+                                                <option value="2">2</option>
+                                                <option value="3">3</option>
+                                                <option value="4">4</option>
+                                                <option value="5">5</option>
                                             </select>
                                         </div>
 
-                                        <!-- Enthusiasm Dropdown -->
-                                        <div class="form-group mb-3" style="margin-right: 5px;width: 144px;">
-                                            <select name="enthusiasm_{{ class_instance.id }}_{{ etudiant.id }}" class="form-control">
-                                                <option value="" selected>Enthousiasme</option>
-                                                <option value="1">1 - Very Poor</option>
-                                                <option value="2">2 - Poor</option>
-                                                <option value="3">3 - Average</option>
-                                                <option value="4">4 - Good</option>
-                                                <option value="5">5 - Excellent</option>
-                                            </select>
-                                        </div>
+                                      
                                     </div>
                                 </div>
                             {% endfor %}

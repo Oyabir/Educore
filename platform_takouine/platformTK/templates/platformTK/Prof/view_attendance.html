@@ -23,9 +23,8 @@
                         <tr>
                             <th>Nom de l'étudiant</th>
                             <th>Statut de présence</th>
-                            <th>Sérieux</th>
+                            <th>Participation</th>
                             <th>Discipline</th>
-                            <th>Enthousiasme</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -40,8 +39,8 @@
                                     {% endif %}
                                 </td>
                                 <td>
-                                    {% if attendance.seriousness is not None %}
-                                        {{ attendance.seriousness }} / 5
+                                    {% if attendance.participation is not None %}
+                                        {{ attendance.participation }} / 5
                                     {% else %}
                                     Non défini
                                     {% endif %}
@@ -52,14 +51,7 @@
                                     {% else %}
                                     Non défini
                                     {% endif %}
-                                </td>
-                                <td>
-                                    {% if attendance.enthusiasm is not None %}
-                                        {{ attendance.enthusiasm }} / 5
-                                    {% else %}
-                                    Non défini
-                                    {% endif %}
-                                </td>                                
+                                </td>                               
                             </tr>
                         {% empty %}
                             <tr>

@@ -93,7 +93,7 @@
                     </div>
                     <div class="mb-3">
                         <label for="password" class="form-label">Mot de passe</label>
-                        <input type="password" class="form-control" id="password" name="password" required>
+                        <input type="password" class="form-control" id="password" name="password" required autocomplete="current-password">
                     </div>
 
                     <!-- Parent Details -->
@@ -114,26 +114,62 @@
                         <input type="text" class="form-control" id="phone" name="phone">
                     </div>
 
-                    <!-- Search Input -->
-                    <div class="mb-3">
-                        <label for="etudiantSearch" class="form-label">Recherche d'Étudiant</label>
-                        <input type="text" id="etudiantSearch" class="form-control" placeholder="Rechercher par prénom ou nom" onkeyup="filterEtudiants()">
-                    </div>
+                                    <!-- Search Input -->
+                <div class="mb-3">
+                    <label for="etudiantSearch" class="form-label">Recherche d'Étudiant</label>
+                    <input type="text" id="etudiantSearch" class="form-control" placeholder="Rechercher par prénom ou nom">
+                </div>
 
-                    <!-- Etudiant List with Add Buttons -->
-                    <div class="mb-3">
-                        <label for="etudiants" class="form-label">Étudiants associés</label>
-                        <div style="max-height: 200px; overflow-y: auto;">
-                            <div class="list-group" id="etudiantList">
-                                {% for etudiant in etudiants %}
-                                    <div class="list-group-item d-flex justify-content-between align-items-center">
-                                        {{ etudiant.prenom }} {{ etudiant.nom }}
-                                        <button type="button" class="btn btn-primary btn-sm add-etudiant" data-id="{{ etudiant.id }}">Ajouter</button>
-                                    </div>
-                                {% endfor %}
-                            </div>
+                <!-- Etudiant List with Add Buttons -->
+                <div class="mb-3">
+                    <label for="etudiants" class="form-label">Étudiants associés</label>
+                    <div style="max-height: 200px; overflow-y: auto;">
+                        <div class="list-group" id="etudiantList">
+                            {% for etudiant in etudiants %}
+                                <div class="list-group-item d-flex justify-content-between align-items-center student-item" data-name="{{ etudiant.prenom|lower }} {{ etudiant.nom|lower }}">
+                                    {{ etudiant.prenom|capitalize_first }} {{ etudiant.nom|capitalize_first }}
+                                    <button type="button" class="btn btn-primary btn-sm add-etudiant" data-id="{{ etudiant.id }}">Ajouter</button>
+                                </div>
+                            {% endfor %}
                         </div>
                     </div>
+                </div>
+                
+                <style>
+                    .hidden {
+                        visibility: hidden; /* Element is invisible but still takes up space */
+                        opacity: 0; /* Make it fully transparent */
+                        transition: opacity 0.3s ease; /* Smooth transition */
+                    }
+                    
+                    .visible {
+                        visibility: visible; /* Element is visible */
+                        opacity: 1; /* Make it fully opaque */
+                        transition: opacity 0.3s ease; /* Smooth transition */
+                    }
+                </style>
+                
+                <script>
+                    document.getElementById('etudiantSearch').addEventListener('input', function() {
+                        var filter = this.value.toLowerCase(); // Get the search input and convert to lowercase
+                        var items = document.querySelectorAll('#etudiantList .student-item'); // Get all student items
+                
+                        items.forEach(function(item) {
+                            var name = item.getAttribute('data-name'); // Get the data-name attribute
+                            if (name.startsWith(filter)) {
+                                item.classList.remove('hidden'); // Remove 'hidden' class to show the item
+                                item.classList.add('visible'); // Add 'visible' class
+                            } else {
+                                item.classList.remove('visible'); // Remove 'visible' class
+                                item.classList.add('hidden'); // Add 'hidden' class to hide the item
+                            }
+                        });
+                    });
+                </script>
+                
+                
+                
+
 
                     <!-- Selected Etudiants List -->
                     <div class="mb-3">
@@ -158,47 +194,39 @@
     </div>
 </div>
 
-<script>
-    function filterEtudiants() {
-        const input = document.getElementById('etudiantSearch');
-        const filter = input.value.toLowerCase();
-        const etudiantList = document.getElementById('etudiantList');
-        const etudiants = etudiantList.getElementsByClassName('list-group-item');
+{% comment %} <script>
+    document.getElementById('etudiantSearch').addEventListener('keyup', function() {
+        var filter = this.value.toLowerCase(); // Get the search input and convert to lowercase
+        var items = document.querySelectorAll('#etudiantList .student-item'); // Get all student items
 
-        for (let i = 0; i < etudiants.length; i++) {
-            const etudiantItem = etudiants[i];
-            const textValue = etudiantItem.textContent || etudiantItem.innerText;
-
-            if (textValue.toLowerCase().indexOf(filter) > -1) {
-                etudiantItem.style.display = ""; // Show the item
+        items.forEach(function(item) {
+            var name = item.getAttribute('data-name'); // Get the data-name attribute
+            if (name.includes(filter)) {
+                item.style.display = ""; // Show item if it matches
             } else {
-                etudiantItem.style.display = "none"; // Hide the item
+                item.style.display = "none"; // Hide item if it doesn't match
             }
-        }
-    }
-</script>
+        });
+    });
+</script> {% endcomment %}
 
-
-    
 
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const searchInput = document.getElementById('etudiantSearch');
         const etudiantList = document.getElementById('etudiantList');
-        const items = etudiantList.getElementsByTagName('li');
         const selectedEtudiantList = document.getElementById('selectedEtudiants');
-    
+
         etudiantList.addEventListener('click', function(event) {
             if (event.target.classList.contains('add-etudiant')) {
                 const etudiantId = event.target.getAttribute('data-id');
                 const etudiantName = event.target.parentElement.textContent.trim();
-    
+
                 // Create a new list item for the selected student
                 const listItem = document.createElement('li');
                 listItem.classList.add('list-group-item', 'd-flex', 'justify-content-between', 'align-items-center');
                 listItem.textContent = etudiantName;
-    
+
                 // Create a remove button for the selected student
                 const removeButton = document.createElement('button');
                 removeButton.classList.add('btn', 'btn-danger', 'btn-sm', 'float-end');
@@ -206,19 +234,23 @@
                 removeButton.addEventListener('click', function() {
                     selectedEtudiantList.removeChild(listItem);
                 });
-    
+
                 listItem.appendChild(removeButton);
                 selectedEtudiantList.appendChild(listItem);
             }
         });
     });
-    
+
     function openModal() {
         var modal = new bootstrap.Modal(document.getElementById('addParentModal'));
         modal.show();
     }
-    
 </script>
+
+
+<!-- Bootstrap JS and dependencies -->
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
 
 
 

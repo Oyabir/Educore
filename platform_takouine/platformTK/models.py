@@ -356,9 +356,8 @@ class Attendance(models.Model):
     date = models.DateField(auto_now_add=True)
     is_present = models.BooleanField(default=True)
 
-    seriousness = models.IntegerField(null=True, blank=True, choices=[(i, i) for i in range(1, 6)])
+    participation = models.IntegerField(null=True, blank=True, choices=[(i, i) for i in range(1, 6)])
     discipline = models.IntegerField(null=True, blank=True, choices=[(i, i) for i in range(1, 6)])
-    enthusiasm = models.IntegerField(null=True, blank=True, choices=[(i, i) for i in range(1, 6)])
 
     class Meta:
         unique_together = ('student', 'schedule', 'class_instance', 'date')

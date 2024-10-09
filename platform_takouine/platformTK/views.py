@@ -1045,19 +1045,19 @@ def mark_attendance(request, code_group, schedule_id):
     group = get_object_or_404(Groups, code_group=code_group)
     schedule = get_object_or_404(Schedule, id=schedule_id)
 
-    locale.setlocale(locale.LC_TIME, 'fr_FR.UTF-8')
+    try:
+        locale.setlocale(locale.LC_TIME, 'fr_FR.UTF-8')
+    except locale.Error:
+        locale.setlocale(locale.LC_TIME, '')  # Fallback locale
 
     current_date = timezone.now().date()
     formatted_date = current_date.strftime('%Y-%m-%d')
 
     day_name = current_date.strftime('%A').capitalize()
-    
-    # Generate a class name
     class_name = f"{day_name} Cours du {formatted_date}"
 
     existing_class = schedule.classes.filter(name=class_name).first()
 
-    # Create the class if it does not exist
     if not existing_class:
         try:
             new_class = Class.objects.create(schedule=schedule, name=class_name, prof=request.user.prof)
@@ -1067,15 +1067,12 @@ def mark_attendance(request, code_group, schedule_id):
             new_class = schedule.classes.filter(name=class_name).first()
     else:
         new_class = existing_class
-    
+
     if request.method == 'POST':
         for etudiant in group.etudiants.all():
             present_status = request.POST.get(f'present_{new_class.id}_{etudiant.id}', 'off') == 'on'
-            
-            # Get values for seriousness, discipline, enthusiasm and set to None if not selected
-            seriousness = request.POST.get(f'seriousness_{new_class.id}_{etudiant.id}') or None
+            participation = request.POST.get(f'participation_{new_class.id}_{etudiant.id}') or None
             discipline = request.POST.get(f'discipline_{new_class.id}_{etudiant.id}') or None
-            enthusiasm = request.POST.get(f'enthusiasm_{new_class.id}_{etudiant.id}') or None
 
             try:
                 attendance, created = Attendance.objects.get_or_create(
@@ -1085,16 +1082,14 @@ def mark_attendance(request, code_group, schedule_id):
                     class_instance=new_class,
                     defaults={
                         'is_present': present_status,
-                        'seriousness': seriousness,
-                        'discipline': discipline,
-                        'enthusiasm': enthusiasm
+                        'participation': participation,
+                        'discipline': discipline
                     }
                 )
                 if not created:
                     attendance.is_present = present_status
-                    attendance.seriousness = seriousness
+                    attendance.participation = participation
                     attendance.discipline = discipline
-                    attendance.enthusiasm = enthusiasm
                     attendance.save()
             except IntegrityError:
                 messages.error(request, f"Attendance already exists for {etudiant.prenom} {etudiant.nom} in {new_class.name}.")
