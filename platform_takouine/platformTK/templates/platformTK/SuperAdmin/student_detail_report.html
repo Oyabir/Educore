@@ -1,0 +1,30 @@
+{% extends "platformTK/SuperAdmin/HomeBase.html" %}
+{% load static %}
+
+{% block content %}
+{% include 'platformTK/SuperAdmin/navbar.html' %}
+
+<div class="container mt-5">
+    <h1>Détails de l'Étudiant: {{ etudiant.prenom }} {{ etudiant.nom }}</h1>
+    <h2>Groupe: {{ group_name }}</h2>
+
+    <table class="table table-striped">
+        <tr>
+            <th>Prénom</th>
+            <td>{{ etudiant.prenom }}</td>
+        </tr>
+        <tr>
+            <th>Nom</th>
+            <td>{{ etudiant.nom }}</td>
+        </tr>
+        <tr>
+            <th>Points</th>
+            <td>{{ pointsG }}</td>  <!-- This should correctly access pointsG -->
+        </tr>
+    </table>
+    
+
+    <a href="{% url 'rapport_soldes' %}" class="btn btn-secondary">Retour</a>  <!-- Adjust the URL as needed -->
+</div>
+
+{% endblock %}

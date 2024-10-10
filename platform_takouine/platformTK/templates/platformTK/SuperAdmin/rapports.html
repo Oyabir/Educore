@@ -1,0 +1,187 @@
+{% extends "platformTK/SuperAdmin/HomeBase.html" %}
+{% load static %}
+
+{% block content %}
+{% include 'platformTK/SuperAdmin/navbar.html' %}
+
+<div class="container mt-5">
+    {% if messages %}
+    <div id="message-container">
+        {% for message in messages %}
+            {% if message.tags == 'error' %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endif %}
+            {% if message.tags == 'success' %}
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+{% endif %}
+
+<script>
+    setTimeout(function() {
+        var messageContainer = document.getElementById('message-container');
+        if (messageContainer) {
+            messageContainer.style.display = 'none';
+        }
+    }, 5000); 
+</script>
+
+   
+<a href="{% url "absence_by_group" %}"> <button class="btn btn-primary mb-3"  style="background-color: #176b90;">absence_by_group</button></a>
+
+
+<a href="{% url "rapport_soldes" %}"> <button class="btn btn-primary mb-3"  style="background-color: #176b90;">rapport_soldes</button></a>
+
+
+<a href="{% url 'competition_history' %}"> <button class="btn btn-primary mb-3"  style="background-color: #176b90;">competition_history</button></a>
+
+
+<a href="{% url 'user_participation_discipline_history' %}"> <button class="btn btn-primary mb-3"  style="background-color: #176b90;">user_participation_discipline_history</button></a>
+
+
+    {% comment %} <!-- Product List Table -->
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Nom</th>
+                <th>Description</th>
+                <th>Catégorie</th>
+                <th>Prix</th>
+                <th>Stock</th>
+                <th>Image</th>
+                <th>Date Ajoutée</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for product in products %}
+            <tr>
+                <td>{{ product.name }}</td>
+                <td>{{ product.description|truncatechars:50 }}</td>
+                <td>{{ product.category.name }}</td>
+                <td>${{ product.price }}</td>
+                <td>{{ product.stock }}</td>
+                <td>
+                    {% if product.image %}
+                        <img src="{{ product.image.url }}" alt="{{ product.name }}" style="width: 100px;">
+                    {% else %}
+                        Pas d'Image
+                    {% endif %}
+                </td>
+                <td>{{ product.date_added|date:"M d, Y" }}</td>
+                <td>
+                    <!-- Edit Button -->
+                    <button type="button" class="btn btn-warning btn-sm" data-bs-toggle="modal" style="width: 114px;margin-bottom: 10px;" data-bs-target="#editProductModal{{ product.ProductCode }}">
+                        Modifier
+                    </button>
+                    
+                    <!-- Delete Button -->
+                    <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal{{ product.ProductCode }}">
+                        Supprimer
+                    </button>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="8" class="text-center">Aucun produit trouvé.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table> {% endcomment %}
+</div>
+</div>
+
+<style>
+    .center-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 10px; /* Optional: adds space between the buttons */
+    }
+
+    /* Full Width Modal Styles */
+.full-width-modal .modal-dialog.modal-full-width {
+    max-width: 100%; /* Full width */
+    margin: 0; /* Remove default margin */
+    width: 100%; /* Ensure full width */
+}
+
+.full-width-modal .modal-content {
+    border-radius: 0; /* Optional: remove rounded corners */
+}
+
+.center-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 10px; /* Optional: adds space between the buttons */
+}
+
+/* CSS for Full Width Modal */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    {% comment %} z-index: 1; /* Sit on top */ {% endcomment %}
+    left: 0;
+    top: 0;
+    width: 100%; /* Full width */
+    height: 100%; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgba(0,0,0,0.4); /* Black background with opacity */
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: 15% auto; /* 15% from the top and centered */
+    padding: 20px;
+    border: 1px solid #888;
+    width: 100%; /* Width of modal content */
+    max-width: 1000px; /* Max width */
+    border-radius: 5px;
+    margin-top: -53px;
+
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+</style>
+
+<style>
+    .page-item.active .page-link {
+        z-index: 3;
+        color: #fff;
+        background-color: #176b90;
+        border-color: #176b90;
+    }
+    .page-link {
+        color: #176b90;
+    }
+
+    .modal-header {
+    background-color: #30bb96;
+    }
+    .btn-primary {
+        background-color: #176b90;
+        color: #ffffff;
+    }
+</style>
+
+
+
+{% endblock %}

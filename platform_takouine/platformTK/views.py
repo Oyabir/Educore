@@ -595,22 +595,30 @@ def finish_competition(request, competition_id):
 
     if competition.is_finished:
         return redirect('competition_results', competition_id=competition.id)
-    
+
     top_sections = competition.sections.all().order_by('-points')[:3]
-    
-    points_distribution = [10, 5, 1]
-    
+    points_distribution = [10, 5, 1]  # Points for top 3 sections
+
     for index, section in enumerate(top_sections):
         points_to_add = points_distribution[index]
         for etudiant in section.etudiants.all():
+            # Update or create UserCompetition record
+            user_competition, created = UserCompetition.objects.get_or_create(
+                user=etudiant.user,
+                competition=competition,
+                defaults={'earned_points': 0}
+            )
+            user_competition.earned_points += points_to_add
+            user_competition.save()
+
+            # Update student points
             etudiant.points = (etudiant.points or 0) + points_to_add 
-            etudiant.save() 
+            etudiant.save()
 
     competition.is_finished = True
     competition.save()
 
     return redirect('competition_results', competition_id=competition.id)
-
 
 
 
@@ -2265,6 +2273,231 @@ def delete_category(request):
 
 
 
+
+@login_required(login_url='login')
+@allowedUsers(allowedGroups=['SuperAdmin'])
+def rapports(request):
+    return render(request, 'platformTK/SuperAdmin/rapports.html')
+
+
+from django.shortcuts import render
+from .models import Groups, Attendance
+
+def absence_by_group(request):
+    groups = Groups.objects.prefetch_related('etudiants').all()
+    
+    group_absence_data = []
+    for group in groups:
+        etudiant_data = []
+        for etudiant in group.etudiants.all():
+            absences = Attendance.objects.filter(group=group, student=etudiant, is_present=False).count()
+            total_sessions = Attendance.objects.filter(group=group, student=etudiant).count()
+            etudiant_data.append({
+                'id': etudiant.id,  # Include the student's ID for the form
+                'prenom': etudiant.prenom,
+                'nom': etudiant.nom,
+                'absences': absences,
+                'total_sessions': total_sessions,
+                'attendance_rate': (total_sessions - absences) / total_sessions * 100 if total_sessions > 0 else 0
+            })
+        
+        group_absence_data.append({
+            'group_name': group.name,
+            'etudiants': etudiant_data
+        })
+    
+    return render(request, 'platformTK/SuperAdmin/absence_by_group.html', {'group_absence_data': group_absence_data})
+
+
+
+
+def absence_by_student(request):
+    if request.method == 'POST':
+        student_id = request.POST.get('student_id')
+
+        # Try to find the student by ID
+        try:
+            etudiant = Etudiant.objects.get(id=student_id)
+        except Etudiant.DoesNotExist:
+            # If no student is found, render the 'student_not_found.html' template
+            return render(request, 'student_not_found.html')
+
+        # If a student is found, retrieve their attendance records
+        attendance_records = Attendance.objects.filter(student=etudiant)
+        total_sessions = attendance_records.count()
+        absences = attendance_records.filter(is_present=False).count()
+        
+        if total_sessions > 0:
+            attendance_rate = ((total_sessions - absences) / total_sessions) * 100
+        else:
+            attendance_rate = 0
+
+        # Render the report with the context
+        return render(request, 'platformTK/SuperAdmin/absence_by_student.html', {
+            'student': etudiant,
+            'attendance_records': attendance_records,
+            'total_sessions': total_sessions,
+            'absences': absences,
+            'attendance_rate': attendance_rate,
+        })
+    return render(request, 'student_not_found.html')
+
+
+from django.template.loader import get_template
+from xhtml2pdf import pisa
+
+def render_to_pdf(template_src, context_dict):
+    template = get_template(template_src)
+    html = template.render(context_dict)
+    response = HttpResponse(content_type='application/pdf')
+
+    # Get the student's name from the context dictionary
+    student_name = f"{context_dict['student'].prenom}_{context_dict['student'].nom}"
+    
+    # Sanitize the filename by replacing spaces with underscores and removing any unwanted characters
+    sanitized_student_name = ''.join(e if e.isalnum() or e == '_' else '_' for e in student_name)
+    
+    # Set the filename with the student's name
+    response['Content-Disposition'] = f'attachment; filename="rapport_absence_{sanitized_student_name}.pdf"'
+    
+    pisa_status = pisa.CreatePDF(html, dest=response)
+    if pisa_status.err:
+        return HttpResponse('We had some errors <pre>' + html + '</pre>')
+    
+    return response
+
+
+
+def download_absence_report(request, student_id):
+    # Fetch attendance records for the specific student
+    student = Etudiant.objects.get(id=student_id)  # Adjust this line as needed
+    attendance_records = Attendance.objects.filter(student=student)
+
+    total_sessions = attendance_records.count()
+    absences = attendance_records.filter(is_present=False).count()
+    attendance_rate = ((total_sessions - absences) / total_sessions * 100) if total_sessions > 0 else 0
+
+    context = {
+        'student': student,
+        'attendance_records': attendance_records,
+        'total_sessions': total_sessions,
+        'absences': absences,
+        'attendance_rate': attendance_rate,
+    }
+    
+    return render_to_pdf('platformTK/SuperAdmin/pdf_absence_report_by_student.html', context)
+
+
+
+
+def rapport_soldes(request):
+    group_soldes_data = []
+
+    # Fetch all groups with their memberships
+    groups = Groups.objects.prefetch_related('membership_set').all()
+
+    for group in groups:
+        etudiant_data = []
+        for membership in group.membership_set.all():
+            if membership.etudiant:  # Ensure the student is not None
+                etudiant_data.append({
+                    'id': membership.etudiant.id,  # Add the ID of the student
+                    'prenom': membership.etudiant.prenom,
+                    'nom': membership.etudiant.nom,
+                    'pointsG': membership.pointsG,
+                })
+
+        group_soldes_data.append({
+            'group_name': group.name,
+            'etudiants': etudiant_data
+        })
+
+    return render(request, 'platformTK/SuperAdmin/rapport_soldes.html', {'group_soldes_data': group_soldes_data})
+
+
+
+
+
+from django.shortcuts import render, get_object_or_404
+from .models import Etudiant, Membership
+
+def student_detail_report(request, id):
+    # Get the specific student by id
+    etudiant = get_object_or_404(Etudiant, id=id)
+
+    # Fetch the membership instance related to this student
+    membership = Membership.objects.filter(etudiant=etudiant).first()  # Get the first membership or None if no memberships exist
+
+    # # Debugging output
+    # if membership:
+    #     print(f"Membership found: {membership.id}, Points: {membership.pointsG}")
+    # else:
+    #     print("No membership found for this student.")
+
+    # Get the pointsG from the membership, if it exists
+    pointsG = membership.pointsG if membership else 0  # Set to 0 or any default if no membership is found
+
+    # Fetch the first group this student belongs to (assuming one group for simplicity)
+    group = etudiant.groups.first()  # Get the first group or None if no groups exist
+    group_name = group.name if group else "Aucun groupe"  # Set group name or default
+
+    # Prepare context for the template
+    context = {
+        'etudiant': etudiant,
+        'group_name': group_name,  # Pass group name to context
+        'pointsG': pointsG  # Pass pointsG to context
+    }
+
+    return render(request, 'platformTK/SuperAdmin/student_detail_report.html', context)
+
+
+
+
+from collections import defaultdict
+
+
+def competition_history(request):
+    competitions = Competitions.objects.all().order_by('-date_created')
+    sorted_students = []
+
+    # Loop through each competition
+    for competition in competitions:
+        students_points = defaultdict(int)
+
+        # Loop through sections in the competition
+        for section in competition.sections.all():
+            for etudiant in section.etudiants.all():
+                students_points[etudiant] += section.points  # Sum points from each section for each student
+
+        # Sort the students by points in descending order
+        sorted_students = sorted(students_points.items(), key=lambda x: x[1], reverse=True)
+
+    return render(request, 'platformTK/SuperAdmin/competition_history.html', {
+        'competitions': competitions,
+        'sorted_students': sorted_students,  # Pass the sorted students to the template
+    })
+
+
+
+from django.shortcuts import render, get_object_or_404
+from django.contrib.auth.models import User
+
+def user_participation_discipline_history(request):
+    all_users = User.objects.all()
+    selected_user = None  # Initialize selected_user to None
+    user_performance = {}
+
+    selected_user_id = request.GET.get('user_id')
+    if selected_user_id:
+        selected_user = get_object_or_404(User, id=selected_user_id)
+        # Assume you have a function to get user performance data.
+        user_performance = get_user_performance(selected_user)
+
+    return render(request, 'platformTK/SuperAdmin/user_participation_discipline_history.html', {
+        'all_users': all_users,
+        'selected_user': selected_user.id if selected_user else None,  # Ensure selected_user is either the ID or None
+        'user_performance': user_performance,
+    })
 
 
 

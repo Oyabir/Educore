@@ -202,6 +202,16 @@ class Competitions(models.Model):
 
 
 
+class UserCompetition(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    competition = models.ForeignKey(Competitions, on_delete=models.CASCADE)
+    earned_points = models.PositiveIntegerField(default=0)
+
+    def __str__(self):
+        return f"{self.user.username} - {self.competition.name} - Points: {self.earned_points}"
+
+
+
 
 class Sections(models.Model):
     competition = models.ForeignKey('Competitions', on_delete=models.SET_NULL, null=True, blank=True, related_name='sections')  # Set null on delete
@@ -304,9 +314,6 @@ class Membership(models.Model):
 
     def __str__(self):
         return f"{self.etudiant if self.etudiant else 'No Etudiant'} in {self.group if self.group else 'No Group'}"
-
-
-
 
 
 

@@ -1,0 +1,89 @@
+{% extends "platformTK/SuperAdmin/HomeBase.html" %}
+{% load static %}
+
+{% block content %}
+{% include 'platformTK/SuperAdmin/navbar.html' %}
+
+<div class="container mt-5">
+    <h1>Rapport des Soldes des Apprenants par Classe</h1>
+
+    <!-- Filter Dropdown for Groups -->
+    <div class="mb-3">
+        <label for="groupSelect">Filtrer par Groupe:</label>
+        <select id="groupSelect" class="form-control" onchange="filterReport()">
+            <option value="">Tous les groupes</option>
+            {% for group in group_soldes_data %}
+                <option value="{{ group.group_name }}">{{ group.group_name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <!-- Search Input for Student Names -->
+    <div class="mb-3">
+        <label for="studentSearch">Rechercher par Nom ou Prénom:</label>
+        <input type="text" id="studentSearch" class="form-control" onkeyup="filterReport()" placeholder="Entrez le nom ou prénom">
+    </div>
+
+    <div class="table-responsive" id="reportTable">
+        {% for group in group_soldes_data %}
+            <div class="group-section" data-group-name="{{ group.group_name }}">
+                <h2>{{ group.group_name }}</h2>
+    
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>Prénom</th>
+                            <th>Nom</th>
+                            <th>Points</th>
+                            <th>Actions</th>  <!-- Added header for actions -->
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for etudiant in group.etudiants %}
+                        <tr class="student-row" data-prenom="{{ etudiant.prenom|lower }}" data-nom="{{ etudiant.nom|lower }}">
+                            <td>{{ etudiant.prenom }}</td>
+                            <td>{{ etudiant.nom }}</td>
+                            <td>{{ etudiant.pointsG }}</td>
+                            <td>
+                                <!-- Button to view detailed report for each student -->
+                                <a href="{% url 'student_detail_report' etudiant.id %}" class="btn btn-info btn-sm">Voir Détails</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>                                 
+                </table>
+            </div>
+        {% endfor %}
+    </div>    
+    <script>
+        function filterReport() {
+            const selectedGroup = document.getElementById('groupSelect').value;
+            const studentSearch = document.getElementById('studentSearch').value.toLowerCase();
+            const groupSections = document.querySelectorAll('.group-section');
+
+            groupSections.forEach(section => {
+                const groupName = section.getAttribute('data-group-name');
+                const studentRows = section.querySelectorAll('.student-row');
+                let groupHasVisibleStudents = false; // To track if any students are visible in this group
+
+                studentRows.forEach(row => {
+                    const studentPrenom = row.getAttribute('data-prenom');
+                    const studentNom = row.getAttribute('data-nom');
+
+                    // Check if the group is selected and if the student matches the search
+                    if ((selectedGroup === '' || groupName === selectedGroup) &&
+                        (studentPrenom.includes(studentSearch) || studentNom.includes(studentSearch))) {
+                        row.style.display = ''; // Show the row
+                        groupHasVisibleStudents = true; // Set flag if a student is shown
+                    } else {
+                        row.style.display = 'none'; // Hide the row
+                    }
+                });
+
+                // Show or hide the group section based on whether it has visible students
+                section.style.display = groupHasVisibleStudents ? '' : 'none';
+            });
+        }
+    </script>
+
+{% endblock %}

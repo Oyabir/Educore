@@ -38,6 +38,11 @@ class CompetitionsAdmin(admin.ModelAdmin):
     readonly_fields = ('date_created',)
 
 
+@admin.register(UserCompetition)
+class UserCompetitionAdmin(admin.ModelAdmin):
+    list_display = ('competition', 'earned_points')
+
+
 
 @admin.register(Sections)
 class SectionsAdmin(admin.ModelAdmin):

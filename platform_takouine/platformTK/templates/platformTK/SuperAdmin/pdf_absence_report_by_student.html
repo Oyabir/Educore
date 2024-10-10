@@ -1,0 +1,47 @@
+{% load static %}
+{% load custom_filters %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Rapport d'Absence</title>
+    <style>
+        /* Add any styles you want for your PDF */
+        body { font-family: Arial, sans-serif; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid black; padding: 8px; text-align: left; }
+    </style>
+</head>
+<body>
+    <h1>Rapport d'Absence pour {{ student.prenom|capitalize_first }} {{ student.nom|capitalize_first }}</h1>
+    <p>Total des séances: {{ total_sessions }}</p>
+    <p>Absences: {{ absences }}</p>
+    <p>Pourcentage de Présence: {{ attendance_rate|floatformat:2 }}%</p>
+
+    <h2>Détails des Séances</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Séance</th>
+                <th>Présence</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for record in attendance_records %}
+            <tr>
+                <td>{{ record.date }}</td>
+                <td>{{ record.class_instance.name }}</td>
+                <td>
+                    {% if record.is_present %}
+                        Présent
+                    {% else %}
+                        Absent
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

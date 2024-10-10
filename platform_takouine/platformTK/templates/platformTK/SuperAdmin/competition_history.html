@@ -1,0 +1,89 @@
+{% extends "platformTK/SuperAdmin/HomeBase.html" %}
+{% load static %}
+{% load custom_filters %}
+
+{% block content %}
+{% include 'platformTK/SuperAdmin/navbar.html' %}
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+    <div class="container">
+        <h1>Historique des Compétitions</h1>
+        
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Nom de la compétition</th>
+                    <th>Date créée</th>
+                    <th>Prof</th>
+                    <th>Statut</th>
+                    <th>Gagnants</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for competition in competitions %}
+                <tr>
+                    <td>{{ competition.name }}</td>
+                    <td>{{ competition.date_created|date:"d M Y" }}</td>
+                    <td>{{competition.prof.prenom|capitalize_first}} {{competition.prof.nom|capitalize_first}}</td>
+                    <td>{{ competition.is_finished|yesno:"Terminée,En cours" }}</td>
+                    <td>
+                        <button type="button" class="btn btn-info" data-toggle="modal" data-target="#learnerModal{{ competition.id }}">
+                            Voir les détails
+                        </button>
+                        <!-- Popup Modal for displaying learner details -->
+                        <div class="modal fade" id="learnerModal{{ competition.id }}" tabindex="-1" role="dialog" aria-labelledby="learnerModalLabel{{ competition.id }}" aria-hidden="true">
+                            <div class="modal-dialog" role="document">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="learnerModalLabel{{ competition.id }}">Détails des Gagnants</h5>
+                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p>Nom de la compétition: <strong>{{ competition.name }}</strong></p>
+                                        <p>Gagnants:</p>
+                                        <ul>
+                                            {% for etudiant, points in sorted_students %}
+                                            <li>{{ etudiant.prenom|capitalize_first }} {{ etudiant.nom|capitalize_first }} - Points gagnés: {{ points }}</li>
+                                            {% endfor %}
+                                        </ul>                                        
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        {% comment %} <h2>Solde Total Gagné par Chaque Utilisateur</h2>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Nom d'utilisateur</th>
+                    <th>Solde Gagné</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user, balance in user_balances.items %}
+                <tr>
+                    <td>{{ user.username }}</td>
+                    <td>{{ balance }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table> {% endcomment %}
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.0.7/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+
+{% endblock %}

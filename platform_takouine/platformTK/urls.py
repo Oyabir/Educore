@@ -105,8 +105,19 @@ urlpatterns = [
     path('view-students-in-class/<str:class_code>/', views.view_students_in_class, name='view_students_in_class'),
     path('class/<str:class_code>/download/', views.download_students_attendance_pdf, name='download_students_attendance_pdf'),
 
+    path('rapports/', views.rapports, name='rapports'), 
+    path('absence_by_group/', views.absence_by_group, name='absence_by_group'),
 
-    
+    path('absence_by_student/', views.absence_by_student, name='absence_by_student'),
+    path('download_absence_report/<int:student_id>/', views.download_absence_report, name='download_absence_report'),
+
+
+    path('rapport_soldes/', views.rapport_soldes, name='rapport_soldes'),
+    path('student/<int:id>/report/', views.student_detail_report, name='student_detail_report'),
+    path('competition/history/', views.competition_history, name='competition_history'),
+    path('history/user-participation-discipline/', views.user_participation_discipline_history, name='user_participation_discipline_history'),
+
+
 
 
 
