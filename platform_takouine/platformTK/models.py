@@ -371,3 +371,19 @@ class Attendance(models.Model):
 
     def __str__(self):
         return f"{self.student.prenom} {self.student.nom} - {self.group.name} - {self.class_instance.name} - {self.date} - {'Present' if self.is_present else 'Absent'}"
+
+
+
+
+
+class AbsenceValidationHistory(models.Model):
+    professor = models.ForeignKey('Prof', on_delete=models.CASCADE)
+    group = models.ForeignKey('Groups', on_delete=models.CASCADE)
+    date = models.DateField()
+    absence_status = models.CharField(max_length=20)
+    class_instance = models.ForeignKey('Class', on_delete=models.CASCADE)  # Link to Class model
+    # Remove or ensure is_attendance exists
+    # is_attendance = models.BooleanField(default=False)  # If you need this field
+
+    def __str__(self):
+        return f"{self.professor} - {self.group} - {self.date} - {self.absence_status}"

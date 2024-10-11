@@ -42,6 +42,8 @@ class CompetitionsAdmin(admin.ModelAdmin):
 class UserCompetitionAdmin(admin.ModelAdmin):
     list_display = ('competition', 'earned_points')
 
+admin.site.register(AbsenceValidationHistory)
+
 
 
 @admin.register(Sections)

@@ -1,0 +1,70 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rapport d'Absentéisme</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>Rapport d'Absentéisme par Groupe</h1>
+    <canvas id="absenteeismChart" width="400" height="200" style="border: 1px solid black;"></canvas>
+
+    <script>
+        const absenteeismData = JSON.parse('{{ absenteeism_data|escapejs }}');
+        console.log('Parsed absenteeism data:', absenteeismData);
+
+        const labels = [];  // Store dates
+        const datasets = [];  // Store data for each class
+
+        for (const className in absenteeismData) {
+            const classData = absenteeismData[className];
+            const data = [];
+
+            for (const date in classData) {
+                data.push(classData[date]);
+
+                if (!labels.includes(date)) {
+                    labels.push(date);  // Add date to labels if not already present
+                }
+            }
+
+            datasets.push({
+                label: className,  // Class name as dataset label
+                data: data,  // Absenteeism percentages for the class
+                borderColor: `hsl(${Math.random() * 360}, 100%, 50%)`,  // Random color
+                fill: false  // Line chart style
+            });
+        }
+
+        // Create the chart
+        const ctx = document.getElementById('absenteeismChart').getContext('2d');
+        const absenteeismChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,  // X-axis dates
+                datasets: datasets  // Y-axis class datasets
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Date'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Taux d\'Absentéisme (%)'
+                        },
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

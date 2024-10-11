@@ -1077,6 +1077,7 @@ def mark_attendance(request, code_group, schedule_id):
         new_class = existing_class
 
     if request.method == 'POST':
+        attendance_records = []  # Collect attendance records for later validation
         for etudiant in group.etudiants.all():
             present_status = request.POST.get(f'present_{new_class.id}_{etudiant.id}', 'off') == 'on'
             participation = request.POST.get(f'participation_{new_class.id}_{etudiant.id}') or None
@@ -1099,9 +1100,24 @@ def mark_attendance(request, code_group, schedule_id):
                     attendance.participation = participation
                     attendance.discipline = discipline
                     attendance.save()
+
+                # Log the validation in AbsenceValidationHistory model
+                attendance_records.append(attendance)  # Store attendance for later validation
+
             except IntegrityError:
                 messages.error(request, f"Attendance already exists for {etudiant.prenom} {etudiant.nom} in {new_class.name}.")
         
+        # Validate attendance records for the class on the current date
+        for attendance in attendance_records:
+            AbsenceValidationHistory.objects.create(
+            professor=request.user.prof,
+            group=group,
+            date=current_date,
+            absence_status="Validated",  # Set to "Validated"
+            class_instance=new_class  # Link to the current class
+            # Removed is_attendance since it's not a field in the model
+        )
+
         messages.success(request, "Attendance and feedback marked successfully.")
         return redirect('group_detail', code_group=group.code_group)
 
@@ -1110,6 +1126,9 @@ def mark_attendance(request, code_group, schedule_id):
         'schedule': schedule,
         'classes': [new_class]
     })
+
+
+
 
 
 
@@ -2479,25 +2498,128 @@ def competition_history(request):
 
 
 
-from django.shortcuts import render, get_object_or_404
-from django.contrib.auth.models import User
+def participation_discipline(request):
+    groups = Groups.objects.all()
+    students_list = Etudiant.objects.all()  # List all students for user selection modal
+    students = []
+    selected_group_name = "All Groups"  # Default name for 'all' option
+    selected_user = None  # To handle selected user
+    attendances = Attendance.objects.none()  # Initialize attendances to avoid UnboundLocalError
 
-def user_participation_discipline_history(request):
-    all_users = User.objects.all()
-    selected_user = None  # Initialize selected_user to None
-    user_performance = {}
+    # Check if POST request
+    if request.method == "POST":
+        selected_group_id = request.POST.get('group_id')
+        selected_user_id = request.POST.get('user_id')
+    else:
+        selected_group_id = groups.first().id if groups.exists() else None
+        selected_user_id = None
 
-    selected_user_id = request.GET.get('user_id')
+    # If both group and user are selected, filter attendances by both
+    if selected_group_id == 'all':
+        attendances = Attendance.objects.all()
+    elif selected_group_id:
+        attendances = Attendance.objects.filter(group_id=selected_group_id)
+        selected_group = Groups.objects.get(id=selected_group_id)
+        selected_group_name = selected_group.name
+
+    # Filter by selected user if provided, and adjust attendances accordingly
     if selected_user_id:
-        selected_user = get_object_or_404(User, id=selected_user_id)
-        # Assume you have a function to get user performance data.
-        user_performance = get_user_performance(selected_user)
+        selected_user = Etudiant.objects.get(id=selected_user_id)
+        if attendances.exists():  # If attendances were already filtered by group, filter by user
+            attendances = attendances.filter(student=selected_user)
+        else:  # If no group was selected, just filter by user
+            attendances = Attendance.objects.filter(student=selected_user)
 
-    return render(request, 'platformTK/SuperAdmin/user_participation_discipline_history.html', {
-        'all_users': all_users,
-        'selected_user': selected_user.id if selected_user else None,  # Ensure selected_user is either the ID or None
-        'user_performance': user_performance,
+    for attendance in attendances:
+        try:
+            membership = Membership.objects.get(etudiant=attendance.student, group=attendance.group)
+            pointsG = membership.pointsG
+        except Membership.DoesNotExist:
+            pointsG = 'N/A'
+
+        student_data = {
+            'student': attendance.student,
+            'group': attendance.group.name,
+            'participation': attendance.participation,
+            'discipline': attendance.discipline,
+            'balance': pointsG
+        }
+        students.append(student_data)
+
+    context = {
+        'students': students,
+        'groups': groups,
+        'students_list': students_list,  # Pass student list to the template for the user modal
+        'selected_group_name': selected_group_name,
+        'selected_user': selected_user,  # Optional: track selected user
+    }
+    return render(request, 'platformTK/SuperAdmin/participation_discipline.html', context)
+
+
+
+
+
+from itertools import groupby
+from operator import attrgetter
+from django.http import HttpResponse
+
+from itertools import groupby
+from operator import attrgetter
+
+@login_required(login_url='login')
+@allowedUsers(allowedGroups=['SuperAdmin'])  # Restrict access to SuperAdmin only
+def validate_absences_history(request):
+    # Fetch all validation history and order by class_instance to enable grouping
+    history = AbsenceValidationHistory.objects.order_by('class_instance')
+
+    # Group the history by class_instance
+    grouped_history = groupby(history, key=attrgetter('class_instance'))
+
+    # Get only the first record from each class_instance
+    first_record_per_class = [(key, list(group)[0]) for key, group in grouped_history]
+
+    return render(request, 'platformTK/SuperAdmin/absence_validation_history.html', {
+        'first_record_per_class': first_record_per_class
     })
+
+
+
+import json
+from django.shortcuts import render
+from .models import Attendance
+
+def absenteeism_report(request):
+    attendances = Attendance.objects.all()
+    absenteeism_data = {}
+
+    for attendance in attendances:
+        class_instance = attendance.class_instance
+        date = str(attendance.date)  # Convert date to string
+        
+        # Ensure class is tracked separately
+        if class_instance.name not in absenteeism_data:
+            absenteeism_data[class_instance.name] = {}
+
+        # Ensure date is properly tracked
+        if date not in absenteeism_data[class_instance.name]:
+            absenteeism_data[class_instance.name][date] = {'absent': 0, 'total': 0}
+
+        absenteeism_data[class_instance.name][date]['total'] += 1
+        if not attendance.is_present:
+            absenteeism_data[class_instance.name][date]['absent'] += 1
+
+    # Now calculate the absenteeism percentages
+    formatted_data = {}
+    for class_name, dates in absenteeism_data.items():
+        formatted_data[class_name] = {}
+        for date, counts in dates.items():
+            percentage = (counts['absent'] / counts['total']) * 100 if counts['total'] > 0 else 0
+            formatted_data[class_name][date] = percentage
+
+    return render(request, 'platformTK/SuperAdmin/absenteeism_report.html', {
+        'absenteeism_data': json.dumps(formatted_data)
+    })
+
 
 
 

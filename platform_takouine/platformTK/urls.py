@@ -115,7 +115,11 @@ urlpatterns = [
     path('rapport_soldes/', views.rapport_soldes, name='rapport_soldes'),
     path('student/<int:id>/report/', views.student_detail_report, name='student_detail_report'),
     path('competition/history/', views.competition_history, name='competition_history'),
-    path('history/user-participation-discipline/', views.user_participation_discipline_history, name='user_participation_discipline_history'),
+    path('participation_discipline/', views.participation_discipline, name='participation_discipline'),
+    path('validate_absences_history/', views.validate_absences_history, name='validate_absences_history'),
+    
+    path('absenteeism_report/', views.absenteeism_report, name='absenteeism_report'),
+
 
 
 
