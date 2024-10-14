@@ -2292,11 +2292,12 @@ def delete_category(request):
 
 
 
-
 @login_required(login_url='login')
 @allowedUsers(allowedGroups=['SuperAdmin'])
 def rapports(request):
-    return render(request, 'platformTK/SuperAdmin/rapports.html')
+    students = Etudiant.objects.all()
+    return render(request, 'platformTK/SuperAdmin/rapports.html', {'students': students})
+
 
 
 from django.shortcuts import render
@@ -2326,6 +2327,138 @@ def absence_by_group(request):
         })
     
     return render(request, 'platformTK/SuperAdmin/absence_by_group.html', {'group_absence_data': group_absence_data})
+
+
+import csv
+from django.http import HttpResponse
+from .models import Groups, Attendance
+
+def download_group_report_csv(request, group_name):
+    group = Groups.objects.prefetch_related('etudiants').get(name=group_name)
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = f'attachment; filename="{group_name}_absences.csv"'
+
+    writer = csv.writer(response)
+    writer.writerow(['Prénom', 'Nom', 'Absences', 'Total Séances', 'Pourcentage de Présence'])
+
+    for etudiant in group.etudiants.all():
+        absences = Attendance.objects.filter(group=group, student=etudiant, is_present=False).count()
+        total_sessions = Attendance.objects.filter(group=group, student=etudiant).count()
+        attendance_rate = (total_sessions - absences) / total_sessions * 100 if total_sessions > 0 else 0
+        writer.writerow([etudiant.prenom, etudiant.nom, absences, total_sessions, f"{attendance_rate:.2f}%"])
+
+    return response
+
+
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfgen import canvas
+from django.http import HttpResponse
+from .models import Groups, Attendance
+
+def download_group_report_pdf(request, group_name):
+    group = Groups.objects.prefetch_related('etudiants').get(name=group_name)
+    
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = f'attachment; filename="{group_name}_absences.pdf"'
+
+    p = canvas.Canvas(response, pagesize=A4)
+    width, height = A4
+
+    p.setFont("Helvetica", 12)
+    p.drawString(100, height - 50, f"Rapport d'Absence pour le Groupe: {group_name}")
+
+    y_position = height - 100
+    p.drawString(50, y_position, "Prénom")
+    p.drawString(150, y_position, "Nom")
+    p.drawString(250, y_position, "Absences")
+    p.drawString(350, y_position, "Total Séances")
+    p.drawString(450, y_position, "Pourcentage de Présence")
+
+    y_position -= 30
+
+    for etudiant in group.etudiants.all():
+        absences = Attendance.objects.filter(group=group, student=etudiant, is_present=False).count()
+        total_sessions = Attendance.objects.filter(group=group, student=etudiant).count()
+        attendance_rate = (total_sessions - absences) / total_sessions * 100 if total_sessions > 0 else 0
+
+        p.drawString(50, y_position, etudiant.prenom)
+        p.drawString(150, y_position, etudiant.nom)
+        p.drawString(250, y_position, str(absences))
+        p.drawString(350, y_position, str(total_sessions))
+        p.drawString(450, y_position, f"{attendance_rate:.2f}%")
+        
+        y_position -= 20
+        if y_position < 50:  # Check if we are at the bottom of the page
+            p.showPage()  # Start a new page
+            p.setFont("Helvetica", 12)
+            y_position = height - 50  # Reset y_position
+
+    p.showPage()
+    p.save()
+
+    return response
+
+
+
+from django.http import HttpResponse
+from django.template.loader import get_template
+from xhtml2pdf import pisa
+import logging
+
+logger = logging.getLogger(__name__)
+
+def generate_absence_pdf(request):
+    if request.method == 'POST':
+        student_id = request.POST.get('student')
+        try:
+            # Fetch the student from the database
+            etudiant = Etudiant.objects.get(id=student_id)
+            logger.debug(f"Student Name: {etudiant.prenom} {etudiant.nom}")  # Debug student name
+
+            # Fetch attendance records for the student
+            attendance_records = Attendance.objects.filter(student=etudiant)
+            total_sessions = attendance_records.count()
+            absences = attendance_records.filter(is_present=False).count()
+
+            # Calculate attendance rate
+            if total_sessions > 0:
+                attendance_rate = ((total_sessions - absences) / total_sessions) * 100
+            else:
+                attendance_rate = 0
+
+            # Prepare context for the PDF template
+            context = {
+                'student': etudiant,
+                'attendance_records': attendance_records,
+                'total_sessions': total_sessions,
+                'absences': absences,
+                'attendance_rate': attendance_rate,
+            }
+
+            # Load the PDF template
+            template = get_template('platformTK/SuperAdmin/absence_report_template.html')
+            # Render the template with context data
+            html = template.render(context)
+
+            # Generate the PDF response
+            response = HttpResponse(content_type='application/pdf')
+            response['Content-Disposition'] = f'attachment; filename="{etudiant.prenom}_{etudiant.nom}_absence_report.pdf"'  # Filename setup
+
+            # Create PDF using xhtml2pdf
+            pisa_status = pisa.CreatePDF(html, dest=response)
+
+            # Check for PDF generation errors
+            if pisa_status.err:
+                logger.error(f'PDF generation error: {pisa_status.err}')
+                return HttpResponse(f'We had some errors <pre>{html}</pre>')
+
+            return response
+        except Etudiant.DoesNotExist:
+            return render(request, 'student_not_found.html')
+    else:
+        return HttpResponse("Invalid request method.", status=400)
+
+
 
 
 
@@ -2360,6 +2493,7 @@ def absence_by_student(request):
             'attendance_rate': attendance_rate,
         })
     return render(request, 'student_not_found.html')
+
 
 
 from django.template.loader import get_template

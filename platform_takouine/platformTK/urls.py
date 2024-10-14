@@ -107,6 +107,12 @@ urlpatterns = [
 
     path('rapports/', views.rapports, name='rapports'), 
     path('absence_by_group/', views.absence_by_group, name='absence_by_group'),
+    
+    path('download-group-report/csv/<str:group_name>/', views.download_group_report_csv, name='download_group_report_csv'),
+    path('download-group-report/pdf/<str:group_name>/', views.download_group_report_pdf, name='download_group_report_pdf'),
+    
+    path('generate_absence_pdf/', views.generate_absence_pdf, name='generate_absence_pdf'),
+
 
     path('absence_by_student/', views.absence_by_student, name='absence_by_student'),
     path('download_absence_report/<int:student_id>/', views.download_absence_report, name='download_absence_report'),
