@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Classes for Next Week</title>
+</head>
+<body>
+    <h1>Create Classes for the Next Week</h1>
+    <form id="create-classes-form" method="POST" action="{% url 'create_classes' %}">
+        {% csrf_token %}
+        <button type="submit">Create Classes</button>
+    </form>
+
+    <script>
+        document.getElementById('create-classes-form').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent default form submission
+            fetch(this.action, {
+                method: this.method,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}' // Use the CSRF token if using Django templates
+                },
+                body: JSON.stringify({}) // Sending an empty object as payload
+            })
+            .then(response => response.json())
+            .then(data => alert(data.message))
+            .catch(error => console.error('Error:', error));
+        });
+    </script>
+</body>
+</html>

@@ -1053,28 +1053,28 @@ def mark_attendance(request, code_group, schedule_id):
     group = get_object_or_404(Groups, code_group=code_group)
     schedule = get_object_or_404(Schedule, id=schedule_id)
 
-    try:
-        locale.setlocale(locale.LC_TIME, 'fr_FR.UTF-8')
-    except locale.Error:
-        locale.setlocale(locale.LC_TIME, '')  # Fallback locale
+    # try:
+    #     locale.setlocale(locale.LC_TIME, 'fr_FR.UTF-8')
+    # except locale.Error:
+    #     locale.setlocale(locale.LC_TIME, '')  # Fallback locale
 
-    current_date = timezone.now().date()
-    formatted_date = current_date.strftime('%Y-%m-%d')
+    # current_date = timezone.now().date()
+    # formatted_date = current_date.strftime('%Y-%m-%d')
 
-    day_name = current_date.strftime('%A').capitalize()
-    class_name = f"{day_name} Cours du {formatted_date}"
+    # day_name = current_date.strftime('%A').capitalize()
+    # class_name = f"{day_name} Cours du {formatted_date}"
 
-    existing_class = schedule.classes.filter(name=class_name).first()
+    # existing_class = schedule.classes.filter(name=class_name).first()
 
-    if not existing_class:
-        try:
-            new_class = Class.objects.create(schedule=schedule, name=class_name, prof=request.user.prof)
-            messages.success(request, f"New class '{class_name}' created for this schedule.")
-        except IntegrityError:
-            messages.error(request, f"Class '{class_name}' already exists.")
-            new_class = schedule.classes.filter(name=class_name).first()
-    else:
-        new_class = existing_class
+    # if not existing_class:
+    #     try:
+    #         new_class = Class.objects.create(schedule=schedule, name=class_name, prof=request.user.prof)
+    #         messages.success(request, f"New class '{class_name}' created for this schedule.")
+    #     except IntegrityError:
+    #         messages.error(request, f"Class '{class_name}' already exists.")
+    #         new_class = schedule.classes.filter(name=class_name).first()
+    # else:
+    #     new_class = existing_class
 
     if request.method == 'POST':
         attendance_records = []  # Collect attendance records for later validation
@@ -1124,7 +1124,7 @@ def mark_attendance(request, code_group, schedule_id):
     return render(request, 'platformTK/Prof/mark_attendance.html', {
         'group': group,
         'schedule': schedule,
-        'classes': [new_class]
+        # 'classes': [new_class]
     })
 
 
@@ -2458,6 +2458,74 @@ def generate_absence_pdf(request):
     else:
         return HttpResponse("Invalid request method.", status=400)
 
+
+
+from django.shortcuts import render
+
+def create_classes_aa(request):
+    return render(request, 'platformTK/SuperAdmin/create_classes.html')
+
+
+
+
+from datetime import timedelta, date
+from django.http import JsonResponse
+from django.utils import timezone
+import locale
+
+def create_classes_for_next_week(request):
+    if request.method == 'POST':
+        try:
+            # Set locale for French language
+            try:
+                locale.setlocale(locale.LC_TIME, 'fr_FR.UTF-8')
+            except locale.Error:
+                locale.setlocale(locale.LC_TIME, '')  # Fallback locale
+
+            # Get the current date
+            current_date = timezone.now().date()
+            start_of_week = current_date + timedelta(days=(0 - current_date.weekday()))  # Get this week's Monday
+            end_of_week = start_of_week + timedelta(days=6)  # Get this week's Sunday
+            
+            # Get all schedules for all days
+            all_schedules = Schedule.objects.all()
+
+            if not all_schedules.exists():
+                return JsonResponse({'message': 'No schedules found to create classes.'}, status=404)
+
+            # Create classes for all schedules
+            created_classes = []
+            for schedule in all_schedules:
+                # Check if classes already exist for this schedule in the current week
+                class_exists = Class.objects.filter(schedule=schedule, date_added__range=[start_of_week, end_of_week]).exists()
+                
+                # If no class exists for this schedule this week, create classes for each day of the week
+                if not class_exists:
+                    # Get the day of the week for the schedule
+                    day_of_week = schedule.day_of_week  # Assuming 'day_of_week' is a field in your Schedule model
+                    # Convert the day_of_week to a date (e.g., "Lundi" to Monday)
+                    day_offset = (list(["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"]).index(day_of_week))
+                    next_day = start_of_week + timedelta(days=day_offset)  # Calculate the date for the specific day
+
+                    formatted_date = next_day.strftime('%Y-%m-%d')  # Format date
+                    class_name = f"{day_of_week} Cours du {formatted_date}"  # Set the class name
+
+                    # Create the new class
+                    new_class = Class.objects.create(
+                        schedule=schedule,
+                        name=class_name,  # Set the new class name
+                        date_added=next_day,  # Set the date for the class
+                        prof=None  # You can leave this empty or assign later
+                    )
+                    created_classes.append(new_class)
+
+            # Response showing how many classes were created
+            return JsonResponse({'message': f'Created {len(created_classes)} classes for the week!'})
+
+        except Exception as e:
+            return JsonResponse({'message': 'There was an error creating the classes.', 'error': str(e)}, status=500)
+
+    return JsonResponse({'message': 'Invalid request method.'}, status=405)
 
 
 

@@ -113,6 +113,9 @@ urlpatterns = [
     
     path('generate_absence_pdf/', views.generate_absence_pdf, name='generate_absence_pdf'),
 
+    path('create_classes_aa/', views.create_classes_aa, name='create_classes_aa'),
+    path('create-classes/', views.create_classes_for_next_week, name='create_classes'),
+
 
     path('absence_by_student/', views.absence_by_student, name='absence_by_student'),
     path('download_absence_report/<int:student_id>/', views.download_absence_report, name='download_absence_report'),
