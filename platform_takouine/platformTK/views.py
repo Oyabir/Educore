@@ -1043,9 +1043,13 @@ def view_attendance(request, code_group, schedule_id):
 
 
 
-
+from datetime import timedelta
+from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
+from django.contrib import messages
 from django.db import IntegrityError
-import locale
+from django.contrib.auth.decorators import login_required
+from .models import Groups, Schedule, Attendance, AbsenceValidationHistory, Class
 
 @login_required(login_url='login')
 @allowedUsers(allowedGroups=['Prof'])
@@ -1053,42 +1057,35 @@ def mark_attendance(request, code_group, schedule_id):
     group = get_object_or_404(Groups, code_group=code_group)
     schedule = get_object_or_404(Schedule, id=schedule_id)
 
-    # try:
-    #     locale.setlocale(locale.LC_TIME, 'fr_FR.UTF-8')
-    # except locale.Error:
-    #     locale.setlocale(locale.LC_TIME, '')  # Fallback locale
+    day_of_week = schedule.day_of_week
+    current_date = timezone.now().date()
+    start_of_week = current_date - timedelta(days=current_date.weekday())
+    day_offset = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"].index(day_of_week)
+    schedule_date = start_of_week + timedelta(days=day_offset)
 
-    # current_date = timezone.now().date()
-    # formatted_date = current_date.strftime('%Y-%m-%d')
+    formatted_date = schedule_date.strftime('%Y-%m-%d')
+    class_name = f"{day_of_week} Cours du {formatted_date}"
 
-    # day_name = current_date.strftime('%A').capitalize()
-    # class_name = f"{day_name} Cours du {formatted_date}"
+    existing_class = schedule.classes.filter(name=class_name).first()
 
-    # existing_class = schedule.classes.filter(name=class_name).first()
-
-    # if not existing_class:
-    #     try:
-    #         new_class = Class.objects.create(schedule=schedule, name=class_name, prof=request.user.prof)
-    #         messages.success(request, f"New class '{class_name}' created for this schedule.")
-    #     except IntegrityError:
-    #         messages.error(request, f"Class '{class_name}' already exists.")
-    #         new_class = schedule.classes.filter(name=class_name).first()
-    # else:
-    #     new_class = existing_class
+    if not existing_class:
+        messages.error(request, f"Class '{class_name}' does not exist for this schedule.")
+        return redirect('group_detail', code_group=group.code_group)
 
     if request.method == 'POST':
-        attendance_records = []  # Collect attendance records for later validation
+        attendance_records = []
+
         for etudiant in group.etudiants.all():
-            present_status = request.POST.get(f'present_{new_class.id}_{etudiant.id}', 'off') == 'on'
-            participation = request.POST.get(f'participation_{new_class.id}_{etudiant.id}') or None
-            discipline = request.POST.get(f'discipline_{new_class.id}_{etudiant.id}') or None
+            present_status = request.POST.get(f'present_{existing_class.id}_{etudiant.id}', 'off') == 'on'
+            participation = request.POST.get(f'participation_{existing_class.id}_{etudiant.id}') or None
+            discipline = request.POST.get(f'discipline_{existing_class.id}_{etudiant.id}') or None
 
             try:
                 attendance, created = Attendance.objects.get_or_create(
                     student=etudiant,
                     group=group,
                     schedule=schedule,
-                    class_instance=new_class,
+                    class_instance=existing_class,
                     defaults={
                         'is_present': present_status,
                         'participation': participation,
@@ -1101,22 +1098,21 @@ def mark_attendance(request, code_group, schedule_id):
                     attendance.discipline = discipline
                     attendance.save()
 
-                # Log the validation in AbsenceValidationHistory model
-                attendance_records.append(attendance)  # Store attendance for later validation
+                attendance_records.append(attendance)
 
             except IntegrityError:
-                messages.error(request, f"Attendance already exists for {etudiant.prenom} {etudiant.nom} in {new_class.name}.")
-        
-        # Validate attendance records for the class on the current date
+                messages.error(request, f"Attendance already exists for {etudiant.prenom} {etudiant.nom} in {existing_class.name}.")
+
         for attendance in attendance_records:
-            AbsenceValidationHistory.objects.create(
-            professor=request.user.prof,
-            group=group,
-            date=current_date,
-            absence_status="Validated",  # Set to "Validated"
-            class_instance=new_class  # Link to the current class
-            # Removed is_attendance since it's not a field in the model
-        )
+            AbsenceValidationHistory.objects.get_or_create(
+                professor=request.user.prof,
+                group=group,
+                date=schedule_date,
+                class_instance=existing_class,
+                defaults={
+                    'absence_status': 'Validated'
+                }
+            )
 
         messages.success(request, "Attendance and feedback marked successfully.")
         return redirect('group_detail', code_group=group.code_group)
@@ -1124,11 +1120,8 @@ def mark_attendance(request, code_group, schedule_id):
     return render(request, 'platformTK/Prof/mark_attendance.html', {
         'group': group,
         'schedule': schedule,
-        # 'classes': [new_class]
+        'classes': [existing_class]
     })
-
-
-
 
 
 
@@ -2468,58 +2461,48 @@ def create_classes_aa(request):
 
 
 
-from datetime import timedelta, date
 from django.http import JsonResponse
 from django.utils import timezone
-import locale
 
 def create_classes_for_next_week(request):
     if request.method == 'POST':
         try:
-            # Set locale for French language
-            try:
-                locale.setlocale(locale.LC_TIME, 'fr_FR.UTF-8')
-            except locale.Error:
-                locale.setlocale(locale.LC_TIME, '')  # Fallback locale
-
-            # Get the current date
             current_date = timezone.now().date()
-            start_of_week = current_date + timedelta(days=(0 - current_date.weekday()))  # Get this week's Monday
-            end_of_week = start_of_week + timedelta(days=6)  # Get this week's Sunday
+            start_of_week = current_date + timedelta(days=(0 - current_date.weekday()))
+            end_of_week = start_of_week + timedelta(days=6)
             
-            # Get all schedules for all days
             all_schedules = Schedule.objects.all()
 
             if not all_schedules.exists():
                 return JsonResponse({'message': 'No schedules found to create classes.'}, status=404)
 
-            # Create classes for all schedules
             created_classes = []
             for schedule in all_schedules:
-                # Check if classes already exist for this schedule in the current week
                 class_exists = Class.objects.filter(schedule=schedule, date_added__range=[start_of_week, end_of_week]).exists()
-                
-                # If no class exists for this schedule this week, create classes for each day of the week
+
                 if not class_exists:
-                    # Get the day of the week for the schedule
-                    day_of_week = schedule.day_of_week  # Assuming 'day_of_week' is a field in your Schedule model
-                    # Convert the day_of_week to a date (e.g., "Lundi" to Monday)
-                    day_offset = (list(["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"]).index(day_of_week))
-                    next_day = start_of_week + timedelta(days=day_offset)  # Calculate the date for the specific day
+                    day_of_week = schedule.day_of_week
+                    day_offset = list(["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"]).index(day_of_week)
+                    next_day = start_of_week + timedelta(days=day_offset)
+                    formatted_date = next_day.strftime('%Y-%m-%d')
+                    class_name = f"{day_of_week} Cours du {formatted_date}"
 
-                    formatted_date = next_day.strftime('%Y-%m-%d')  # Format date
-                    class_name = f"{day_of_week} Cours du {formatted_date}"  # Set the class name
-
-                    # Create the new class
                     new_class = Class.objects.create(
                         schedule=schedule,
-                        name=class_name,  # Set the new class name
-                        date_added=next_day,  # Set the date for the class
-                        prof=None  # You can leave this empty or assign later
+                        name=class_name,
+                        date_added=next_day,
+                        prof=None
                     )
                     created_classes.append(new_class)
 
-            # Response showing how many classes were created
+                    AbsenceValidationHistory.objects.create(
+                        professor=None,
+                        group=schedule.group,
+                        date=next_day,
+                        absence_status="Not Validated yet",
+                        class_instance=new_class
+                    )
+
             return JsonResponse({'message': f'Created {len(created_classes)} classes for the week!'})
 
         except Exception as e:
@@ -2769,15 +2752,10 @@ from itertools import groupby
 from operator import attrgetter
 
 @login_required(login_url='login')
-@allowedUsers(allowedGroups=['SuperAdmin'])  # Restrict access to SuperAdmin only
+@allowedUsers(allowedGroups=['SuperAdmin'])
 def validate_absences_history(request):
-    # Fetch all validation history and order by class_instance to enable grouping
     history = AbsenceValidationHistory.objects.order_by('class_instance')
-
-    # Group the history by class_instance
     grouped_history = groupby(history, key=attrgetter('class_instance'))
-
-    # Get only the first record from each class_instance
     first_record_per_class = [(key, list(group)[0]) for key, group in grouped_history]
 
     return render(request, 'platformTK/SuperAdmin/absence_validation_history.html', {

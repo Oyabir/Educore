@@ -106,7 +106,7 @@ class Parents(models.Model):
     slugParents = models.SlugField(blank=True, null=True)
     date_created = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     ParentsCode = models.CharField(max_length=100, null=True, blank=True, default=generate_Parents_code)
-
+    
     # Add ManyToManyField for Etudiant relationship
     etudiants = models.ManyToManyField('Etudiant', blank=True, related_name='parents')
 
@@ -377,7 +377,7 @@ class Attendance(models.Model):
 
 
 class AbsenceValidationHistory(models.Model):
-    professor = models.ForeignKey('Prof', on_delete=models.CASCADE)
+    professor = models.ForeignKey('Prof', on_delete=models.CASCADE , null=True)
     group = models.ForeignKey('Groups', on_delete=models.CASCADE)
     date = models.DateField()
     absence_status = models.CharField(max_length=20)
