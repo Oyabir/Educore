@@ -61,6 +61,10 @@ urlpatterns = [
     
     path('list_parents/', views.list_parents, name='list_parents'),
     path('add-parent/', views.add_parent, name='add_parent'),
+    path('export_parents_to_excel/', views.export_parents_to_excel, name='export_parents_to_excel'),
+    path('parent/update/<int:parent_id>/', views.update_parent, name='update_parent'),
+    path('parent/delete/<int:parent_id>/',  views.delete_parent, name='delete_parent'),
+
 
 
     

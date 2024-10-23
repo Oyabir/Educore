@@ -39,6 +39,20 @@
         <button class="btn btn-primary" style="background-color: #176b90;" onclick="openModal()">Ajouter un Parent</button>
     </div>
 
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <!-- Form to upload Excel file -->
+        <form method="POST" enctype="multipart/form-data" action="{% url 'export_parents_to_excel' %}">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="file">Upload Excel (.xlsx) file:</label>
+                <input type="file" name="file" class="form-control-file" id="file" accept=".xlsx" required>
+            </div>
+    
+            <button type="submit" class="btn btn-primary">Upload File</button>
+        </form>
+    </div>
+    
+
     <div class="table-responsive">
         <table class="table table-striped table-hover">
             <thead>
@@ -66,7 +80,10 @@
                     </td>
                     <td>{{ parent.ParentsCode }}</td>
                     <td>
-                        <button class="btn btn-warning btn-sm" style="width: 114px; margin-bottom: 10px;" onclick="openEditModal('{{ parent.id }}', '{{ parent.user.username }}', '{{ parent.prenom }}', '{{ parent.nom }}', '{{ parent.date_de_naissance|date:'Y-m-d' }}', '{{ parent.email }}', '{{ parent.numéro_de_téléphone }}', {% if parent.avatar %}'{{ parent.avatar.url }}'{% else %}''{% endif %}, [{% for group in parent.groups.all %} '{{ group.id }}', {% endfor %}])">Modifier</button>
+                        <button class="btn btn-warning btn-sm" style="width: 114px; margin-bottom: 10px;" 
+                        onclick="openEditModal('{{ parent.id }}', '{{ parent.prenom }}', '{{ parent.nom }}', '{{ parent.email }}', '{{ parent.numéro_de_téléphone }}', {% if parent.avatar %}'{{ parent.avatar.url }}'{% else %}null{% endif %})">
+                        Modifier
+                        </button>
                         <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal{{ parent.id }}">Supprimer</button>
                     </td>
                 </tr>
@@ -74,7 +91,164 @@
             </tbody>
         </table>
     </div>
+    
+    {% for parent in parents %}
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteModal{{ parent.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ parent.id }}" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteModalLabel{{ parent.id }}">Confirmer la suppression</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Êtes-vous sûr de vouloir supprimer ce parent? Cette action est irréversible.
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <button type="button" class="btn btn-danger" onclick="deleteParent({{ parent.id }})">Supprimer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    
+    <!-- Include Bootstrap Bundle JS -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function deleteParent(parentId) {
+            fetch(`/parent/delete/${parentId}/`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json'
+                },
+            })
+            .then(response => {
+                if (response.ok) {
+                    location.reload();
+                } else {
+                    alert('Erreur lors de la suppression du parent.');
+                }
+            })
+            .catch(error => {
+                console.error('Erreur:', error);
+                alert('Erreur de connexion au serveur.');
+            });
+        }
+    </script>
+    
+
+
+<!-- Edit Parent Modal -->
+<div class="modal fade" id="editParentModal" tabindex="-1" aria-labelledby="editParentModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content" style="margin-top: -56px;">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editParentModalLabel">Modifier Parent</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" enctype="multipart/form-data" id="editParentForm">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <input type="hidden" name="parent_id" id="editParentId">
+                    
+                    <div class="form-group">
+                        <label for="editPrenom">Prénom</label>
+                        <input type="text" class="form-control" id="editPrenom" name="prenom" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="editNom">Nom</label>
+                        <input type="text" class="form-control" id="editNom" name="nom" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="editEmail">Email</label>
+                        <input type="email" class="form-control" id="editEmail" name="email">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="editTelephone">Numéro de Téléphone</label>
+                        <input type="text" class="form-control" id="editTelephone" name="numéro_de-téléphone">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="editAvatar">Avatar</label>
+                        <input type="file" class="form-control" id="editAvatar" name="avatar">
+                        
+                        <!-- Display existing avatar if it exists -->
+                        <div id="existingAvatar" style="margin-top: 10px; display: none;">
+                            <img src="" alt="Current Avatar" class="img-thumbnail" style="max-width: 150px; max-height: 150px;">
+                        </div>
+                    </div>
+
+                    <!-- Search Input for Etudiants -->
+                    <div class="form-group">
+                        <label for="etudiantSearch">Search Etudiants</label>
+                        <input type="text" id="etudiantSearch" class="form-control" placeholder="Search by prénom or nom" oninput="filterEtudiants()">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="editEtudiants">Etudiants</label>
+                        <select multiple class="form-control" id="editEtudiants" name="etudiants">
+                            {% for etudiant in etudiants %}
+                                <option value="{{ etudiant.id }}" {% if etudiant in parent.etudiants.all %}selected{% endif %}>
+                                    {{ etudiant.prenom }} {{ etudiant.nom }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                    <button type="submit" class="btn btn-primary">Enregistrer les modifications</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
+
+
+
+<script>
+    function openEditModal(id, prenom, nom, email, telephone, avatar) {
+        // Set the form action dynamically if you need to POST to a specific URL
+        document.getElementById('editParentForm').action = `/parent/update/${id}/`;  // Adjust this URL
+
+        // Fill the form with parent data
+        document.getElementById('editParentId').value = id;
+        document.getElementById('editPrenom').value = prenom;
+        document.getElementById('editNom').value = nom;
+        document.getElementById('editEmail').value = email;
+        document.getElementById('editTelephone').value = telephone;
+
+        // If avatar exists, display it
+        if (avatar) {
+            document.getElementById('existingAvatar').style.display = 'block';
+            document.querySelector('#existingAvatar img').src = avatar; // Assuming you have the avatar URL
+        } else {
+            document.getElementById('existingAvatar').style.display = 'none';
+        }
+
+        // Open the modal
+        var modal = new bootstrap.Modal(document.getElementById('editParentModal'));
+        modal.show();
+    }
+
+    function filterEtudiants() {
+        const searchValue = document.getElementById('etudiantSearch').value.toLowerCase();
+        const options = document.querySelectorAll('#editEtudiants option');
+
+        options.forEach(option => {
+            const text = option.textContent.toLowerCase();
+            option.style.display = text.includes(searchValue) ? '' : 'none';
+        });
+    }
+</script>
+
+
+
 
 <div class="modal" id="addParentModal" tabindex="-1" aria-labelledby="addParentModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg" style="max-width: 1123px;">

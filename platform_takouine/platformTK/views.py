@@ -396,7 +396,81 @@ def my_groups(request):
 @login_required(login_url='login')
 @allowedUsers(allowedGroups=['Parents'])
 def homeParents(request):
-    return render(request, "platformTK/Parents/homeParents.html")
+    # Get the logged-in parent
+    parent = request.user.parents  # Assuming the related name is 'parents'
+
+    # Get associated students
+    etudiants = parent.etudiants.all()  # This will give you all etudiants related to this parent
+    num_etudiants = etudiants.count()  # Count the number of etudiants
+
+    today = timezone.now().date()
+
+    # Initialize birthday message
+    birthday_message = None
+
+    competition_section_data = []
+    group_data = []
+
+    # Loop through each student to check for birthdays
+    for etudiant in etudiants:
+        # Check if it's the student's birthday
+        birthday_message = is_birthday(etudiant)
+
+        # Show the birthday message only once per login on the birthday
+        if birthday_message and request.session.get('birthday_message_shown') != str(today):
+            request.session['birthday_message_shown'] = str(today) 
+        else:
+            birthday_message = False
+        
+        try:
+            sections = Sections.objects.filter(etudiants=etudiant)
+            competitions = Competitions.objects.filter(sections__in=sections).distinct()
+
+            for competition in competitions:
+                for section in sections.filter(competition=competition):
+                    # Calculate rank within the competition
+                    section_rank = Sections.objects.filter(
+                        competition=competition, 
+                        points__gt=section.points
+                    ).count() + 1
+
+                    competition_section_data.append({
+                        'competition': competition,
+                        'section': section,
+                        'points': section.points,
+                        'rank': section_rank,
+                    })
+
+            memberships = Membership.objects.filter(etudiant=etudiant).select_related('group')
+
+            for membership in memberships:
+                group = membership.group
+                etudiant_pointsG = membership.pointsG
+
+                memberships_in_group = Membership.objects.filter(group=group).order_by('-pointsG')
+
+                # Calculate the rank of the student in this specific group
+                rank = list(memberships_in_group).index(membership) + 1
+
+                group_data.append({
+                    'group': group,
+                    'points': etudiant_pointsG,
+                    'rank': rank,
+                    'total_students': group.etudiants.count() 
+                })
+
+        except Exception as e:
+            messages.error(request, f"An error occurred while processing data for {etudiant.prenom}: {str(e)}")
+
+    context = {
+        'etudiants': etudiants,  # Pass the list of students to the template
+        'num_etudiants': num_etudiants,  # Pass the number of students
+        'competition_section_data': competition_section_data,
+        'group_data': group_data,
+        'birthday_message': birthday_message,
+    }
+
+    return render(request, "platformTK/Parents/homeParents.html", context)
 
 
 
@@ -1043,6 +1117,7 @@ def view_attendance(request, code_group, schedule_id):
 
 
 
+
 from datetime import timedelta
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
@@ -1050,6 +1125,7 @@ from django.contrib import messages
 from django.db import IntegrityError
 from django.contrib.auth.decorators import login_required
 from .models import Groups, Schedule, Attendance, AbsenceValidationHistory, Class
+
 
 @login_required(login_url='login')
 @allowedUsers(allowedGroups=['Prof'])
@@ -1071,6 +1147,11 @@ def mark_attendance(request, code_group, schedule_id):
     if not existing_class:
         messages.error(request, f"Class '{class_name}' does not exist for this schedule.")
         return redirect('group_detail', code_group=group.code_group)
+
+    # Update the class instance to set the prof field (current user is assumed to be the professor)
+    if not existing_class.prof:
+        existing_class.prof = request.user.prof  # Set the current user as the professor
+        existing_class.save()
 
     if request.method == 'POST':
         attendance_records = []
@@ -1103,9 +1184,10 @@ def mark_attendance(request, code_group, schedule_id):
             except IntegrityError:
                 messages.error(request, f"Attendance already exists for {etudiant.prenom} {etudiant.nom} in {existing_class.name}.")
 
+        # Update AbsenceValidationHistory with the professor
         for attendance in attendance_records:
             AbsenceValidationHistory.objects.get_or_create(
-                professor=request.user.prof,
+                professor=request.user.prof,  # Use the current logged-in professor
                 group=group,
                 date=schedule_date,
                 class_instance=existing_class,
@@ -1122,6 +1204,7 @@ def mark_attendance(request, code_group, schedule_id):
         'schedule': schedule,
         'classes': [existing_class]
     })
+
 
 
 
@@ -2059,6 +2142,148 @@ def add_parent(request):
     
     return render(request, 'platformTK/SuperAdmin/add_parent.html')
 
+
+import pandas as pd
+
+logger = logging.getLogger(__name__)
+
+@login_required(login_url='login')
+@allowedUsers(allowedGroups=['SuperAdmin'])
+def export_parents_to_excel(request):
+    if request.method == 'POST':
+        file = request.FILES.get('file')
+
+        # Check if file was uploaded
+        if not file:
+            messages.error(request, 'No file uploaded.')
+            return redirect('list_parents')
+
+        # Validate that the uploaded file is an Excel file
+        if file.name.endswith('.xlsx'):
+            try:
+                # Read the Excel file using pandas
+                df = pd.read_excel(file)
+
+                # Drop irrelevant or unnamed columns
+                df = df.loc[:, ~df.columns.str.contains('^Unnamed')]
+
+                # Check for the required columns
+                required_columns = ['username', 'password', 'prenom', 'nom', 'email', 'numéro_de_téléphone']
+                missing_columns = [col for col in required_columns if col not in df.columns]
+
+                if missing_columns:
+                    messages.error(request, f"Missing required columns: {', '.join(missing_columns)}.")
+                    return redirect('list_parents')
+
+                # Process each row in the DataFrame
+                for _, row in df.iterrows():
+                    username = row.get('username')
+                    password = row.get('password')
+                    prenom = row.get('prenom')
+                    nom = row.get('nom')
+                    email = row.get('email', '')  # Email is optional
+                    numéro_de_téléphone = row.get('numéro_de_téléphone', '')
+
+                    # Skip rows with missing critical fields
+                    if pd.isna(username) or pd.isna(password) or pd.isna(prenom) or pd.isna(nom):
+                        logger.warning(f"Skipping row due to missing data: {row.to_dict()}")
+                        continue
+
+                    try:
+                        # Create user
+                        user = User.objects.create_user(username=username, password=password)
+                        # Create parent entry
+                        Parents.objects.create(
+                            user=user,
+                            prenom=prenom,
+                            nom=nom,
+                            email=email,
+                            numéro_de_téléphone=numéro_de_téléphone,
+                            avatar=None
+                        )
+
+                        # Add user to 'Parents' group
+                        group, created = Group.objects.get_or_create(name='Parents')
+                        user.groups.add(group)
+
+                    except Exception as e:
+                        logger.error(f"Error processing row for '{username}': {e}")
+                        messages.error(request, f"Error processing row for '{username}': {e}")
+
+                messages.success(request, 'Parents added successfully from the Excel file.')
+                return redirect('list_parents')
+
+            except Exception as e:
+                logger.error(f"Error reading Excel file: {e}")
+                messages.error(request, 'An error occurred while reading the Excel file.')
+                return redirect('list_parents')
+
+        else:
+            messages.error(request, 'Invalid file type. Please upload an Excel (.xlsx) file.')
+            return redirect('list_parents')
+
+    return render(request, "platformTK/SuperAdmin/list_parents.html")
+
+
+
+
+from django.shortcuts import render, get_object_or_404, redirect
+from .models import Parents, Etudiant
+from django.contrib import messages
+
+def update_parent(request, parent_id):
+    parent = get_object_or_404(Parents, id=parent_id)
+
+    if request.method == 'POST':
+        # Fetching the fields you want to update, excluding username
+        prenom = request.POST.get('prenom', parent.prenom)
+        nom = request.POST.get('nom', parent.nom)
+        email = request.POST.get('email', parent.email)
+        numéro_de_téléphone = request.POST.get('numéro_de-téléphone', parent.numéro_de_téléphone)
+        avatar = request.FILES.get('avatar', parent.avatar)
+
+        # Update the parent instance
+        parent.prenom = prenom
+        parent.nom = nom
+        parent.email = email
+        parent.numéro_de_téléphone = numéro_de_téléphone
+        
+        # Update avatar only if a new file is uploaded
+        if avatar:
+            parent.avatar = avatar
+
+        # Update Etudiants
+        etudiant_ids = request.POST.getlist('etudiants')  # Get the list of selected Etudiant IDs
+        parent.etudiants.set(etudiant_ids)  # Update the ManyToMany relationship
+
+        parent.save()
+        messages.success(request, 'Parent updated successfully!')
+        return redirect('list_parents')  # Change to your redirect URL
+
+    # Get existing Etudiants for the selection in the modal
+    etudiants = Etudiant.objects.all()
+    
+    context = {
+        'parent': parent,
+        'etudiants': etudiants,
+    }
+    return render(request, 'platformTK/SuperAdmin/list_parents.html', context)  # Update with your template
+
+
+
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+
+@csrf_exempt  # Use only if you're handling CSRF tokens in a different way
+def delete_parent(request, parent_id):
+    if request.method == 'DELETE':
+        try:
+            parent = Parents.objects.get(id=parent_id)
+            parent.delete()
+            return JsonResponse({'success': True})
+        except Parents.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Parent not found.'}, status=404)
+    return JsonResponse({'success': False, 'error': 'Invalid request method.'}, status=400)
 
 
 
