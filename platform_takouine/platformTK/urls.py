@@ -162,6 +162,13 @@ urlpatterns = [
 
 
     path('homeParents/', views.homeParents, name='homeParents'),
+    path('groupes/', views.parent_groupes, name='parent_groupes'),
+    path('competitions/', views.parent_competitions, name='parent_competitions'),
+    path('profil_parent/', views.profil_parent, name='profil_parent'),
+    path('update-profil/', views.update_profil_parent, name='update_profil_parent'),
+
+
+
 
 
 

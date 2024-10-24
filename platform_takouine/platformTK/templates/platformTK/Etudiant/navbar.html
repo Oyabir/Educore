@@ -14,9 +14,9 @@
                 <a href="{% url "homeEtudiant" %}" class="nav-item nav-link active">Home</a>
                 <a href="{% url "my_groups" %}" class="nav-item nav-link">Groupes</a>
                 <a href="{% url "my_competitions" %}" class="nav-item nav-link">Compétitions</a>
-                <a href="{% url "Store" %}" class="nav-item nav-link">Store</a>
+                {% comment %} <a href="{% url "Store" %}" class="nav-item nav-link">Store</a> {% endcomment %}
                 <a href="{% url "profile" %}" class="nav-item nav-link">Profil</a>
-                <a href="{% url 'list_commandes' %}" class="nav-item nav-link">Commandes</a>
+                {% comment %} <a href="{% url 'list_commandes' %}" class="nav-item nav-link">Commandes</a> {% endcomment %}
                 <a href="{% url 'userLogout' %}" class="nav-item nav-link">Déconnexion</a>
 
 

@@ -1,0 +1,79 @@
+{% extends "platformTK/Parents/HomeBase.html" %}
+{% load static %}
+{% load custom_filters %}
+
+{% block content %}
+    {% include 'platformTK/Parents/navbar.html' %}
+    <link href="{% static 'css/profile.css' %}" rel="stylesheet">
+    {% if messages %}
+    <div class="container">
+        {% for message in messages %}
+            {% if message.tags == 'error' %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endif %}
+            {% if message.tags == 'success' %}
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <script>
+        setTimeout(function() {
+            var messageContainer = document.getElementById('message-container');
+            if (messageContainer) {
+                messageContainer.style.display = 'none';
+            }
+        }, 5000); 
+    </script>
+
+    <div class="container-xxl py-5">
+        <div class="row justify-content-center">
+            <!-- Profile Card -->
+            <div class="col-lg-8 col-md-10 col-sm-12 mb-4">
+                <div class="profile-card card">
+                    <div class="card-body">
+                        <div class="text-center mb-4">
+                            <img src="{% if Parent.avatar %}{{ Parent.avatar.url }}{% else %}{% static 'img/786525_people_512x512.png' %}{% endif %}" alt="Profile Picture" class="profile-picture img-fluid rounded-circle">
+                        </div>
+                        <h2 class="card-title text-center">User Profile</h2>
+                        <form id="profile-form" method="POST" enctype="multipart/form-data" action="{% url 'update_profil_parent' %}">
+                            {% csrf_token %}
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="firstName" class="form-label">First Name</label>
+                                    <input type="text" class="form-control" id="firstName" name="prenom" value="{{ Parent.prenom }}">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="lastName" class="form-label">Last Name</label>
+                                    <input type="text" class="form-control" id="lastName" name="nom" value="{{ Parent.nom }}">
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="phone" class="form-label">Phone Number</label>
+                                <input type="text" class="form-control" id="phone" name="numéro_de_téléphone" value="{{ Parent.numéro_de_téléphone }}">
+                            </div>
+                            <div class="mb-3">
+                                <label for="avatar" class="form-label">Avatar</label>
+                                <input class="form-control" type="file" name="avatar" id="avatar">
+                            </div>
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary" style="background-color: #176b90; border-color: #176b90;">Update Parent</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="scripts.js"></script>
+
+{% endblock  %}

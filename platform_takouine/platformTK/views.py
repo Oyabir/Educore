@@ -408,20 +408,15 @@ def homeParents(request):
     # Initialize birthday message
     birthday_message = None
 
-    competition_section_data = []
-    group_data = []
+    # Data will be a list of dictionaries for each student
+    student_data = []
 
-    # Loop through each student to check for birthdays
+    # Loop through each student to collect data
     for etudiant in etudiants:
-        # Check if it's the student's birthday
-        birthday_message = is_birthday(etudiant)
+        # Collect competition and group data for the student
+        competition_section_data = []
+        group_data = []
 
-        # Show the birthday message only once per login on the birthday
-        if birthday_message and request.session.get('birthday_message_shown') != str(today):
-            request.session['birthday_message_shown'] = str(today) 
-        else:
-            birthday_message = False
-        
         try:
             sections = Sections.objects.filter(etudiants=etudiant)
             competitions = Competitions.objects.filter(sections__in=sections).distinct()
@@ -430,7 +425,7 @@ def homeParents(request):
                 for section in sections.filter(competition=competition):
                     # Calculate rank within the competition
                     section_rank = Sections.objects.filter(
-                        competition=competition, 
+                        competition=competition,
                         points__gt=section.points
                     ).count() + 1
 
@@ -440,6 +435,9 @@ def homeParents(request):
                         'points': section.points,
                         'rank': section_rank,
                     })
+
+            # Limit competition_section_data to the last 5 competitions
+            competition_section_data = competition_section_data[-3:]
 
             memberships = Membership.objects.filter(etudiant=etudiant).select_related('group')
 
@@ -456,21 +454,136 @@ def homeParents(request):
                     'group': group,
                     'points': etudiant_pointsG,
                     'rank': rank,
-                    'total_students': group.etudiants.count() 
+                    'total_students': group.etudiants.count()
                 })
 
         except Exception as e:
             messages.error(request, f"An error occurred while processing data for {etudiant.prenom}: {str(e)}")
 
+        # Append student-specific data to the list
+        student_data.append({
+            'etudiant': etudiant,
+            'competition_section_data': competition_section_data,  # Contains only last 5 competitions
+            'group_data': group_data,
+        })
+
     context = {
-        'etudiants': etudiants,  # Pass the list of students to the template
-        'num_etudiants': num_etudiants,  # Pass the number of students
-        'competition_section_data': competition_section_data,
-        'group_data': group_data,
-        'birthday_message': birthday_message,
+        'student_data': student_data,  # Pass the list of student data to the template
+        'num_etudiants': num_etudiants,
     }
 
     return render(request, "platformTK/Parents/homeParents.html", context)
+
+
+
+@login_required(login_url='login')
+@allowedUsers(allowedGroups=['Parents'])
+def parent_groupes(request):
+    # Get the logged-in parent
+    parent = request.user.parents  # Assuming the related name is 'parents'
+
+    # Get associated students
+    etudiants = parent.etudiants.all()
+
+    # Collect groups related to the student's memberships
+    group_data = []
+    for etudiant in etudiants:
+        memberships = Membership.objects.filter(etudiant=etudiant).select_related('group')
+        for membership in memberships:
+            group_data.append({
+                'group': membership.group,
+                'etudiant': etudiant,
+                'points': membership.pointsG,
+            })
+
+    context = {
+        'group_data': group_data,  # List of groups and related students
+    }
+
+    return render(request, 'platformTK/Parents/groupes.html', context)
+
+
+
+@login_required(login_url='login')
+@allowedUsers(allowedGroups=['Parents'])
+def parent_competitions(request):
+    # Get the logged-in parent
+    parent = request.user.parents  # Assuming the related name is 'parents'
+    
+    # Get associated students
+    etudiants = parent.etudiants.all()
+
+    # Collect competitions related to the student's sections
+    student_data = []
+    for etudiant in etudiants:
+        competition_section_data = []
+
+        sections = Sections.objects.filter(etudiants=etudiant)
+        competitions = Competitions.objects.filter(sections__in=sections).distinct()
+
+        for competition in competitions:
+            for section in sections.filter(competition=competition):
+                # Calculate rank within the competition
+                section_rank = Sections.objects.filter(
+                    competition=competition,
+                    points__gt=section.points
+                ).count() + 1
+
+                competition_section_data.append({
+                    'competition': competition,
+                    'section': section,
+                    'points': section.points,
+                    'rank': section_rank,
+                })
+
+        student_data.append({
+            'etudiant': etudiant,
+            'competition_section_data': competition_section_data,
+        })
+
+    context = {
+        'student_data': student_data,  # Pass the list of student data to the template
+    }
+
+    return render(request, 'platformTK/Parents/competitions.html', context)
+
+
+
+@login_required(login_url='login')
+@allowedUsers(allowedGroups=['Parents'])
+def profil_parent(requset):
+    Parent = get_object_or_404(Parents, user=requset.user)
+    context = {
+        'Parent': Parent,
+    }
+    return render(requset,"platformTK/Parents/profil_parent.html",context)
+
+
+
+
+@login_required(login_url='login')
+@allowedUsers(allowedGroups=['Parents'])
+def update_profil_parent(request):
+    parent = get_object_or_404(Parents, user=request.user)
+
+    if request.method == 'POST':
+        # Update the parent object with new data from the form
+        parent.prenom = request.POST.get('prenom')
+        parent.nom = request.POST.get('nom')
+        parent.numéro_de_téléphone = request.POST.get('numéro_de_téléphone')
+
+        # Check if a new avatar file has been uploaded
+        if request.FILES.get('avatar'):
+            parent.avatar = request.FILES['avatar']
+
+        parent.save()  # Save the updated parent object
+        return redirect('profil_parent')  # Redirect to the profile view after saving
+
+    context = {
+        'Parent': parent,
+    }
+    return render(request, "platformTK/Parents/profil_parent.html", context)
+
 
 
 

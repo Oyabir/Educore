@@ -45,8 +45,8 @@
 
      <div class="container">
         <div class="text-center mb-5">
-            <h1 class="mb-3">Mes Groupes</h1>
-            <p class="lead">Voici les groupes dont vous faites partie, {{ etudiant.prenom|capitalize_first }}.</p>
+            <h1 class="mb-3">Vos enfants</h1>
+            {% comment %} <p class="lead">Voici les groupes dont vous faites partie, {{ etudiant.prenom|capitalize_first }}.</p> {% endcomment %}
         </div>            
     
         <div class="row justify-content-center">
@@ -55,23 +55,23 @@
             <div class="col-lg-12 mb-4">
                 <div class="table-wrapper">
                     <div class="table-responsive">
-                        <h2 class="text-center mb-4">Vos Étudiants</h2>
+                        {% comment %} <h2 class="text-center mb-4">Vos Étudiants</h2> {% endcomment %}
                         <table class="table table-striped">
                             <thead>
                                 <tr>
-                                    <th>#</th>
-                                    <th>Nom de l'Étudiant</th>
-                                    <th>Âge</th>
-                                    <th>Classe</th>
+                                    <th>N°</th>
+                                    <th>Nom de l'enfant</th>
+                                    <th>Date de naissance</th>
+                                    {% comment %} <th>Classe</th> {% endcomment %}
                                 </tr>                                    
                             </thead>
                             <tbody>
-                                {% for etudiant in etudiants %}
+                                {% for student in student_data %}
                                 <tr>
                                     <td>{{ forloop.counter }}</td>
-                                    <td>{{ etudiant.prenom }} {{ etudiant.nom }}</td>
-                                    <td>{{ etudiant.date_de_naissance|date:"Y" }}</td> <!-- Assuming you want the year of birth -->
-                                    {% comment %} <td>{{ etudiant.classe }}</td> <!-- Adjust according to your model --> {% endcomment %}
+                                    <td>{{ student.etudiant.prenom }} {{ student.etudiant.nom }}</td>
+                                    <td>{{ student.etudiant.date_de_naissance }}</td> <!-- Assuming you're using the 'age' filter -->
+                                    {% comment %} <td>{{ student.etudiant.classe.nom }}</td> <!-- Assuming 'classe' is a related field --> {% endcomment %}
                                 </tr>
                                 {% endfor %}
                             </tbody>
@@ -79,118 +79,106 @@
                     </div>
                 </div>
             </div>
-            {% endif %}
-    
-            {% if group_data %}
-            <!-- Groups Table -->
-            <div class="col-lg-12 mb-4">
-                <div class="table-wrapper">
-                    <div class="table-responsive">
-                        <h2 class="text-center mb-4">Groupes Associés</h2>
-                        <table class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th>#</th>
-                                    <th>Nom du Groupe</th>
-                                    <th>Description</th>
-                                    <th>Vos Points</th>
-                                    <th>Votre Rang</th>
-                                    <th>Nombre Total d'Étudiants</th>
-                                </tr>                                    
-                            </thead>
-                            <tbody>
-                                {% for data in group_data %}
-                                <tr>
-                                    <td>{{ forloop.counter }}</td>
-                                    <td>{{ data.group.name }}</td>
-                                    <td class="d-none d-md-table-cell" style="width: 309px;">{{ data.group.description }}</td>
-                                    <td>{{ data.points }}</td>
-                                    <td>{{ data.rank }}/{{ data.total_students }}</td>
-                                    <td>{{ data.total_students }}</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-            {% else %}
-            <div class="alert alert-info" role="alert">
-                Vous ne faites partie d'aucun groupe.
-            </div>                
-            {% endif %}
+        {% endif %}
         </div>
-    </div>
-    
-
-    <div class="container-xxl py-5">
-        <div class="container">
-            <div class="text-center mb-5">
-                <h1 class="mb-3">Mes Compétitions</h1>
-                <p class="lead">Voici les compétitions auxquelles vous participez, {{ etudiant.prenom|capitalize_first }}.</p>
-            </div>            
-            <div class="row justify-content-center">
-                {% if competition_section_data %}
-                <!-- Competitions Table -->
-                <div class="col-lg-12 mb-4">
-                    <div class="table-wrapper">
-                        <div class="table-responsive">
-                            <table class="table table-striped">
-                                <thead>
-                                    <tr>
-                                        <th>#</th>
-                                        <th>Nom de la Compétition</th>
-                                        <th>Nom de la Section</th>
-                                        <th>Points</th>
-                                        <th class="d-none d-md-table-cell">Rang</th> <!-- Caché sur SM et XS -->
-                                        <th>Le Prix</th> <!-- Visible sur toutes les tailles d'écran -->
-                                        <th class="d-none d-md-table-cell">Date de Création</th> <!-- Caché sur SM et XS -->
-                                        <th class="d-none d-md-table-cell">Statut</th> <!-- Caché sur SM et XS -->
-                                    </tr>                                    
-                                </thead>
-                                <tbody>
-                                    {% for data in competition_section_data %}
-                                    <tr>
-                                        <td>{{ forloop.counter }}</td>
-                                        <td>{{ data.competition.name }}</td>
-                                        <td>{{ data.section.section_name }}</td>
-                                        <td>{{ data.points }}</td>
-                                        <td class="d-none d-md-table-cell">{{ data.rank }}/{{ data.competition.number_of_sections }}</td>
-                                        <td>
-                                            {% if data.rank == 1 %}
-                                            Vous avez gagné 10 $
-                                            {% elif data.rank == 2 %}
-                                            Vous avez gagné 5 $
-                                            {% elif data.rank == 3 %}
-                                            Vous avez gagné 1 $
-                                            {% else %}
-                                            Vous avez gagné 0 $
-                                            {% endif %}
-                                        </td>                                        
-                                        <td class="d-none d-md-table-cell">{{ data.competition.date_created|date:"M d, Y" }}</td>
-                                        <td class="d-none d-md-table-cell">
-                                            {% if data.competition.is_finished %}
-                                                <span class="badge bg-success text-white">Terminé</span>
-                                            {% else %}
-                                                <span class="badge bg-warning text-dark">En cours</span>
-                                            {% endif %}
-                                        </td>                                        
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
+            <br><br>
+                <div class="text-center mb-5">
+                    <h1 class="mb-3">Groupes et Compétitions pour vos enfants</h1>
+                    {% comment %} <p class="lead">Voici les informations de vos enfants, {{ parent.prenom|capitalize_first }}.</p> {% endcomment %}
+                </div>
+            
+                <!-- Loop through each student's data -->
+                {% for student in student_data %}
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h2 class="card-title">L'enfant: {{ student.etudiant.prenom }} {{ student.etudiant.nom }}</h2>
+                    </div>
+                    <div class="card-body">
+                        <!-- Show student's groups -->
+                        {% if student.group_data %}
+                        <div class="mb-4">
+                            <h3>Groupes Associés</h3>
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>N°</th>
+                                            <th>Nom du Groupe</th>
+                                            {% comment %} <th>Description</th> {% endcomment %}
+                                            <th>Vos Points</th>
+                                            <th>Votre Rang</th>
+                                            <th>Nombre Total d'Étudiants</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for data in student.group_data %}
+                                        <tr>
+                                            <td>{{ forloop.counter }}</td>
+                                            <td>{{ data.group.name }}</td>
+                                            {% comment %} <td class="d-none d-md-table-cell">{{ data.group.description }}</td> {% endcomment %}
+                                            <td>{{ data.points }}</td>
+                                            <td>{{ data.rank }}/{{ data.total_students }}</td>
+                                            <td>{{ data.total_students }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
+                        {% else %}
+                        <div class="alert alert-info">Aucun groupe associé pour cet étudiant.</div>
+                        {% endif %}
+            
+                        <!-- Show student's competitions -->
+                        {% if student.competition_section_data %}
+                        <div class="mb-4">
+                            <h3>Compétitions Associées</h3>
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>N°</th>
+                                            <th>Nom de la Compétition</th>
+                                            <th>Section</th>
+                                            <th>Points</th>
+                                            <th>Rang</th>
+                                            <th>Le Prix</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for data in student.competition_section_data %}
+                                        <tr>
+                                            <td>{{ forloop.counter }}</td>
+                                            <td>{{ data.competition.name }}</td>
+                                            <td>{{ data.section.section_name }}</td>
+                                            <td>{{ data.points }}</td>
+                                            <td>{{ data.rank }}/{{ data.competition.number_of_sections }}</td>
+                                            <td>
+                                                {% if data.rank == 1 %}
+                                                Vous avez gagné 10 $
+                                                {% elif data.rank == 2 %}
+                                                Vous avez gagné 5 $
+                                                {% elif data.rank == 3 %}
+                                                Vous avez gagné 1 $
+                                                {% else %}
+                                                Vous avez gagné 0 $
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="alert alert-info">Aucune compétition associée pour cet étudiant.</div>
+                        {% endif %}
                     </div>
                 </div>
-                {% else %}
-                <div class="alert alert-info" role="alert">
-                    Vous ne participez à aucune compétition.
-                </div>                
-                {% endif %}
-            </div>
+                {% endfor %}
+                
         </div>
-    </div>
-      
+
 
     {% endblock  %}
     <!-- Footer Start -->
