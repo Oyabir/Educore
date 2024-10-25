@@ -393,6 +393,12 @@ def my_groups(request):
 
 
 
+from django.utils import timezone
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from .models import Parents, Etudiant, Attendance
+
 @login_required(login_url='login')
 @allowedUsers(allowedGroups=['Parents'])
 def homeParents(request):
@@ -416,6 +422,7 @@ def homeParents(request):
         # Collect competition and group data for the student
         competition_section_data = []
         group_data = []
+        attendance_data = []  # To hold attendance summary
 
         try:
             sections = Sections.objects.filter(etudiants=etudiant)
@@ -457,6 +464,19 @@ def homeParents(request):
                     'total_students': group.etudiants.count()
                 })
 
+            # Collect attendance data
+            attendance_records = Attendance.objects.filter(student=etudiant)
+            total_classes = attendance_records.count()
+            present_classes = attendance_records.filter(is_present=True).count()
+            absent_classes = total_classes - present_classes
+
+            attendance_data.append({
+                'total_classes': total_classes,
+                'present_classes': present_classes,
+                'absent_classes': absent_classes,
+                'attendance_rate': (present_classes / total_classes * 100) if total_classes > 0 else 0,
+            })
+
         except Exception as e:
             messages.error(request, f"An error occurred while processing data for {etudiant.prenom}: {str(e)}")
 
@@ -465,6 +485,7 @@ def homeParents(request):
             'etudiant': etudiant,
             'competition_section_data': competition_section_data,  # Contains only last 5 competitions
             'group_data': group_data,
+            'attendance_data': attendance_data,  # Add attendance summary for each student
         })
 
     context = {
@@ -473,6 +494,63 @@ def homeParents(request):
     }
 
     return render(request, "platformTK/Parents/homeParents.html", context)
+
+
+
+
+@login_required(login_url='login')
+@allowedUsers(allowedGroups=['Parents'])
+def attendance_view(request):
+    # Get the logged-in parent
+    parent = request.user.parents  # Assuming the related name is 'parents'
+
+    # Get associated students
+    etudiants = parent.etudiants.all()  # This will give you all etudiants related to this parent
+
+    # Data will be a list of dictionaries for each student's attendance summary
+    attendance_data = []
+
+    for etudiant in etudiants:
+        # Retrieve attendance records for each student
+        attendance_records = Attendance.objects.filter(student=etudiant)
+        total_classes = attendance_records.count()
+        present_classes = attendance_records.filter(is_present=True).count()
+        absent_classes = total_classes - present_classes
+
+        # Manually calculate averages
+        total_participation = 0
+        total_discipline = 0
+        participation_count = 0
+        discipline_count = 0
+
+        for record in attendance_records:
+            if record.participation is not None:
+                total_participation += record.participation
+                participation_count += 1
+            if record.discipline is not None:
+                total_discipline += record.discipline
+                discipline_count += 1
+
+        avg_participation = total_participation / participation_count if participation_count > 0 else 0
+        avg_discipline = total_discipline / discipline_count if discipline_count > 0 else 0
+
+        # Append each student's attendance data to the list
+        attendance_data.append({
+            'etudiant': etudiant,
+            'total_classes': total_classes,
+            'present_classes': present_classes,
+            'absent_classes': absent_classes,
+            'attendance_rate': (present_classes / total_classes * 100) if total_classes > 0 else 0,
+            'avg_participation': avg_participation,
+            'avg_discipline': avg_discipline,
+        })
+
+    context = {
+        'attendance_data': attendance_data,  # Pass the attendance data to the template
+    }
+
+    return render(request, "platformTK/Parents/attendance.html", context)
+
 
 
 

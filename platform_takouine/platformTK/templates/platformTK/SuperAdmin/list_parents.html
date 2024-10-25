@@ -152,7 +152,7 @@
                 {% csrf_token %}
                 <div class="modal-body">
                     <input type="hidden" name="parent_id" id="editParentId">
-                    
+
                     <div class="form-group">
                         <label for="editPrenom">Prénom</label>
                         <input type="text" class="form-control" id="editPrenom" name="prenom" required>
@@ -189,15 +189,38 @@
                         <input type="text" id="etudiantSearch" class="form-control" placeholder="Search by prénom or nom" oninput="filterEtudiants()">
                     </div>
 
+                  <!-- Button to add selected Etudiants -->
                     <div class="form-group">
-                        <label for="editEtudiants">Etudiants</label>
-                        <select multiple class="form-control" id="editEtudiants" name="etudiants">
-                            {% for etudiant in etudiants %}
-                                <option value="{{ etudiant.id }}" {% if etudiant in parent.etudiants.all %}selected{% endif %}>
-                                    {{ etudiant.prenom }} {{ etudiant.nom }}
-                                </option>
-                            {% endfor %}
-                        </select>
+                        <label>Available Etudiants</label>
+                        <div style="max-height: 200px; overflow-y: auto; border: 1px solid #ccc; border-radius: 5px;">
+                            <ul id="etudiantList" class="list-group mb-3">
+                                {% for etudiant in etudiants %}
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        {{ etudiant.prenom }} {{ etudiant.nom }}
+                                        <button type="button" class="btn btn-primary btn-sm" onclick="addEtudiant('{{ etudiant.id }}', '{{ etudiant.prenom }}', '{{ etudiant.nom }}')">Add</button>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <style>
+                        #etudiantList {
+                            /* Optional: set specific height for scrolling */
+                            max-height: 200px;  /* Set the height you prefer */
+                            overflow-y: auto;   /* Enable vertical scrolling */
+                            border: 1px solid #ccc;  /* Optional: add border for better visibility */
+                            border-radius: 5px;     /* Optional: rounded corners */
+                        }
+                        
+                    </style>
+
+                    <!-- Selected Etudiants display -->
+                    <div class="form-group">
+                        <label for="selectedEtudiants">Selected Etudiants</label>
+                        <ul id="selectedEtudiantList" class="list-group">
+                            <!-- Dynamically populated with selected Etudiants -->
+                        </ul>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -208,8 +231,6 @@
         </div>
     </div>
 </div>
-
-
 
 <script>
     function openEditModal(id, prenom, nom, email, telephone, avatar) {
@@ -238,12 +259,41 @@
 
     function filterEtudiants() {
         const searchValue = document.getElementById('etudiantSearch').value.toLowerCase();
-        const options = document.querySelectorAll('#editEtudiants option');
-
+        const options = document.querySelectorAll('#etudiantList .list-group-item');
+    
         options.forEach(option => {
             const text = option.textContent.toLowerCase();
-            option.style.display = text.includes(searchValue) ? '' : 'none';
+            if (text.includes(searchValue)) {
+                option.style.display = ''; // Show the item
+            } else {
+                option.style.display = 'none'; // Remove the item from view
+            }
         });
+    }
+    
+    
+
+    function addEtudiant(id, prenom, nom) {
+        const selectedList = document.getElementById('selectedEtudiantList');
+
+        // Create a new list item for the selected Etudiant
+        const listItem = document.createElement('li');
+        listItem.className = 'list-group-item d-flex justify-content-between align-items-center';
+        listItem.textContent = `${prenom} ${nom}`;
+
+        // Create a remove button
+        const removeButton = document.createElement('button');
+        removeButton.className = 'btn btn-danger btn-sm';
+        removeButton.textContent = 'Remove';
+        removeButton.onclick = function() {
+            selectedList.removeChild(listItem);
+        };
+
+        // Append the remove button to the list item
+        listItem.appendChild(removeButton);
+        
+        // Append the list item to the selected list
+        selectedList.appendChild(listItem);
     }
 </script>
 

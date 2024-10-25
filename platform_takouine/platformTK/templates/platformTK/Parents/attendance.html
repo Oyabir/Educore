@@ -1,0 +1,58 @@
+{% extends "platformTK/Parents/HomeBase.html" %}
+{% load static %}
+{% load custom_filters %}
+
+{% block content %}
+    {% include 'platformTK/Parents/navbar.html' %}
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">Attendance Summary</h1>
+        <div class="row justify-content-center">
+            {% for student in attendance_data %}
+                <div class="col-lg-8 col-md-10 mb-4">
+                    <div class="card shadow-sm border-light">
+                        <div class="card-body">
+                            <h3 class="card-title text-primary">
+                                {{ student.etudiant.prenom|capitalize_first }} {{ student.etudiant.nom|capitalize_first }}
+                            </h3>
+                            <div class="d-flex justify-content-between mt-3">
+                                <p class="mb-1"><strong>Total Classes:</strong> {{ student.total_classes }}</p>
+                                <p class="mb-1"><strong>Classes Present:</strong> {{ student.present_classes }}</p>
+                                <p class="mb-1"><strong>Classes Absent:</strong> {{ student.absent_classes }}</p>
+                            </div>
+
+                            <div class="mt-4">
+                                <h6>Attendance Rate</h6>
+                                <div class="progress" style="height: 20px;">
+                                    <div class="progress-bar 
+                                        {% if student.attendance_rate >= 80 %}
+                                            bg-success
+                                        {% elif student.attendance_rate >= 50 %}
+                                            bg-warning
+                                        {% else %}
+                                            bg-danger
+                                        {% endif %}" 
+                                    role="progressbar"
+                                    style="width: {{ student.attendance_rate }}%;" 
+                                    aria-valuenow="{{ student.attendance_rate }}" 
+                                    aria-valuemin="0" 
+                                    aria-valuemax="100">
+                                        {{ student.attendance_rate|floatformat:2 }}%
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Additional Info: Participation and Discipline Averages -->
+                            <div class="mt-4">
+                                <h6>Performance Summary</h6>
+                                <div class="d-flex justify-content-between">
+                                    <p class="mb-1"><strong>Average Participation:</strong> {{ student.avg_participation|floatformat:1 }} / 5</p>
+                                    <p class="mb-1"><strong>Average Discipline:</strong> {{ student.avg_discipline|floatformat:1 }} / 5</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}

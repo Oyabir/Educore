@@ -162,6 +162,7 @@ urlpatterns = [
 
 
     path('homeParents/', views.homeParents, name='homeParents'),
+    path('attendance/', views.attendance_view, name='attendance'),
     path('groupes/', views.parent_groupes, name='parent_groupes'),
     path('competitions/', views.parent_competitions, name='parent_competitions'),
     path('profil_parent/', views.profil_parent, name='profil_parent'),

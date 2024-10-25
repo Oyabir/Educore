@@ -69,7 +69,7 @@
                                 {% for student in student_data %}
                                 <tr>
                                     <td>{{ forloop.counter }}</td>
-                                    <td>{{ student.etudiant.prenom }} {{ student.etudiant.nom }}</td>
+                                    <td>{{ student.etudiant.prenom|capitalize_first }} {{ student.etudiant.nom|capitalize_first }}</td>
                                     <td>{{ student.etudiant.date_de_naissance }}</td> <!-- Assuming you're using the 'age' filter -->
                                     {% comment %} <td>{{ student.etudiant.classe.nom }}</td> <!-- Assuming 'classe' is a related field --> {% endcomment %}
                                 </tr>
@@ -91,7 +91,7 @@
                 {% for student in student_data %}
                 <div class="card mb-4">
                     <div class="card-header">
-                        <h2 class="card-title">L'enfant: {{ student.etudiant.prenom }} {{ student.etudiant.nom }}</h2>
+                        <h2 class="card-title">L'enfant: {{ student.etudiant.prenom|capitalize_first }} {{ student.etudiant.nom|capitalize_first }}</h2>
                     </div>
                     <div class="card-body">
                         <!-- Show student's groups -->
@@ -176,6 +176,37 @@
                     </div>
                 </div>
                 {% endfor %}
+
+                <div class="container">
+    <h1>Home Parents</h1>
+    <h2>Students</h2>
+    {% for student in student_data %}
+        <div class="student-report">
+            <h3>{{ student.etudiant.prenom }} {{ student.etudiant.nom }}</h3>
+
+            <h4>Attendance Summary</h4>
+            <p>Total Classes: {{ student.attendance_data.0.total_classes }}</p>
+            <p>Classes Present: {{ student.attendance_data.0.present_classes }}</p>
+            <p>Classes Absent: {{ student.attendance_data.0.absent_classes }}</p>
+            <p>Attendance Rate: {{ student.attendance_data.0.attendance_rate|floatformat:2 }}%</p>
+
+            <h4>Competitions</h4>
+            <ul>
+                {% for competition in student.competition_section_data %}
+                    <li>{{ competition.competition.name }}: {{ competition.points }} points (Rank: {{ competition.rank }})</li>
+                {% endfor %}
+            </ul>
+
+            <h4>Groups</h4>
+            <ul>
+                {% for group in student.group_data %}
+                    <li>{{ group.group.name }}: {{ group.points }} points (Rank: {{ group.rank }} out of {{ group.total_students }})</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endfor %}
+</div>
+
                 
         </div>
 
