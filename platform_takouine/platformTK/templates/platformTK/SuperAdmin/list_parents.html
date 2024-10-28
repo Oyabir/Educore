@@ -91,6 +91,46 @@
             </tbody>
         </table>
     </div>
+
+
+<!-- Pagination controls -->
+<div class="d-flex justify-content-center mt-4">
+    <nav aria-label="Page navigation">
+        <ul class="pagination">
+            {% if parents.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1" aria-label="First">
+                        <span aria-hidden="true">&laquo;&laquo;</span>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ parents.previous_page_number }}" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+            {% endif %}
+
+            {% for num in parents.paginator.page_range %}
+                <li class="page-item {% if num == parents.number %}active{% endif %}">
+                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                </li>
+            {% endfor %}
+
+            {% if parents.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ parents.next_page_number }}" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ parents.paginator.num_pages }}" aria-label="Last">
+                        <span aria-hidden="true">&raquo;&raquo;</span>
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+</div>
     
     {% for parent in parents %}
     <!-- Delete Confirmation Modal -->
@@ -139,11 +179,10 @@
     </script>
     
 
-
 <!-- Edit Parent Modal -->
 <div class="modal fade" id="editParentModal" tabindex="-1" aria-labelledby="editParentModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg">
-        <div class="modal-content" style="margin-top: -56px;">
+        <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="editParentModalLabel">Modifier Parent</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -152,7 +191,9 @@
                 {% csrf_token %}
                 <div class="modal-body">
                     <input type="hidden" name="parent_id" id="editParentId">
+                    <input type="hidden" id="selectedEtudiantIds" name="etudiants" value="">
 
+                    <!-- Fields for Parent Details -->
                     <div class="form-group">
                         <label for="editPrenom">Prénom</label>
                         <input type="text" class="form-control" id="editPrenom" name="prenom" required>
@@ -170,14 +211,12 @@
 
                     <div class="form-group">
                         <label for="editTelephone">Numéro de Téléphone</label>
-                        <input type="text" class="form-control" id="editTelephone" name="numéro_de-téléphone">
+                        <input type="text" class="form-control" id="editTelephone" name="numéro_de_téléphone">
                     </div>
 
                     <div class="form-group">
                         <label for="editAvatar">Avatar</label>
                         <input type="file" class="form-control" id="editAvatar" name="avatar">
-                        
-                        <!-- Display existing avatar if it exists -->
                         <div id="existingAvatar" style="margin-top: 10px; display: none;">
                             <img src="" alt="Current Avatar" class="img-thumbnail" style="max-width: 150px; max-height: 150px;">
                         </div>
@@ -189,9 +228,158 @@
                         <input type="text" id="etudiantSearch" class="form-control" placeholder="Search by prénom or nom" oninput="filterEtudiants()">
                     </div>
 
-                  <!-- Button to add selected Etudiants -->
+                    <!-- Available Etudiants List -->
                     <div class="form-group">
-                        <label>Available Etudiants</label>
+                        <label>Available Étudiants</label>
+                        <div style="max-height: 200px; overflow-y: auto; border: 1px solid #ccc; border-radius: 5px;">
+                            <ul id="etudiantList" class="list-group mb-3">
+                                {% for etudiant in etudiants %}
+                                    <li class="list-group-item d-flex justify-content-between align-items-center" data-id="{{ etudiant.id }}" data-prenom="{{ etudiant.prenom }}" data-nom="{{ etudiant.nom }}">
+                                        {{ etudiant.prenom }} {{ etudiant.nom }}
+                                        <button type="button" class="btn btn-primary btn-sm" onclick="selectEtudiant('{{ etudiant.id }}', '{{ etudiant.prenom }}', '{{ etudiant.nom }}')">Select</button>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Selected Etudiants Section -->
+                    <div class="form-group">
+                        <label for="selectedEtudiants">Selected Étudiants</label>
+                        <ul id="selectedEtudiantList" class="list-group"></ul>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
+                    <button type="submit" class="btn btn-primary">Enregistrer les modifications</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for Modal and Selection -->
+<script>
+    function openEditModal(id, prenom, nom, email, telephone, avatar) {
+        document.getElementById('editParentId').value = id;
+        document.getElementById('editPrenom').value = prenom;
+        document.getElementById('editNom').value = nom;
+        document.getElementById('editEmail').value = email;
+        document.getElementById('editTelephone').value = telephone;
+
+        if (avatar) {
+            document.getElementById('existingAvatar').style.display = 'block';
+            document.querySelector('#existingAvatar img').src = avatar;
+        } else {
+            document.getElementById('existingAvatar').style.display = 'none';
+        }
+
+        var modal = new bootstrap.Modal(document.getElementById('editParentModal'));
+        modal.show();
+    }
+
+    function filterEtudiants() {
+        const searchValue = document.getElementById('etudiantSearch').value.toLowerCase();
+        const options = document.querySelectorAll('#etudiantList .list-group-item');
+        
+        options.forEach(option => {
+            const text = option.textContent.toLowerCase();
+            option.classList.toggle('hidden', !text.includes(searchValue));
+        });
+    }
+
+    function selectEtudiant(id, prenom, nom) {
+        const selectedList = document.getElementById('selectedEtudiantList');
+    
+        if ([...selectedList.children].some(item => item.dataset.id === id)) {
+            alert(`${prenom} ${nom} is already selected!`);
+            return;
+        }
+
+        const listItem = document.createElement('li');
+        listItem.className = 'list-group-item d-flex justify-content-between align-items-center';
+        listItem.dataset.id = id;
+        listItem.textContent = `${prenom} ${nom}`;
+
+        const removeButton = document.createElement('button');
+        removeButton.className = 'btn btn-danger btn-sm';
+        removeButton.textContent = 'Remove';
+        removeButton.onclick = function() {
+            selectedList.removeChild(listItem);
+            updateSelectedIds();
+        };
+
+        listItem.appendChild(removeButton);
+        selectedList.appendChild(listItem);
+        updateSelectedIds();
+    }
+
+    function updateSelectedIds() {
+        const selectedIds = [...document.getElementById('selectedEtudiantList').children].map(item => item.dataset.id);
+        document.getElementById('selectedEtudiantIds').value = selectedIds.join(',');
+    }
+</script>
+
+
+
+
+{% comment %} 
+<!-- Modal Structure -->
+<div id="addParentModal" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content" style="margin-top: -56px;">
+            <div class="modal-header">
+                <h5 class="modal-title">Ajouter un Parent</h5>
+                <button type="button" class="close" onclick="closeModal()" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="addParentForm" method="POST" enctype="multipart/form-data" action="{% url 'add_parent' %}">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="username">Nom d'utilisateur</label>
+                        <input type="text" class="form-control" name="username" required>
+                    </div>
+                    
+                    <!-- Only one hidden input for selected Étudiant IDs -->
+                    <input type="hidden" id="selectedEtudiantIds" name="etudiants" value="">
+
+                    <div class="form-group">
+                        <label for="password">Mot de passe</label>
+                        <input type="password" class="form-control" name="password" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="prenom">Prénom</label>
+                        <input type="text" class="form-control" name="prenom" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="nom">Nom</label>
+                        <input type="text" class="form-control" name="nom" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" class="form-control" name="email">
+                    </div>
+                    <div class="form-group">
+                        <label for="phone">Numéro de téléphone</label>
+                        <input type="text" class="form-control" name="phone">
+                    </div>
+                    <div class="form-group">
+                        <label for="avatar">Avatar</label>
+                        <input type="file" class="form-control" name="avatar" accept="image/*">
+                    </div>
+
+                    <!-- Search Input for Etudiants -->
+                    <div class="form-group">
+                        <label for="etudiantSearchadd">Search Etudiants</label>
+                        <input type="text" id="etudiantSearchadd" class="form-control" placeholder="Search by prénom or nom" oninput="filterEtudiants()">
+                    </div>
+
+                    <!-- Available Étudiants Section -->
+                    <div class="form-group">
+                        <label>Available Étudiants</label>
                         <div style="max-height: 200px; overflow-y: auto; border: 1px solid #ccc; border-radius: 5px;">
                             <ul id="etudiantList" class="list-group mb-3">
                                 {% for etudiant in etudiants %}
@@ -203,102 +391,124 @@
                             </ul>
                         </div>
                     </div>
-                    
+
                     <style>
-                        #etudiantList {
-                            /* Optional: set specific height for scrolling */
-                            max-height: 200px;  /* Set the height you prefer */
-                            overflow-y: auto;   /* Enable vertical scrolling */
-                            border: 1px solid #ccc;  /* Optional: add border for better visibility */
-                            border-radius: 5px;     /* Optional: rounded corners */
+                        .hidden {
+                            display: none !important;
                         }
                         
+                        #etudiantList {
+                            max-height: 200px;
+                            overflow-y: auto;
+                            border: 1px solid #ccc;
+                            border-radius: 5px;
+                        }
                     </style>
 
-                    <!-- Selected Etudiants display -->
                     <div class="form-group">
-                        <label for="selectedEtudiants">Selected Etudiants</label>
-                        <ul id="selectedEtudiantList" class="list-group">
-                            <!-- Dynamically populated with selected Etudiants -->
+                        <label for="selectedEtudiants">Étudiants sélectionnés</label>
+                        <ul id="selectedEtudiantListadd" class="list-group">
+                            <!-- Dynamically populated with selected Étudiants -->
                         </ul>
                     </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fermer</button>
-                    <button type="submit" class="btn btn-primary">Enregistrer les modifications</button>
-                </div>
-            </form>
+
+                    <button type="submit" class="btn btn-primary">Ajouter</button>
+                </form>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
-    function openEditModal(id, prenom, nom, email, telephone, avatar) {
-        // Set the form action dynamically if you need to POST to a specific URL
-        document.getElementById('editParentForm').action = `/parent/update/${id}/`;  // Adjust this URL
-
-        // Fill the form with parent data
-        document.getElementById('editParentId').value = id;
-        document.getElementById('editPrenom').value = prenom;
-        document.getElementById('editNom').value = nom;
-        document.getElementById('editEmail').value = email;
-        document.getElementById('editTelephone').value = telephone;
-
-        // If avatar exists, display it
-        if (avatar) {
-            document.getElementById('existingAvatar').style.display = 'block';
-            document.querySelector('#existingAvatar img').src = avatar; // Assuming you have the avatar URL
-        } else {
-            document.getElementById('existingAvatar').style.display = 'none';
-        }
-
-        // Open the modal
-        var modal = new bootstrap.Modal(document.getElementById('editParentModal'));
-        modal.show();
+    function openModal() {
+        $('#addParentModal').modal('show');
+    }
+    
+    function closeModal() {
+        $('#addParentModal').modal('hide');
     }
 
+    // Close modal when clicking outside of it
+    window.onclick = function(event) {
+        const modal = document.getElementById('addParentModal');
+        if (event.target === modal) {
+            closeModal();
+        }
+    };
+
     function filterEtudiants() {
-        const searchValue = document.getElementById('etudiantSearch').value.toLowerCase();
+        const searchValue = document.getElementById('etudiantSearchadd').value.toLowerCase();
         const options = document.querySelectorAll('#etudiantList .list-group-item');
-    
+        
         options.forEach(option => {
             const text = option.textContent.toLowerCase();
             if (text.includes(searchValue)) {
-                option.style.display = ''; // Show the item
+                option.classList.remove('hidden'); // Show the item
             } else {
-                option.style.display = 'none'; // Remove the item from view
+                option.classList.add('hidden'); // Hide the item
             }
         });
     }
-    
-    
 
     function addEtudiant(id, prenom, nom) {
-        const selectedList = document.getElementById('selectedEtudiantList');
-
-        // Create a new list item for the selected Etudiant
+        const selectedList = document.getElementById('selectedEtudiantListadd');
+        const selectedIdsInput = document.getElementById('selectedEtudiantIds');
+    
+        // Check if the Étudiant is already in the selected list
+        const existingItems = selectedList.getElementsByTagName('li');
+        for (let i = 0; i < existingItems.length; i++) {
+            if (existingItems[i].dataset.id === id) {
+                alert('Cet étudiant est déjà sélectionné.');
+                return; // Exit the function if the student is already selected
+            }
+        }
+    
+        // Create a new list item for the selected Étudiant
         const listItem = document.createElement('li');
         listItem.className = 'list-group-item d-flex justify-content-between align-items-center';
+        listItem.dataset.id = id; // Store the student ID in a data attribute
         listItem.textContent = `${prenom} ${nom}`;
-
+    
         // Create a remove button
         const removeButton = document.createElement('button');
         removeButton.className = 'btn btn-danger btn-sm';
         removeButton.textContent = 'Remove';
         removeButton.onclick = function() {
             selectedList.removeChild(listItem);
+            updateSelectedIds(); // Update the selected IDs when an item is removed
         };
-
+    
         // Append the remove button to the list item
         listItem.appendChild(removeButton);
-        
+    
         // Append the list item to the selected list
         selectedList.appendChild(listItem);
+    
+        // Update the selected IDs input after adding a new item
+        updateSelectedIds();
+    }
+    
+    function updateSelectedIds() {
+        const selectedList = document.getElementById('selectedEtudiantListadd');
+        const selectedIdsInput = document.getElementById('selectedEtudiantIds');
+    
+        const selectedIds = [];
+        const items = selectedList.getElementsByTagName('li');
+        for (let i = 0; i < items.length; i++) {
+            selectedIds.push(items[i].dataset.id);
+        }
+    
+        // Join the IDs with commas to store in the hidden input
+        selectedIdsInput.value = selectedIds.join(',');
     }
 </script>
 
+ {% endcomment %}
 
 
+
+
+{% comment %} 
 
 <div class="modal" id="addParentModal" tabindex="-1" aria-labelledby="addParentModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg" style="max-width: 1123px;">
@@ -416,7 +626,7 @@
             </div>
         </div>
     </div>
-</div>
+</div> {% endcomment %}
 
 {% comment %} <script>
     document.getElementById('etudiantSearch').addEventListener('keyup', function() {
@@ -436,7 +646,7 @@
 
 
 
-<script>
+{% comment %} <script>
     document.addEventListener('DOMContentLoaded', function() {
         const etudiantList = document.getElementById('etudiantList');
         const selectedEtudiantList = document.getElementById('selectedEtudiants');
@@ -469,7 +679,7 @@
         var modal = new bootstrap.Modal(document.getElementById('addParentModal'));
         modal.show();
     }
-</script>
+</script> {% endcomment %}
 
 
 <!-- Bootstrap JS and dependencies -->

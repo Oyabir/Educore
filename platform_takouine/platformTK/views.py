@@ -2265,13 +2265,16 @@ def upload_prof_from_file(request):
 
 
 
-
 @login_required(login_url='login')
 @allowedUsers(allowedGroups=['SuperAdmin'])
 def list_parents(request):
-    parents = Parents.objects.all().order_by('-date_created')
-    # Fetch all etudiants to populate the selection options
+    parents_list = Parents.objects.all().order_by('-date_created')
     etudiants = Etudiant.objects.all()
+    
+    # Set up pagination
+    paginator = Paginator(parents_list, 5)  # Show 10 parents per page
+    page_number = request.GET.get('page')
+    parents = paginator.get_page(page_number)
     
     return render(request, 'platformTK/SuperAdmin/list_parents.html', {
         'parents': parents, 
@@ -2279,8 +2282,6 @@ def list_parents(request):
     })
 
 
-
-from django.core.files.storage import FileSystemStorage
 
 @login_required(login_url='login')
 @allowedUsers(allowedGroups=['SuperAdmin'])
@@ -2291,47 +2292,48 @@ def add_parent(request):
         prenom = request.POST.get('prenom')
         nom = request.POST.get('nom')
         email = request.POST.get('email')
-        phone = request.POST.get('phone')
+        numéro_de_téléphone = request.POST.get('phone')
         avatar = request.FILES.get('avatar')
-        etudiant_ids = request.POST.getlist('etudiants')  # Get the list of selected etudiants
+        etudiants = request.POST.get('etudiants', '')
 
-        # Check if username exists
-        if User.objects.filter(username=username).exists():
-            messages.error(request, 'Un utilisateur avec ce nom existe déjà.')
-            return redirect('list_parents')
+        # Split the IDs and filter out empty strings
+        etudiant_ids = [id.strip() for id in etudiants.split(',') if id.strip()]
 
-        # Check if email exists
-        if email and Parents.objects.filter(email=email).exists():
-            messages.error(request, 'Un parent avec cet email existe déjà.')
-            return redirect('list_parents')
+        print("Etudiant IDs received:", etudiant_ids)  # Debugging line
 
-        # Create a new User
+        # Check if any IDs are received
+        if not etudiant_ids:
+            print("No Etudiant IDs were provided.")
+            # You can handle this case accordingly, e.g., returning an error message
+
+        # Create User instance for Parent
         user = User.objects.create_user(username=username, password=password)
 
-        # Create a new Parents object
-        parent = Parents(
+        # Create the Parent instance
+        parent = Parents.objects.create(
             user=user,
             prenom=prenom,
             nom=nom,
-            email=email if email else None,
-            numéro_de_téléphone=phone,
-            avatar=avatar if avatar else None,
+            email=email,
+            numéro_de_téléphone=numéro_de_téléphone,
+            avatar=avatar
         )
-        parent.save()
 
-        # Assign etudiants to the parent
-        if etudiant_ids:
-            parent.etudiants.set(etudiant_ids)
+        # Link selected Etudiants to the Parent
+        for etudiant_id in etudiant_ids:
+            try:
+                etudiant = Etudiant.objects.get(id=etudiant_id)
+                parent.etudiants.add(etudiant)  # Link Etudiant to Parent
+            except Etudiant.DoesNotExist:
+                print(f"Etudiant with ID {etudiant_id} does not exist.")
 
-        # Assign the user to the 'Parents' group
-        parents_group, created = Group.objects.get_or_create(name='Parents')
-        user.groups.add(parents_group)
-
-        messages.success(request, 'Parent ajouté avec succès.')
         return redirect('list_parents')
 
-    
-    return render(request, 'platformTK/SuperAdmin/add_parent.html')
+    return render(request, 'add_parent.html')
+
+
+
+
 
 
 import pandas as pd
@@ -2418,47 +2420,46 @@ def export_parents_to_excel(request):
 
 
 
-from django.shortcuts import render, get_object_or_404, redirect
-from .models import Parents, Etudiant
+from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib import messages
+from .models import Parents, Etudiant  # Import your models here
 
 def update_parent(request, parent_id):
     parent = get_object_or_404(Parents, id=parent_id)
 
     if request.method == 'POST':
-        # Fetching the fields you want to update, excluding username
-        prenom = request.POST.get('prenom', parent.prenom)
-        nom = request.POST.get('nom', parent.nom)
-        email = request.POST.get('email', parent.email)
-        numéro_de_téléphone = request.POST.get('numéro_de-téléphone', parent.numéro_de_téléphone)
-        avatar = request.FILES.get('avatar', parent.avatar)
+        # Fetching fields to update
+        parent.prenom = request.POST.get('prenom', parent.prenom)
+        parent.nom = request.POST.get('nom', parent.nom)
+        parent.email = request.POST.get('email', parent.email)
+        parent.numéro_de_téléphone = request.POST.get('numéro_de_téléphone', parent.numéro_de_téléphone)
 
-        # Update the parent instance
-        parent.prenom = prenom
-        parent.nom = nom
-        parent.email = email
-        parent.numéro_de_téléphone = numéro_de_téléphone
-        
         # Update avatar only if a new file is uploaded
-        if avatar:
-            parent.avatar = avatar
+        if 'avatar' in request.FILES:
+            parent.avatar = request.FILES['avatar']
 
-        # Update Etudiants
-        etudiant_ids = request.POST.getlist('etudiants')  # Get the list of selected Etudiant IDs
-        parent.etudiants.set(etudiant_ids)  # Update the ManyToMany relationship
+        # Handle selected Etudiants
+        etudiant_ids = request.POST.get('etudiants', '').split(',')
+        valid_ids = [int(id) for id in etudiant_ids if id.isdigit()]
+
+        if valid_ids:
+            parent.etudiants.set(valid_ids)  # Update with new IDs
+        else:
+            parent.etudiants.clear()  # Clear if no valid IDs are provided
 
         parent.save()
         messages.success(request, 'Parent updated successfully!')
-        return redirect('list_parents')  # Change to your redirect URL
+        return redirect('list_parents')  # Redirect to the appropriate URL
 
-    # Get existing Etudiants for the selection in the modal
+    # Get existing Etudiants for selection in the modal
     etudiants = Etudiant.objects.all()
-    
     context = {
         'parent': parent,
         'etudiants': etudiants,
     }
-    return render(request, 'platformTK/SuperAdmin/list_parents.html', context)  # Update with your template
+    return render(request, 'platformTK/SuperAdmin/list_parents.html', context)
+
+
 
 
 
