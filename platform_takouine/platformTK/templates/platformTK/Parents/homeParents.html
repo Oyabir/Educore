@@ -178,9 +178,63 @@
                 {% endfor %}
 
                 <div class="container">
-    <h1>Home Parents</h1>
-    <h2>Students</h2>
-    {% for student in student_data %}
+                    <div class="text-center mb-5">
+                        <h1 class="mb-3">Attendance</h1>
+                        {% comment %} <p class="lead">Voici les groupes dont vous faites partie, {{ etudiant.prenom|capitalize_first }}.</p> {% endcomment %}
+                    </div> 
+                    <div class="col-lg-12 mb-4">
+                        <div class="table-wrapper">
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>N°</th>
+                                            <th>Nom de l'enfant</th>
+                                            {% comment %} <th>Date de naissance</th> {% endcomment %}
+                                            <th>Total Classes</th>
+                                            <th>Classes Present</th>
+                                            <th>Classes Absent</th>
+                                            <th>Attendance Rate</th>
+                                            {% comment %} <th>Competitions</th>
+                                            <th>Groups</th> {% endcomment %}
+                                        </tr>                                    
+                                    </thead>
+                                    <tbody>
+                                        {% for student in student_data %}
+                                        <tr>
+                                            <td>{{ forloop.counter }}</td>
+                                            <td>{{ student.etudiant.prenom }} {{ student.etudiant.nom }}</td>
+                                            {% comment %} <td>{{ student.etudiant.date_de_naissance }}</td> <!-- Assuming you have the date of birth in the student data --> {% endcomment %}
+                                            <td>{{ student.attendance_data.0.total_classes }}</td>
+                                            <td>{{ student.attendance_data.0.present_classes }}</td>
+                                            <td>{{ student.attendance_data.0.absent_classes }}</td>
+                                            <td>{{ student.attendance_data.0.attendance_rate|floatformat:2 }}%</td>
+                                            {% comment %} <td>
+                                                <ul>
+                                                    {% for competition in student.competition_section_data %}
+                                                        <li>{{ competition.competition.name }}: {{ competition.points }} points (Rank: {{ competition.rank }})</li>
+                                                    {% endfor %}
+                                                </ul>
+                                            </td>
+                                            <td>
+                                                <ul>
+                                                    {% for group in student.group_data %}
+                                                        <li>{{ group.group.name }}: {{ group.points }} points (Rank: {{ group.rank }} out of {{ group.total_students }})</li>
+                                                    {% endfor %}
+                                                </ul>
+                                            </td> {% endcomment %}
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+                    
+
+    {% comment %} {% for student in student_data %}
         <div class="student-report">
             <h3>{{ student.etudiant.prenom }} {{ student.etudiant.nom }}</h3>
 
@@ -208,7 +262,7 @@
 </div>
 
                 
-        </div>
+        </div> {% endcomment %}
 
 
     {% endblock  %}
