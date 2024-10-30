@@ -42,16 +42,16 @@
                         <div class="text-center mb-4">
                             <img src="{% if Prof.avatar %}{{ Prof.avatar.url }}{% else %}{% static 'img/786525_people_512x512.png' %}{% endif %}" alt="Profile Picture" class="profile-picture img-fluid rounded-circle">
                         </div>
-                        <h2 class="card-title text-center">User Profile</h2>
+                        <h2 class="card-title text-center">Profil du Prof</h2>
                         <form id="profile-form" method="POST" enctype="multipart/form-data" action="{% url 'update_profil_prof' %}">
                             {% csrf_token %}
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label for="firstName" class="form-label">First Name</label>
+                                    <label for="firstName" class="form-label">Prénom</label>
                                     <input type="text" class="form-control" id="firstName" name="firstName" value="{{Prof.prenom}}">
                                 </div>
                                 <div class="col-md-6 mb-3">
-                                    <label for="lastName" class="form-label">Last Name</label>
+                                    <label for="lastName" class="form-label">Nom</label>
                                     <input type="text" class="form-control" id="lastName" name="lastName" value="{{Prof.nom}}">
                                 </div>
                             </div>
@@ -60,7 +60,7 @@
                                 <input type="email" class="form-control" id="email" name="email" value="{{Prof.email}}">
                             </div>
                             <div class="mb-3">
-                                <label for="phone" class="form-label">Phone Number</label>
+                                <label for="phone" class="form-label">Numéro de téléphone</label>
                                 <input type="text" class="form-control" id="phone" name="phone" value="{{Prof.numéro_de_téléphone}}">
                             </div>
                             <div class="mb-3">
@@ -68,7 +68,7 @@
                                 <input class="form-control" type="file" name="avatar" id="avatar">
                             </div>
                             <div class="d-grid">
-                                <button type="submit" class="btn btn-primary" style="background-color: #176b90;border-color: #176b90;">Update Profile</button>
+                                <button type="submit" class="btn btn-primary" style="background-color: #176b90;border-color: #176b90;">Mettre à jour le profil</button>
                             </div>
                             <div class="d-grid text-center mt-4">
                                 <a href="{% url 'change_password_prof' %}">Changer le mot de passe</a>

@@ -664,7 +664,6 @@ def update_profil_parent(request):
 
 
 
-
 @login_required(login_url='login')
 @allowedUsers(allowedGroups=['Prof'])
 def homeProf(request):
@@ -672,7 +671,7 @@ def homeProf(request):
         current_prof = prof.objects.get(user=request.user)
         
         groups = Groups.objects.filter(profs=current_prof)
-        competitions = Competitions.objects.filter(prof=current_prof)
+        competitions = Competitions.objects.filter(prof=current_prof).order_by('-date_created')
         
         # Get the top 3 groups
         top_groups = sorted(groups, key=lambda group: group.total_points(), reverse=True)[:3]
@@ -1134,21 +1133,24 @@ def birthday_list(request, code_group):
 def Répartition_points(request, code_group):
     group = get_object_or_404(Groups, code_group=code_group)
     students = group.etudiants.all()
-    memberships = Membership.objects.filter(group=group)
     
-    memberships_dict = {membership.etudiant.id: membership.pointsG for membership in memberships}
+    # Retrieve memberships for the group and check if each membership has a valid student
+    memberships = Membership.objects.filter(group=group).select_related('etudiant')
+    memberships_dict = {membership.etudiant.id: membership.pointsG for membership in memberships if membership.etudiant}
 
-    # Add pointsG to each student dynamically
+    # Add pointsG to each student, defaulting to 0 if no membership exists
     students_with_points = []
     for student in students:
-        pointsG = memberships_dict.get(student.id, 0)
+        pointsG = memberships_dict.get(student.id, 0)  # Use 0 if no membership found
         students_with_points.append((student, pointsG))
 
+    # Sort students by pointsG in descending order
     students_with_points = sorted(students_with_points, key=lambda x: x[1], reverse=True)
 
     # Extract sorted students and their pointsG
     students_sorted, points_sorted = zip(*students_with_points) if students_with_points else ([], [])
 
+    # Filtering based on request GET parameters
     prenom_filter = request.GET.get('prenom', '')
     nom_filter = request.GET.get('nom', '')
     code_filter = request.GET.get('code', '')
@@ -1161,15 +1163,20 @@ def Répartition_points(request, code_group):
         students_sorted = [s for s in students_sorted if code_filter.lower() in s.EtudiantCode.lower()]
 
     # Create a dictionary of points for filtered students
-    memberships_dict_filtered = dict(zip([s.id for s in students_sorted], [points_sorted[students_with_points.index((s, p))] for s, p in students_with_points if s in students_sorted]))
+    memberships_dict_filtered = dict(zip(
+        [s.id for s in students_sorted],
+        [points_sorted[students_with_points.index((s, p))] for s, p in students_with_points if s in students_sorted]
+    ))
 
     return render(request, "platformTK/Prof/Répartition_points.html", {
         "group": group,
         "students": students_sorted,
         "memberships_dict": memberships_dict_filtered,
     })
-    
-    
+
+
+
+
 
 
 #Another way for do this

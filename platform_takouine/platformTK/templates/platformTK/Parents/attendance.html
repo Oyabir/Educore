@@ -5,7 +5,7 @@
 {% block content %}
     {% include 'platformTK/Parents/navbar.html' %}
     <div class="container mt-5">
-        <h1 class="text-center mb-4">Attendance Summary</h1>
+        <h1 class="text-center mb-4">Résumé de la présence</h1>
         <div class="row justify-content-center">
             {% for student in attendance_data %}
                 <div class="col-lg-8 col-md-10 mb-4">
@@ -15,9 +15,9 @@
                                 {{ student.etudiant.prenom|capitalize_first }} {{ student.etudiant.nom|capitalize_first }}
                             </h3>
                             <div class="d-flex justify-content-between mt-3">
-                                <p class="mb-1"><strong>Total Classes:</strong> {{ student.total_classes }}</p>
-                                <p class="mb-1"><strong>Classes Present:</strong> {{ student.present_classes }}</p>
-                                <p class="mb-1"><strong>Classes Absent:</strong> {{ student.absent_classes }}</p>
+                                <p class="mb-1"><strong>Total Seances:</strong> {{ student.total_classes }}</p>
+                                <p class="mb-1"><strong>Seances Present:</strong> {{ student.present_classes }}</p>
+                                <p class="mb-1"><strong>Seances Absent:</strong> {{ student.absent_classes }}</p>
                             </div>
 
                             <div class="mt-4">
@@ -43,10 +43,10 @@
 
                             <!-- Additional Info: Participation and Discipline Averages -->
                             <div class="mt-4">
-                                <h6>Performance Summary</h6>
+                                <h6>Résumé des performances</h6>
                                 <div class="d-flex justify-content-between">
-                                    <p class="mb-1"><strong>Average Participation:</strong> {{ student.avg_participation|floatformat:1 }} / 5</p>
-                                    <p class="mb-1"><strong>Average Discipline:</strong> {{ student.avg_discipline|floatformat:1 }} / 5</p>
+                                    <p class="mb-1"><strong>Participation moyenne:</strong> {{ student.avg_participation|floatformat:1 }} / 5</p>
+                                    <p class="mb-1"><strong>Discipline moyenne:</strong> {{ student.avg_discipline|floatformat:1 }} / 5</p>
                                 </div>
                             </div>
                         </div>

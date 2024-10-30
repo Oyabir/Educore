@@ -4,48 +4,53 @@
 
 {% block content %}
     {% include 'platformTK/Prof/navbar.html' %}
-    
-    <div class="container-xxl py-5">
-        <div class="row justify-content-center">        
-            <div class="col-lg-12 mb-4">
-                <div class="table-wrapper">
-                    <h2 class="table-title">Groupes</h2>
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>#</th>
-                                <th>Nom</th>
-                                <th>Date</th>
-                                <th>Code Group</th>
-                                <th>Participants</th>
-                                <th>Total Points</th>
-                                <th>ALL</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for group in groups %}
-                            <tr>
-                                <td>{{ forloop.counter }}</td>
-                                <td>{{ group.name }}</td>
-                                <td>{{ group.date_created }}</td>
-                                <td>{{ group.code_group }} </td>
-                                <td>{{ group.etudiants.count }}</td>
-                                <th>{{ group.total_points }}</th>
-                                <td><a href="{% url 'group_detail' code_group=group.code_group %}">Show</a></td>
-                            </tr>
-                            {% empty %}
-                            <tr>
-                                <td colspan="4" class="text-center">No groups found.</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
+    <div class="container">
+        <div class="container-xxl py-5">
+            <div class="row justify-content-center">        
+                <div class="col-lg-12 mb-4">
+                    <div class="table-wrapper">
+                        <h2 class="table-title">Groupes</h2>
+                        <div class="table-responsive">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Nom</th>
+                                        <th>Date</th>
+                                        <th>Code Group</th>
+                                        <th>Participants</th>
+                                        <th>Total Points</th>
+                                        <th>ALL</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for group in groups %}
+                                    <tr>
+                                        <td>{{ forloop.counter }}</td>
+                                        <td data-label="Nom">{{ group.name }}</td>
+                                        <td data-label="Date">{{ group.date_created }}</td>
+                                        <td data-label="Code Group">{{ group.code_group }}</td>
+                                        <td data-label="Participants">{{ group.etudiants.count }}</td>
+                                        <td data-label="Total Points">{{ group.total_points }}</td>
+                                        <td data-label="ALL"><a href="{% url 'group_detail' code_group=group.code_group %}">Show</a></td>
+                                        
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="7" class="text-center">No groups found.</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
     <style>
+        /* General link styles */
         a {
             color: #121212;
             text-decoration: none;
@@ -54,6 +59,44 @@
         a:hover {
             color: #30bb96;
         }
+
+        /* Responsive styles for mobile view */
+        @media (max-width: 768px) {
+            .table-responsive {
+                overflow-x: auto;
+            }
+            .table-title {
+                font-size: 1.5rem;
+                text-align: center;
+                margin-bottom: 1rem;
+            }
+            .table {
+                font-size: 0.875rem;
+            }
+            .table thead {
+                display: none; /* Hide table header on mobile */
+            }
+            .table tbody tr {
+                display: block;
+                margin-bottom: 1rem;
+                border: 1px solid #ddd;
+                border-radius: 8px;
+                padding: 0.75rem;
+            }
+            .table tbody tr td {
+                display: flex;
+                justify-content: space-between;
+                padding: 0.5rem 0;
+                border: none;
+            }
+            .table tbody tr td::before {
+                content: attr(data-label);
+                font-weight: bold;
+                flex-basis: 50%;
+                padding-right: 0.5rem;
+                color: #333;
+            }
+        }
     </style>
   
-{% endblock  %}
+{% endblock %}

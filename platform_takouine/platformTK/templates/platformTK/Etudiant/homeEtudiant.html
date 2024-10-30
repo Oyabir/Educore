@@ -189,9 +189,9 @@
                             <table class="table table-striped">
                                 <thead>
                                     <tr>
-                                        <th>#</th>
+                                        <th>N°</th>
                                         <th>Nom du Groupe</th>
-                                        <th>Description</th>
+                                        {% comment %} <th>Description</th> {% endcomment %}
                                         <th>Vos Points</th>
                                         <th>Votre Rang</th>
                                         <th>Nombre Total d'Étudiants</th>
@@ -202,7 +202,7 @@
                                     <tr>
                                         <td>{{ forloop.counter }}</td>
                                         <td>{{ data.group.name }}</td>
-                                        <td class="d-none d-md-table-cell" style="width: 309px;">{{ data.group.description }}</td>
+                                        {% comment %} <td class="d-none d-md-table-cell" style="width: 309px;">{{ data.group.description }}</td> {% endcomment %}
                                         <td>{{ data.points }}</td>
                                         <td>{{ data.rank }}/{{ data.total_students }}</td>
                                         <td>{{ data.total_students }}</td>
@@ -238,12 +238,12 @@
                             <table class="table table-striped">
                                 <thead>
                                     <tr>
-                                        <th>#</th>
+                                        <th>N°</th>
                                         <th>Nom de la Compétition</th>
                                         <th>Nom de la Section</th>
                                         <th>Points</th>
                                         <th class="d-none d-md-table-cell">Rang</th> <!-- Caché sur SM et XS -->
-                                        <th>Le Prix</th> <!-- Visible sur toutes les tailles d'écran -->
+                                        <th>Le Prix vous avez gagné</th> <!-- Visible sur toutes les tailles d'écran -->
                                         <th class="d-none d-md-table-cell">Date de Création</th> <!-- Caché sur SM et XS -->
                                         <th class="d-none d-md-table-cell">Statut</th> <!-- Caché sur SM et XS -->
                                     </tr>                                    

@@ -12,7 +12,7 @@
     <meta name="description" content="">
     
     <!-- Favicon -->
-    <link href="{% static '/img/favicon.ico' %}" rel="icon">
+    <link href="{% static '/img/LOGOPRO.png' %}" rel="icon">
     
     <!-- Google Web Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -142,7 +142,7 @@
                                             <th>Section</th>
                                             <th>Points</th>
                                             <th>Rang</th>
-                                            <th>Le Prix</th>
+                                            <th>Le prix que votre enfant a gagné</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -155,13 +155,13 @@
                                             <td>{{ data.rank }}/{{ data.competition.number_of_sections }}</td>
                                             <td>
                                                 {% if data.rank == 1 %}
-                                                Vous avez gagné 10 $
+                                                Il a gagné 10 $
                                                 {% elif data.rank == 2 %}
-                                                Vous avez gagné 5 $
+                                                Il a gagné 5 $
                                                 {% elif data.rank == 3 %}
-                                                Vous avez gagné 1 $
+                                                Il a gagné 1 $
                                                 {% else %}
-                                                Vous avez gagné 0 $
+                                                Il a gagné 0 $
                                                 {% endif %}
                                             </td>
                                         </tr>
@@ -191,10 +191,10 @@
                                             <th>N°</th>
                                             <th>Nom de l'enfant</th>
                                             {% comment %} <th>Date de naissance</th> {% endcomment %}
-                                            <th>Total Classes</th>
-                                            <th>Classes Present</th>
-                                            <th>Classes Absent</th>
-                                            <th>Attendance Rate</th>
+                                            <th>Total Seances</th>
+                                            <th>Seances Present</th>
+                                            <th>Seances Absent</th>
+                                            <th>Taux de Attendance</th>
                                             {% comment %} <th>Competitions</th>
                                             <th>Groups</th> {% endcomment %}
                                         </tr>                                    

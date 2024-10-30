@@ -42,21 +42,21 @@
                         <div class="text-center mb-4">
                             <img src="{% if Parent.avatar %}{{ Parent.avatar.url }}{% else %}{% static 'img/786525_people_512x512.png' %}{% endif %}" alt="Profile Picture" class="profile-picture img-fluid rounded-circle">
                         </div>
-                        <h2 class="card-title text-center">User Profile</h2>
+                        <h2 class="card-title text-center">Profil du parent</h2>
                         <form id="profile-form" method="POST" enctype="multipart/form-data" action="{% url 'update_profil_parent' %}">
                             {% csrf_token %}
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label for="firstName" class="form-label">First Name</label>
+                                    <label for="firstName" class="form-label">Prénom</label>
                                     <input type="text" class="form-control" id="firstName" name="prenom" value="{{ Parent.prenom }}">
                                 </div>
                                 <div class="col-md-6 mb-3">
-                                    <label for="lastName" class="form-label">Last Name</label>
+                                    <label for="lastName" class="form-label">Nom</label>
                                     <input type="text" class="form-control" id="lastName" name="nom" value="{{ Parent.nom }}">
                                 </div>
                             </div>
                             <div class="mb-3">
-                                <label for="phone" class="form-label">Phone Number</label>
+                                <label for="phone" class="form-label">Numéro de téléphone</label>
                                 <input type="text" class="form-control" id="phone" name="numéro_de_téléphone" value="{{ Parent.numéro_de_téléphone }}">
                             </div>
                             <div class="mb-3">
@@ -64,7 +64,7 @@
                                 <input class="form-control" type="file" name="avatar" id="avatar">
                             </div>
                             <div class="d-grid">
-                                <button type="submit" class="btn btn-primary" style="background-color: #176b90; border-color: #176b90;">Update Parent</button>
+                                <button type="submit" class="btn btn-primary" style="background-color: #176b90; border-color: #176b90;">Mise à jour du parent</button>
                             </div>
                         </form>
                     </div>
