@@ -63,7 +63,7 @@ class prof(models.Model):
     prenom = models.CharField(max_length=50)
     nom = models.CharField(max_length=50)
     date_de_naissance = models.DateField(blank=True, null=True)  # Not required
-    email = models.EmailField(unique=True, blank=True, null=True)  # Not required
+    email = models.EmailField(blank=True, null=True)  # Email is optional
     numéro_de_téléphone = models.CharField(max_length=15, blank=True, null=True)
     avatar = models.ImageField(null=True, blank=True)
     slugProf = models.SlugField(blank=True, null=True)

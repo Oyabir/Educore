@@ -45,11 +45,11 @@
             <button class="btn btn-primary" type="submit" style="background-color: #176b90;">Télécharger les Étudiants</button>
         </div>
     </form>
-    <a href="{% url "list_parents" %}"><button class="btn btn-primary" style="background-color: #176b90;">Gestion de Parents</button></a>
+    {% comment %} <a href="{% url "list_parents" %}"><button class="btn btn-primary" style="background-color: #176b90;">Gestion de Parents</button></a>
     <br><br>
 
     <a href="{% url "rapports" %}"><button class="btn btn-primary" style="background-color: #176b90;">Les Rapports</button></a>
-    <br><br>
+    <br><br> {% endcomment %}
 
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="text-center">Étudiants</h2>
@@ -243,7 +243,7 @@
         let formattedDate = date_de_naissance ? new Date(date_de_naissance).toISOString().split('T')[0] : '';
         document.getElementById("edit_date_de_naissance").value = formattedDate;
         
-        document.getElementById("edit_email").value = email;
+        document.getElementById("edit_email").value = " ";
         document.getElementById("edit_numéro_de_téléphone").value = numéro_de_téléphone;
         
         let avatarPreview = document.getElementById("current_avatar");

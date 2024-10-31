@@ -160,7 +160,7 @@
                     </div>
                     <div class="mb-3">
                         <label for="email{{ prof.id }}" class="form-label">Email:</label>
-                        <input type="email" class="form-control" id="email{{ prof.id }}" name="email" value="{{ prof.email }}" required>
+                        <input type="email" class="form-control" id="email{{ prof.id }}" name="email" value=""> {% comment %}  {{ prof.email }} {% endcomment %}
                     </div>
                     <div class="mb-3">
                         <label for="date_de_naissance{{ prof.id }}" class="form-label">Date de Naissance:</label>
@@ -289,8 +289,8 @@
 
                 <div class="mb-3">
                     <label for="email" class="form-label">Email:</label>
-                    <input type="email" class="form-control" name="email" id="email" required>
-               </div>
+                    <input type="email" class="form-control" name="email" id="email">
+                </div>                
 
                 <div class="mb-3">
                     <label for="numéro_de_téléphone" class="form-label">Numéro de Téléphone:</label>

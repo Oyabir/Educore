@@ -1788,7 +1788,6 @@ def delete_profs_etudiants(request, group_id):
     })
 
 
-
 @login_required(login_url='login')
 @allowedUsers(allowedGroups=['SuperAdmin'])
 def add_etudiant(request):
@@ -1800,13 +1799,13 @@ def add_etudiant(request):
         prenom = request.POST.get('prenom')
         nom = request.POST.get('nom')
         date_de_naissance = request.POST.get('date_de_naissance')
-        email = request.POST.get('email')
+        email = request.POST.get('email', "")  # Optional email
         numéro_de_téléphone = request.POST.get('numéro_de_téléphone')
         avatar = request.FILES.get('avatar')
         group_id = request.POST.get('group')
 
         # Check if required fields
-        if not username or not password or not prenom or not nom or not date_de_naissance or not email:
+        if not username or not password or not prenom or not nom or not date_de_naissance:
             return render(request, "platformTK/SuperAdmin/add_student.html", {
                 'error': 'Please fill in all required fields.',
                 'groups': groups
@@ -1820,7 +1819,7 @@ def add_etudiant(request):
                 prenom=prenom,
                 nom=nom,
                 date_de_naissance=date_de_naissance,
-                email=email,
+                email=email if email else None,  # Assign email or None
                 numéro_de_téléphone=numéro_de_téléphone,
                 avatar=avatar
             )
@@ -2030,10 +2029,8 @@ def add_prof(request):
 
 
 
-
 @login_required(login_url='login')
 @allowedUsers(allowedGroups=['SuperAdmin'])
-@login_required(login_url='login')
 def prof_list(request):
     groups = Groups.objects.all()
     profs = prof.objects.all()
@@ -2042,7 +2039,7 @@ def prof_list(request):
         prenom = request.POST.get('prenom')
         nom = request.POST.get('nom')
         date_de_naissance = request.POST.get('date_de_naissance')
-        email = request.POST.get('email')
+        email = request.POST.get('email', "")  # Optional email
         numéro_de_téléphone = request.POST.get('numéro_de_téléphone')
         avatar = request.FILES.get('avatar')
         group_id = request.POST.get('group')
@@ -2050,7 +2047,8 @@ def prof_list(request):
         username = request.POST.get('username')
         password = request.POST.get('password')
 
-        if not (prenom and nom and date_de_naissance and email and username and password):
+        # Check required fields (email is optional)
+        if not (prenom and nom and date_de_naissance and username and password):
             return render(request, 'platformTK/SuperAdmin/add_prof.html', {
                 'error': 'Please fill in all required fields.',
                 'groups': groups,
@@ -2063,7 +2061,6 @@ def prof_list(request):
             })
 
         try:
-            # user = User.objects.create_user(username=username, password=password, email=email)
             user = User.objects.create_user(username=username, password=password)
 
             new_prof = prof.objects.create(
@@ -2071,7 +2068,7 @@ def prof_list(request):
                 prenom=prenom,
                 nom=nom,
                 date_de_naissance=date_de_naissance,
-                email=email,
+                email=email if email else None,  # Assign email or None
                 numéro_de_téléphone=numéro_de_téléphone,
                 avatar=avatar,
                 slugProf=slugify(username)
@@ -2093,6 +2090,7 @@ def prof_list(request):
 
             messages.success(request, 'Prof added successfully!')
             return redirect('add_prof')
+
         except Exception as e:
             return render(request, 'platformTK/SuperAdmin/add_prof.html', {
                 'error': f'Error creating professor: {e}',
@@ -2103,6 +2101,7 @@ def prof_list(request):
         'groups': groups,
         'profs': profs,
     })
+
 
 
 
@@ -2294,7 +2293,6 @@ def list_parents(request):
 
 
 
-
 @login_required(login_url='login')
 @allowedUsers(allowedGroups=['SuperAdmin'])
 def add_parent(request):
@@ -2332,6 +2330,8 @@ def add_parent(request):
         return redirect('list_parents')
 
     return render(request, 'add_parent.html', {'etudiants': etudiants})
+
+
 
 
 
