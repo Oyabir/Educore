@@ -56,10 +56,10 @@
             <thead>
                 <tr>
                     <th>Nom du groupe</th>
-                    <th>Professeurs</th>
+                    <th>Enseignants</th>
                     <th>Membres</th>
                     <th>Code du groupe</th>
-                    <th>Ajouter et supprimer</th>
+                    <th>Gestion de ressources</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -71,7 +71,7 @@
                         {% for professor in group.profs.all %}
                             {{ professor.prenom|capitalize_first }} {{ professor.nom|capitalize_first }}{% if not forloop.last %}, {% endif %}
                         {% empty %}
-                        Aucun professeur assigné
+                        Aucun Enseignant assigné
                         {% endfor %}
                     </td>
                     <td>{{ group.etudiants.count }}</td>

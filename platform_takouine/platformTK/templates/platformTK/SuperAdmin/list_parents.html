@@ -226,18 +226,21 @@
                         <div id="existingAvatar" style="display: none;">
                             <img src="" alt="Existing Avatar" style="max-width: 100%; height: auto;">
                         </div>
-                        <input type="file" class="form-control" name="avatar">
+                        <input type="file" class="form-control" name="avatar"> 
                     </div>
                     <div class="form-group">
                         <label>Available Étudiants</label>
-                        <input type="text" class="form-control mb-2" id="searchEtudiants" placeholder="Search Étudiants" onkeyup="filterEtudiants()">
-                        <!-- Étudiant List -->
+                        <!-- Update IDs to be unique -->
+                        <input type="text" class="form-control mb-2" id="searchEtudiantsEdit" placeholder="Search Étudiants" onkeyup="filterEtudiantsEdit()">
+
                         <div style="max-height: 200px; overflow-y: auto; border: 1px solid #ccc; border-radius: 5px;">
-                            <ul id="etudiantList" class="list-group mb-3">
+                            <ul id="etudiantListEdit" class="list-group mb-3">
                                 {% for etudiant in etudiants %}
                                     <li class="list-group-item d-flex justify-content-between align-items-center" data-id="{{ etudiant.id }}" data-prenom="{{ etudiant.prenom }}" data-nom="{{ etudiant.nom }}">
-                                        {{ etudiant.prenom }} {{ etudiant.nom }}
-                                        <button type="button" class="btn btn-primary btn-sm" onclick="selectEtudiant('{{ etudiant.id }}', '{{ etudiant.prenom }}', '{{ etudiant.nom }}')">Select</button>
+                                        <input type="checkbox" class="form-check-input" id="etudiant-{{ etudiant.id }}" onclick="selectEtudiant('{{ etudiant.id }}', '{{ etudiant.prenom }}', '{{ etudiant.nom }}', this)">
+                                        <label for="etudiant-{{ etudiant.id }}" class="form-check-label">
+                                            {{ etudiant.prenom|capitalize_first }} {{ etudiant.nom|capitalize_first }}
+                                        </label>
                                     </li>
                                 {% endfor %}
                             </ul>
@@ -280,41 +283,41 @@
         document.getElementById('editNom').value = nom;
         document.getElementById('editEmail').value = email;
         document.getElementById('editTelephone').value = telephone;
-
+    
         document.getElementById('editParentForm').action = "{% url 'update_parent' 0 %}".replace("0", id);
-
+    
         if (avatar) {
             document.getElementById('existingAvatar').style.display = 'block';
             document.querySelector('#existingAvatar img').src = avatar;
         } else {
             document.getElementById('existingAvatar').style.display = 'none';
         }
-
+    
         // Populate selected students
         const selectedList = document.getElementById('selectedEtudiantList');
         selectedList.innerHTML = '';
-
+    
         selectedEtudiants.split(',').forEach(function(id) {
             if (id) {
-                const etudiant = document.querySelector(`#etudiantList .list-group-item[data-id="${id}"]`);
+                const etudiant = document.querySelector(`#etudiantListEdit .list-group-item[data-id="${id}"]`); // Updated ID
                 if (etudiant) {
                     selectEtudiant(id, etudiant.dataset.prenom, etudiant.dataset.nom);
                 }
             }
         });
-
+    
         var modal = new bootstrap.Modal(document.getElementById('editParentModal'));
         modal.show();
-        
     }
+    
 
-    function filterEtudiants() {
-        const searchValue = document.getElementById('searchEtudiants').value.toLowerCase();
-        const etudiantItems = document.querySelectorAll('#etudiantList .list-group-item');
+    function filterEtudiantsEdit() {
+        const searchValue = document.getElementById('searchEtudiantsEdit').value.toLowerCase();
+        const etudiantItems = document.querySelectorAll('#etudiantListEdit .list-group-item'); // Ensure this is updated
     
         etudiantItems.forEach(item => {
             const prenomNom = item.textContent.toLowerCase();
-            
+    
             // Toggle hidden class based on search input
             if (prenomNom.includes(searchValue)) {
                 item.classList.remove("hidden"); // Show the item
@@ -324,21 +327,36 @@
         });
     }
     
+    
 
     function selectEtudiant(id, prenom, nom) {
+        // Helper function to capitalize the first letter of a string
+        function capitalizeFirst(str) {
+            if (!str) return ''; // Return an empty string if str is falsy
+            return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+        }
+    
         const selectedList = document.getElementById('selectedEtudiantList');
+        // Check if the étudient is already in the list
         const existingItem = selectedList.querySelector(`li[data-id="${id}"]`);
-
+    
+        // Only add if the étudient is not already selected
         if (!existingItem) {
             const listItem = document.createElement('li');
             listItem.className = 'list-group-item d-flex justify-content-between align-items-center';
-            listItem.dataset.id = id;
-            listItem.innerHTML = `${prenom} ${nom} <button type="button" class="btn btn-danger btn-sm" onclick="removeEtudiant('${id}')">Remove</button>`;
+            // Use the helper function to capitalize the first letters
+            const capitalizedPrenom = capitalizeFirst(prenom);
+            const capitalizedNom = capitalizeFirst(nom);
+            
+            listItem.innerHTML = `${capitalizedPrenom} ${capitalizedNom} <button type="button" class="btn btn-danger btn-sm" onclick="removeEtudiant('${id}')">Remove</button>`;
             selectedList.appendChild(listItem);
-
+    
             updateSelectedEtudiantIds();
+        } else {
+            alert(`${capitalizedPrenom} ${capitalizedNom} is already selected!`); // Optional alert to inform the user
         }
     }
+    
 
     function removeEtudiant(id) {
         const selectedList = document.getElementById('selectedEtudiantList');
