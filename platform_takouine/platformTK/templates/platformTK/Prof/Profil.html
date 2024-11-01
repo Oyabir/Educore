@@ -42,7 +42,7 @@
                         <div class="text-center mb-4">
                             <img src="{% if Prof.avatar %}{{ Prof.avatar.url }}{% else %}{% static 'img/786525_people_512x512.png' %}{% endif %}" alt="Profile Picture" class="profile-picture img-fluid rounded-circle">
                         </div>
-                        <h2 class="card-title text-center">Profil du Prof</h2>
+                        <h2 class="card-title text-center">Profil du Enseignants</h2>
                         <form id="profile-form" method="POST" enctype="multipart/form-data" action="{% url 'update_profil_prof' %}">
                             {% csrf_token %}
                             <div class="row">
