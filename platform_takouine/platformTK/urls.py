@@ -132,6 +132,12 @@ urlpatterns = [
     path('validate_absences_history/', views.validate_absences_history, name='validate_absences_history'),
     
     path('absenteeism_report/', views.absenteeism_report, name='absenteeism_report'),
+    path('real_time_absenteeism_by_group/', views.real_time_absenteeism_by_group, name='real_time_absenteeism_by_group'),
+    path('calculate-absenteeism-rate/', views.calculate_absenteeism_rate, name='calculate_absenteeism_rate'),
+    path('calculate_absenteeism_by_language/', views.calculate_absenteeism_by_language, name='calculate_absenteeism_by_language'),
+    path('calculate_global_absenteeism_rate/', views.calculate_global_absenteeism_rate, name='calculate_global_absenteeism_rate'),
+    path('show_absenteeism_statistics/', views.show_absenteeism_statistics, name='show_absenteeism_statistics'),
+
 
 
 

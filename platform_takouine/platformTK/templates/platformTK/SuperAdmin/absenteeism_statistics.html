@@ -1,0 +1,30 @@
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="text-center">Statistiques d'absentéisme</h1>
+
+    <!-- Display average sessions per group -->
+    <div class="card mt-4">
+        <div class="card-body">
+            <h3 class="card-title">Moyenne des Séances par Groupe</h3>
+            <p class="card-text"><strong>{{ average_sessions|floatformat:2 }}</strong> sessions</p>
+        </div>
+    </div>
+
+    <!-- Display real-time absenteeism rate -->
+    <div class="card mt-4">
+        <div class="card-body">
+            <h3 class="card-title">Taux d'absentéisme Global en Temps Réel</h3>
+            <p class="card-text"><strong>{{ real_time_absenteeism_rate|floatformat:2 }}%</strong></p>
+        </div>
+    </div>
+
+    <!-- Display final global absenteeism rate -->
+    <div class="card mt-4">
+        <div class="card-body">
+            <h3 class="card-title">Taux d'absentéisme Global Final</h3>
+            <p class="card-text"><strong>{{ final_global_absenteeism_rate|floatformat:2 }}%</strong></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

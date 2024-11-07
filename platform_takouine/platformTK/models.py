@@ -139,6 +139,8 @@ class Groups(models.Model):
     etudiants = models.ManyToManyField('Etudiant', related_name='groups')
     profs = models.ManyToManyField('Prof', related_name='groups')
     date_created = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    language = models.CharField(max_length=50, choices=[('Anglais', 'Anglais'), ('Français', 'Français')])
+
 
     def save(self, *args, **kwargs):
         if not self.code_group:

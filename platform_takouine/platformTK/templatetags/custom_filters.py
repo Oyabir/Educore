@@ -19,3 +19,9 @@ def capitalize_first(value):
 @register.filter
 def get(attendance_records, student):
     return next((record for record in attendance_records if record.student == student), None)
+
+
+
+@register.filter
+def zip_lists(list1, list2):
+    return zip(list1, list2)

@@ -3155,17 +3155,17 @@ from django.http import HttpResponse
 from itertools import groupby
 from operator import attrgetter
 
+
+
 @login_required(login_url='login')
 @allowedUsers(allowedGroups=['SuperAdmin'])
 def validate_absences_history(request):
-    history = AbsenceValidationHistory.objects.order_by('class_instance')
-    grouped_history = groupby(history, key=attrgetter('class_instance'))
-    first_record_per_class = [(key, list(group)[0]) for key, group in grouped_history]
-
+    # Get all records from AbsenceValidationHistory
+    history = AbsenceValidationHistory.objects.all().order_by('class_instance', 'date')
+    
     return render(request, 'platformTK/SuperAdmin/absence_validation_history.html', {
-        'first_record_per_class': first_record_per_class
+        'history': history
     })
-
 
 
 import json
@@ -3179,7 +3179,7 @@ def absenteeism_report(request):
     for attendance in attendances:
         class_instance = attendance.class_instance
         date = str(attendance.date)  # Convert date to string
-        
+
         # Ensure class is tracked separately
         if class_instance.name not in absenteeism_data:
             absenteeism_data[class_instance.name] = {}
@@ -3192,7 +3192,7 @@ def absenteeism_report(request):
         if not attendance.is_present:
             absenteeism_data[class_instance.name][date]['absent'] += 1
 
-    # Now calculate the absenteeism percentages
+    # Calculate the absenteeism percentages
     formatted_data = {}
     for class_name, dates in absenteeism_data.items():
         formatted_data[class_name] = {}
@@ -3202,6 +3202,240 @@ def absenteeism_report(request):
 
     return render(request, 'platformTK/SuperAdmin/absenteeism_report.html', {
         'absenteeism_data': json.dumps(formatted_data)
+    })
+
+
+
+
+
+from django.shortcuts import render
+from django.db.models import Count, Q
+from .models import Groups, Attendance, Schedule
+
+def real_time_absenteeism_by_group(request):
+    groups = Groups.objects.all()
+    group_names = []
+    absenteeism_rates = []
+    
+    for group in groups:
+        # Calculate the total number of sessions for the group
+        total_sessions = Schedule.objects.filter(group=group).count()
+
+        # Calculate the number of students in the group
+        total_students = group.etudiants.count()
+
+        # Calculate the total absences for the group
+        total_absences = Attendance.objects.filter(group=group, is_present=False).count()
+
+        # Calculate the absenteeism rate per student per session
+        if total_sessions > 0 and total_students > 0:
+            # Total possible attendance is the number of students times the number of sessions
+            total_possible_attendance = total_students * total_sessions
+            absenteeism_rate = (total_absences / total_possible_attendance) * 100
+        else:
+            absenteeism_rate = 0  # If no sessions or no students, absenteeism rate is 0
+
+        # Append data to lists
+        group_names.append(group.name)
+        absenteeism_rates.append(absenteeism_rate)
+
+
+    # Pass the data to the template
+    return render(request, 'platformTK/SuperAdmin/real_time_absenteeism_by_group.html', {
+        'group_names': group_names,
+        'absenteeism_rates': absenteeism_rates
+    })
+
+
+
+# views.py
+from django.shortcuts import render
+from .models import Groups, Attendance, Schedule
+
+def calculate_absenteeism_rate(request):
+    groups = Groups.objects.all()
+    group_names = []
+    absenteeism_rates = []
+
+    for group in groups:
+        # Get the total number of sessions for this group
+        total_sessions = Schedule.objects.filter(group=group).count()
+        total_students = group.etudiants.count()
+
+        # Check if there are no sessions or no students
+        if total_sessions == 0 or total_students == 0:
+            # If there are no sessions or students, we can't calculate absenteeism
+            final_absenteeism_rate = 0
+        else:
+            # Sum of absenteeism percentages for all students in the group
+            total_absenteeism_percentage = 0
+            for student in group.etudiants.all():
+                total_absences = Attendance.objects.filter(student=student, group=group, is_present=False).count()
+                absenteeism_percentage = (total_absences / total_sessions) * 100
+                total_absenteeism_percentage += absenteeism_percentage
+
+            # Calculate the final absenteeism rate by dividing the sum of percentages by 60
+            final_absenteeism_rate = total_absenteeism_percentage / 60
+
+        # Append data to lists
+        group_names.append(group.name)
+        absenteeism_rates.append(final_absenteeism_rate)
+
+    return render(request, 'platformTK/SuperAdmin/calculate_absenteeism_rate.html', {
+        'group_names': group_names,
+        'absenteeism_rates': absenteeism_rates
+    })
+
+
+
+
+from django.shortcuts import render
+from .models import Groups, Attendance, Schedule
+
+def calculate_absenteeism_by_language(request):
+    # Create dictionaries to store language data
+    groups_by_language = {'Anglais': [], 'Français': []}
+    absenteeism_rates = {'Anglais': 0, 'Français': 0}  # Initialize with 0, not a list
+    total_sessions_by_language = {'Anglais': 0, 'Français': 0}
+    total_students_by_language = {'Anglais': 0, 'Français': 0}
+    total_absenteeism_percentage_by_language = {'Anglais': 0, 'Français': 0}
+
+    groups = Groups.objects.all()
+
+    # Step 1: Classify groups by language
+    for group in groups:
+        if 'Anglais' in group.name:
+            language = 'Anglais'
+        else:
+            language = 'Français'
+
+        groups_by_language[language].append(group)
+
+    # Step 2: Calculate absenteeism for each language
+    for language in ['Anglais', 'Français']:
+        for group in groups_by_language[language]:
+            total_sessions_for_group = Schedule.objects.filter(group=group).count()
+            total_students_for_group = group.etudiants.count()
+
+            total_sessions_by_language[language] += total_sessions_for_group
+            total_students_by_language[language] += total_students_for_group
+
+            # Sum of absenteeism percentages for all students in the group
+            if total_sessions_for_group > 0 and total_students_for_group > 0:
+                for student in group.etudiants.all():
+                    total_absences = Attendance.objects.filter(student=student, group=group, is_present=False).count()
+                    absenteeism_percentage = (total_absences / total_sessions_for_group) * 100
+                    total_absenteeism_percentage_by_language[language] += absenteeism_percentage
+
+        # Step 3: Calculate final absenteeism rate for the language
+        if total_students_by_language[language] > 0:
+            absenteeism_rates[language] = total_absenteeism_percentage_by_language[language] / total_students_by_language[language]
+        else:
+            absenteeism_rates[language] = 0
+
+    return render(request, 'platformTK/SuperAdmin/calculate_absenteeism_by_language.html', {
+        'absenteeism_rates': absenteeism_rates
+    })
+
+
+
+
+from django.shortcuts import render
+from .models import Groups, Attendance, Schedule
+
+def calculate_average_sessions_per_group():
+    groups = Groups.objects.all()
+    total_sessions = 0
+    total_groups = groups.count()
+    
+    for group in groups:
+        total_sessions += Schedule.objects.filter(group=group).count()
+    
+    if total_groups > 0:
+        return total_sessions / total_groups
+    return 0
+
+def calculate_global_absenteeism_rate(request):
+    # Get the average number of sessions across all groups
+    average_sessions_per_group = calculate_average_sessions_per_group()
+
+    # Initialize variables for calculating total absenteeism
+    total_absenteeism_percentage = 0
+    total_students = 0
+
+    groups = Groups.objects.all()
+
+    for group in groups:
+        total_sessions_for_group = Schedule.objects.filter(group=group).count()
+        if total_sessions_for_group == 0:
+            continue
+
+        for student in group.etudiants.all():
+            # Count absences and calculate absenteeism percentage for the student
+            total_absences = Attendance.objects.filter(student=student, group=group, is_present=False).count()
+            absenteeism_percentage = (total_absences / total_sessions_for_group) * 100
+            total_absenteeism_percentage += absenteeism_percentage
+            total_students += 1
+
+    # Calculate the global absenteeism rate
+    if total_students > 0 and average_sessions_per_group > 0:
+        global_absenteeism_rate = total_absenteeism_percentage / (total_students * average_sessions_per_group)
+    else:
+        global_absenteeism_rate = 0
+
+    # Render the result in a template
+    return render(request, 'platformTK/SuperAdmin/global_absenteeism_rate.html', {
+        'global_absenteeism_rate': global_absenteeism_rate
+    })
+
+
+
+
+# views.py
+from django.shortcuts import render
+from .models import Groups, Attendance, Schedule
+
+def calculate_average_sessions_per_group():
+    groups = Groups.objects.all()
+    total_sessions = sum(Schedule.objects.filter(group=group).count() for group in groups)
+    total_groups = groups.count()
+    
+    return total_sessions / total_groups if total_groups > 0 else 0
+
+def calculate_real_time_global_absenteeism():
+    groups = Groups.objects.all()
+    total_absenteeism_percentage = 0
+    total_students = 0
+
+    for group in groups:
+        total_sessions_for_group = Schedule.objects.filter(group=group).count()
+        total_students_for_group = group.etudiants.count()
+
+        if total_sessions_for_group > 0 and total_students_for_group > 0:
+            for student in group.etudiants.all():
+                total_absences = Attendance.objects.filter(student=student, group=group, is_present=False).count()
+                absenteeism_percentage = (total_absences / total_sessions_for_group) * 100
+                total_absenteeism_percentage += absenteeism_percentage
+
+            total_students += total_students_for_group
+
+    return total_absenteeism_percentage / total_students if total_students > 0 else 0
+
+def calculate_final_global_absenteeism_rate():
+    # Sum of real-time absenteeism rates divided by 60
+    real_time_absenteeism_rate = calculate_real_time_global_absenteeism()
+    final_absenteeism_rate = real_time_absenteeism_rate / 60
+    return final_absenteeism_rate
+
+def show_absenteeism_statistics(request):
+    average_sessions = calculate_average_sessions_per_group()
+    real_time_absenteeism_rate = calculate_real_time_global_absenteeism()
+    final_global_absenteeism_rate = calculate_final_global_absenteeism_rate()
+
+    return render(request, 'platformTK/SuperAdmin/absenteeism_statistics.html', {
+        'average_sessions': average_sessions,
+        'real_time_absenteeism_rate': real_time_absenteeism_rate,
+        'final_global_absenteeism_rate': final_global_absenteeism_rate
     })
 
 

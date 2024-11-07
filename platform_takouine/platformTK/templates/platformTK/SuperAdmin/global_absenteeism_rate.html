@@ -1,0 +1,63 @@
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="text-center">Taux d'absentéisme Global en Temps Réel</h1>
+
+    <div class="card mt-4">
+        <div class="card-body">
+            <h3 class="card-title">Statistiques d'absentéisme</h3>
+            <p class="card-text">
+                <strong>Le taux d'absentéisme global en temps réel :</strong>
+                <span>{{ global_absenteeism_rate|floatformat:2 }}%</span>
+            </p>
+        </div>
+    </div>
+
+    <!-- Chart.js Graph to Visualize the Absenteeism Rate -->
+    <div class="mt-5">
+        <canvas id="absenteeismChart" width="400" height="200"></canvas>
+    </div>
+</div>
+
+<!-- Include Chart.js for Graph -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const ctx = document.getElementById('absenteeismChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Global Absenteeism Rate'],  // Label for the global absenteeism rate
+                datasets: [{
+                    label: "Taux d'absentéisme en Temps Réel",
+                    data: [{{ global_absenteeism_rate|floatformat:2 }}],  // Using global absenteeism rate value
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',  // Light red color for the bar
+                    borderColor: 'rgba(255, 99, 132, 1)',      // Darker red for the border
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: true
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.raw + '%';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

@@ -6,29 +6,27 @@
 {% include 'platformTK/SuperAdmin/navbar.html' %}
 <div class="container">
     <table class="table table-bordered mt-3">
-            <thead>
-                <tr>
-                    <th>Classe</th>
-                    <th>Professeur</th>
-                    <th>Groupe</th>
-                    <th>Date</th>
-                    <th>État de la fiche d’absence</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for class_instance, record in first_record_per_class %}
-                <!-- Row for class_instance -->
-                <tr>
-                    <td>{{ class_instance.name }}</td>  <!-- Display class_instance name -->
-                    <td>{{ record.professor.prenom }} {{ record.professor.nom }}</td> <!-- Professor full name -->
-                    <td>{{ record.group.name }}</td> <!-- Group name -->
-                    <td>{{ record.date|date:"M d, Y" }}</td> <!-- Date -->
-                    <td>{{ record.absence_status }}</td> <!-- Absence status -->
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        
+        <thead>
+            <tr>
+                <th>Classe</th>
+                <th>Professeur</th>
+                <th>Groupe</th>
+                <th>Date</th>
+                <th>État de la fiche d’absence</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for record in history %}
+            <tr>
+                <td>{{ record.class_instance.name }}</td>  <!-- Class name -->
+                <td>{{ record.professor.prenom }} {{ record.professor.nom }}</td> <!-- Professor full name -->
+                <td>{{ record.group.name }}</td> <!-- Group name -->
+                <td>{{ record.date|date:"M d, Y" }}</td> <!-- Date -->
+                <td>{{ record.absence_status }}</td> <!-- Absence status -->
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </div>
 <style>
     body {

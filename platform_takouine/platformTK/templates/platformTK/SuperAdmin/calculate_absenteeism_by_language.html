@@ -1,0 +1,55 @@
+{% load custom_filters %}
+
+{% block content %}
+<h1>Taux d’absentéisme GLOBAL PAR LANGUE (Anglais – Français)</h1>
+
+<!-- Displaying Absenteeism Data -->
+<table class="table">
+    <thead>
+        <tr>
+            <th>Langue</th>
+            <th>Taux d'absentéisme (Global)</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for language, rate in absenteeism_rates.items %}
+        <tr>
+            <td>{{ language }}</td>
+            <td>{{ rate|default:0 }}%</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- Chart.js Bar Chart -->
+<canvas id="absenteeismChart" width="400" height="200"></canvas>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    const ctx = document.getElementById('absenteeismChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Anglais', 'Français'],  // The languages
+            datasets: [{
+                label: "Taux d'absentéisme Global par Langue",
+                data: [
+                    {{ absenteeism_rates.Anglais|default:0 }},
+                    {{ absenteeism_rates.Francais|default:0 }}
+                ],
+                backgroundColor: 'rgba(75, 192, 192, 0.2)',  // Light green color for bars
+                borderColor: 'rgba(75, 192, 192, 1)',      // Darker green for borders
+                borderWidth: 1
+            }]
+        },
+        options: {
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+</script>
+
+{% endblock %}

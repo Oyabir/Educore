@@ -1,0 +1,64 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Taux d'Absentéisme par Groupe en Temps Réel</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>Taux d'Absentéisme par Groupe en Temps Réel</h1>
+
+    <canvas id="absenteeismChart" width="400" height="200"></canvas>
+
+    <script>
+        // Get data from Django context
+        const groupNames = {{ group_names|safe }};
+        const absenteeismRates = {{ absenteeism_rates|safe }};
+
+        // Initialize Chart.js
+        const ctx = document.getElementById('absenteeismChart').getContext('2d');
+        const absenteeismChart = new Chart(ctx, {
+            type: 'bar',  // Bar chart type
+            data: {
+                labels: groupNames,  // X-axis labels
+                datasets: [{
+                    label: 'Taux d\'absentéisme (%)',
+                    data: absenteeismRates,  // Data for the chart
+                    backgroundColor: 'rgba(255, 99, 132, 0.2)',  // Bar color
+                    borderColor: 'rgba(255, 99, 132, 1)',  // Bar border color
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Absenteeism Rate (%)'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Groups'
+                        }
+                    }
+                },
+                responsive: true,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top',
+                    },
+                    tooltip: {
+                        enabled: true
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
