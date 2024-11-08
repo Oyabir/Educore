@@ -1407,6 +1407,256 @@ def mark_attendance(request, code_group, schedule_id):
 
 
 
+
+
+@login_required(login_url='login')
+@allowedUsers(allowedGroups=['Prof'])
+def rapports_prof(request):
+    professor = request.user.prof
+
+    # Get all groups associated with the professor
+    groups = Groups.objects.filter(profs=professor)
+
+    # Get all students in these groups
+    students = Etudiant.objects.filter(groups__in=groups).distinct()
+    
+    return render(request, "platformTK/Prof/rapports_prof.html", {'students': students})
+
+
+
+
+# views.py
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from .models import prof, Groups, Attendance
+
+@login_required
+def attendance_by_group_for_prof(request):
+    # Get the logged-in professor
+    try:
+        professor = prof.objects.get(user=request.user)
+    except Prof.DoesNotExist:
+        # Redirect or show an error if the logged-in user is not a professor
+        return render(request, 'error.html', {'message': "You are not authorized to view this page."})
+
+    # Get the groups managed by the professor
+    groups = professor.groups.all()
+
+    # Gather attendance data for each group and student
+    attendance_data = {}
+    for group in groups:
+        student_attendance = []
+        for student in group.etudiants.all():
+            attendance_records = Attendance.objects.filter(student=student, group=group).order_by('-date')
+            student_attendance.append({
+                'student': student,
+                'attendance_records': attendance_records
+            })
+        attendance_data[group] = student_attendance
+
+    return render(request, 'platformTK/Prof/attendance_by_group_for_prof.html', {
+        'professor': professor,
+        'attendance_data': attendance_data,
+    })
+
+
+# views.py
+from django.shortcuts import render, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from .models import Attendance, Etudiant, Groups  # Import necessary models
+
+@login_required
+def absence_by_student_for_prof(request):
+    # Assume the logged-in user is associated with a `Prof` instance
+    professor = request.user.prof
+
+    # Get all groups associated with the professor
+    groups = Groups.objects.filter(profs=professor)
+
+    # Get all students in these groups
+    students = Etudiant.objects.filter(groups__in=groups).distinct()
+
+    # Handle POST request to generate attendance report
+    if request.method == 'POST':
+        student_id = request.POST.get('student_id')
+        student = get_object_or_404(Etudiant, id=student_id, groups__in=groups)
+
+        # Fetch attendance records for the selected student across all sessions
+        attendance_records = Attendance.objects.filter(student=student).order_by('date')
+
+        # Calculate summary statistics
+        total_sessions = attendance_records.count()
+        total_present = attendance_records.filter(is_present=True).count()
+        total_absent = total_sessions - total_present
+
+        context = {
+            'student': student,
+            'attendance_records': attendance_records,
+            'total_sessions': total_sessions,
+            'total_present': total_present,
+            'total_absent': total_absent,
+        }
+        return render(request, 'platformTK/Prof/attendance_summary.html', context)
+
+    # Render the student selection page
+    return render(request, 'platformTK/Prof/rapports_prof.html', {'students': students})
+
+
+
+
+
+@login_required
+def student_balance_report(request):
+    # Get the groups associated with the logged-in professor
+    professor_groups = Groups.objects.filter(profs=request.user.prof)
+
+    # Create a context to store the report data
+    report_data = []
+
+    for group in professor_groups:
+        # For each group, get the students and their points from Membership
+        membership_data = Membership.objects.filter(group=group)
+
+        student_balances = []
+        for membership in membership_data:
+            student = membership.etudiant
+            if student:  # Ensure student exists (not None)
+                balance = membership.pointsG  # Get the balance from the Membership model
+                student_balances.append({
+                    'student_name': f"{student.prenom} {student.nom}",
+                    'balance': balance
+                })
+            else:
+                # Handle case where there's no student associated with this membership
+                student_balances.append({
+                    'student_name': 'No Student Assigned',
+                    'balance': membership.pointsG
+                })
+
+        # Add the group and its associated student balances to the report data
+        report_data.append({
+            'group_name': group.name,
+            'students': student_balances
+        })
+
+    # Render the report in a template
+    return render(request, 'platformTK/Prof/student_balance_report.html', {'report_data': report_data})
+
+
+
+
+
+
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from .models import Etudiant, Groups, Competitions
+
+@login_required
+def competition_history_for_prof(request):
+    # Get the logged-in professor
+    professor = request.user.prof  # Assuming the professor is linked to the user
+
+    # Get all the groups the professor is associated with
+    groups = professor.groups.all()
+
+    # Prepare the competition data with competitions fetched through the student's groups
+    competition_data = []
+
+    for group in groups:
+        students_in_group = group.etudiants.all()  # Get all students in the group
+
+        for student in students_in_group:
+            # Gather competitions for each group the student is a part of
+            competitions = group.competitions.all()
+            competition_data.append({
+                'student_name': f"{student.prenom} {student.nom}",
+                'student': student,  # Include the student object
+                'group': group,  # Include the group the student belongs to
+                'competitions': competitions  # Competitions related to the group
+            })
+
+    return render(request, 'platformTK/Prof/competition_history_for_prof.html', {
+        'competition_data': competition_data,
+        'professor': professor
+    })
+
+
+
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from .models import Attendance, Groups
+
+@login_required
+def participation_discipline_history(request):
+    professor = request.user.prof  # Get the logged-in professor
+    groups = professor.groups.all()  # Get all groups the professor is associated with
+
+    # Get the selected group from GET parameters (if specified)
+    group_id = request.GET.get('group_id')
+    
+    # Filter attendance records based on selected group or all groups
+    if group_id and group_id.isdigit():
+        selected_group = groups.filter(id=group_id).first()
+        if selected_group:
+            attendance_records = Attendance.objects.filter(group=selected_group)
+        else:
+            attendance_records = Attendance.objects.filter(group__in=groups)
+    else:
+        selected_group = None
+        attendance_records = Attendance.objects.filter(group__in=groups)
+
+    return render(request, 'platformTK/Prof/participation_discipline_history.html', {
+        'attendance_records': attendance_records,
+        'groups': groups,
+        'selected_group': selected_group
+    })
+
+
+
+
+# from django.shortcuts import render
+# from django.contrib.auth.decorators import login_required
+# from django.db.models import Avg
+# from .models import Attendance, Groups
+
+# @login_required
+# def participation_discipline_history(request):
+#     professor = request.user.prof
+#     groups = professor.groups.all()  # Get all groups the professor is associated with
+
+#     # Get the selected group from GET parameters (if specified)
+#     group_id = request.GET.get('group_id')
+    
+#     # Filter attendance records based on selected group or all groups
+#     if group_id and group_id.isdigit():
+#         selected_group = groups.filter(id=group_id).first()
+#         if selected_group:
+#             attendance_records = Attendance.objects.filter(group=selected_group)
+#         else:
+#             attendance_records = Attendance.objects.filter(group__in=groups)
+#     else:
+#         selected_group = None
+#         attendance_records = Attendance.objects.filter(group__in=groups)
+
+#     # Calculate average participation and discipline for each student
+#     student_averages = (
+#         attendance_records
+#         .values('student', 'student__prenom', 'student__nom')
+#         .annotate(
+#             avg_participation=Avg('participation'),
+#             avg_discipline=Avg('discipline')
+#         )
+#     )
+
+#     return render(request, 'platformTK/Prof/participation_discipline_history.html', {
+#         'student_averages': student_averages,
+#         'groups': groups,
+#         'selected_group': selected_group
+#     })
+
+
+
+
 @login_required(login_url='login')
 @allowedUsers(allowedGroups=['SuperAdmin'])
 def homeSuperAdmin(requset):

@@ -1,0 +1,79 @@
+{% extends "platformTK/Prof/HomeBase.html" %}
+{% load static %}
+{% load custom_filters %}
+
+{% block content %}
+{% include 'platformTK/Prof/navbar.html' %}
+
+<div class="container py-5">
+    <h2 class="text-center mb-4">Competition History</h2>
+    <h4 class="text-center mb-4">Professor: {{ professor.prenom }} {{ professor.nom }}</h4>
+
+    <div class="card shadow-lg">
+        <div class="card-body">
+            <h5 class="card-title mb-4">Competitions Overview</h5>
+
+            <!-- Table of Competitions -->
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>Student Name</th>
+                            <th>Groups</th>
+                            <th>Details</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for student_data in competition_data %}
+                            <tr>
+                                <td>{{ student_data.student_name }}</td>
+                                <td>
+                                    <!-- Display the group that the student belongs to -->
+                                    <span>{{ student_data.group.name }}</span>
+                                </td>
+                                <td>
+                                    <!-- Trigger modal to show all competitions -->
+                                    <button class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#detailsModal{{ forloop.counter }}">
+                                        View All Competitions
+                                    </button>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Template for competition details -->
+    {% for student_data in competition_data %}
+        <div class="modal fade" id="detailsModal{{ forloop.counter }}" tabindex="-1" aria-labelledby="detailsModalLabel{{ forloop.counter }}" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="detailsModalLabel{{ forloop.counter }}">Competition Details for {{ student_data.student_name }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        {% if student_data.competitions %}
+                            <!-- Loop through competitions related to the group -->
+                            {% for competition in student_data.competitions %}
+                                <p><strong>Competition:</strong> {{ competition.name }}</p>
+                                <p><strong>Number of Sections:</strong> {{ competition.number_of_sections }}</p>
+                                <p><strong>Is Finished:</strong> {{ competition.is_finished }}</p>
+                                <hr>
+                            {% endfor %}
+                        {% else %}
+                            <p>No competitions available.</p>
+                        {% endif %}
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+
+{% endblock %}

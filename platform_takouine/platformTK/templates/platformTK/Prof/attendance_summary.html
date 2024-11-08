@@ -1,0 +1,53 @@
+{% extends "platformTK/Prof/HomeBase.html" %}
+{% load static %}
+{% load custom_filters %}
+
+{% block content %}
+{% include 'platformTK/Prof/navbar.html' %}
+
+<div class="container mt-5">
+
+    <h1>Rapport d'Absence pour {{ student.prenom|capitalize_first  }} {{ student.nom|capitalize_first  }}</h1>
+
+    <p>Total des séances: {{ total_sessions }}</p>
+    <p>Absences: {{ total_absent }}</p>
+    <p>Présence: {{ total_present }}</p>
+    <div class="table-responsive">
+    <h2>Détails des Séances</h2>
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Séance</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for record in attendance_records %}
+            <tr>
+                <td>{{ record.date }}</td>
+                <td>{{ record.class_instance.name }}</td>
+                <td>
+                    {% if record.is_present %}
+                        Present
+                    {% else %}
+                        Absent
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+
+    {% comment %} <h3>Summary</h3>
+    <p>Total Sessions: {{ total_sessions }}</p>
+    <p>Total Present: {{ total_present }}</p>
+    <p>Total Absent: {{ total_absent }}</p> {% endcomment %}
+
+    <a href="{% url 'rapports_prof' %}" class="btn btn-secondary">Back to Student Selection</a>
+
+<br><br><br>
+</div></div>
+
+{% endblock %}

@@ -1,0 +1,56 @@
+{% extends "platformTK/Prof/HomeBase.html" %}
+
+{% load static %}
+
+{% block content %}
+    {% include 'platformTK/Prof/navbar.html' %}
+
+<div class="container mt-5">
+    <h1 class="text-center">Absence des utilisateurs par groupes</h1>
+    <p><strong>Professeur:</strong> {{ professor.prenom }} {{ professor.nom }}</p>
+
+    {% for group, students in attendance_data.items %}
+        <div class="card mt-4">
+            <div class="card-header">
+                <h3>Groupe: {{ group.name }} ({{ group.language }})</h3>
+            </div>
+            <div class="card-body">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Étudiant</th>
+                            <th>Date</th>
+                            <th>Présence</th>
+                            <th>Participation</th>
+                            <th>Discipline</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for student_info in students %}
+                            {% for record in student_info.attendance_records %}
+                                <tr>
+                                    <td>{{ student_info.student.prenom }} {{ student_info.student.nom }}</td>
+                                    <td>{{ record.date }}</td>
+                                    <td>
+                                        {% if record.is_present %}
+                                            Présent
+                                        {% else %}
+                                            Absent
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ record.participation }}</td>
+                                    <td>{{ record.discipline }}</td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="5">No attendance records found for this student.</td>
+                                </tr>
+                            {% endfor %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}

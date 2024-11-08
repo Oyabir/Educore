@@ -44,6 +44,13 @@ urlpatterns = [
     path('group/<str:code_group>/birthday/',views.birthday_list, name='birthday_list'),
 
     path('change-password-prof/', views.change_password_prof, name='change_password_prof'),
+    path('rapports_prof/', views.rapports_prof, name='rapports_prof'),
+    path('attendance_by_group_for_prof/', views.attendance_by_group_for_prof, name='attendance_by_group_for_prof'),
+    path('absence_by_student_for_prof/', views.absence_by_student_for_prof, name='absence_by_student_for_prof'),
+    path('student_balance_report/', views.student_balance_report, name='student_balance_report'),
+    path('competition_history_for_prof/', views.competition_history_for_prof, name='competition_history_for_prof'),
+    path('participation_discipline_history/', views.participation_discipline_history, name='participation_discipline_history'),
+
 
     
     

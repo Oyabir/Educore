@@ -1,0 +1,34 @@
+{% extends "platformTK/Prof/HomeBase.html" %}
+{% load static %}
+{% load custom_filters %}
+
+{% block content %}
+{% include 'platformTK/Prof/navbar.html' %}
+
+<div class="container mt-5">
+  <h1>Rapport des soldes des apprenants</h1>
+  <br>
+
+  {% for group in report_data %}
+    <h2>{{ group.group_name }}</h2>
+    <div class="card-body">
+        <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Student Name</th>
+                <th>Balance</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for student in group.students %}
+                <tr>
+                    <td>{{ student.student_name }}</td>
+                    <td>{{ student.balance }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+        </table>
+    </div>
+  {% endfor %}
+</div>
+{% endblock %}

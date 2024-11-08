@@ -1,0 +1,131 @@
+{% extends "platformTK/Prof/HomeBase.html" %}
+{% load static %}
+{% load custom_filters %}
+
+{% block content %}
+{% include 'platformTK/Prof/navbar.html' %}
+
+<div class="container py-5">
+    <h2 class="text-center mb-4">Participation and Discipline History</h2>
+
+    <!-- Dropdown to select group or view all -->
+    <form method="get" class="text-center mb-4">
+        <label for="group_id">Select Group:</label>
+        <select name="group_id" id="group_id" class="form-select d-inline-block w-auto">
+            <option value="">All Groups</option>
+            {% for group in groups %}
+                <option value="{{ group.id }}" {% if selected_group and group.id == selected_group.id %}selected{% endif %}>
+                    {{ group.name }}
+                </option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="btn btn-primary">Filter</button>
+    </form>
+
+    <!-- Attendance Table -->
+    <div class="card shadow-lg">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th>Group</th>
+                            <th>Class</th>
+                            <th>Date</th>
+                            <th>Participation</th>
+                            <th>Discipline</th>
+                            <th>Presence</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for record in attendance_records %}
+                            <tr>
+                                <td>{{ record.student.prenom|capitalize_first }} {{ record.student.nom|capitalize_first }}</td>
+                                <td>{{ record.group.name }}</td>
+                                <td>{{ record.class_instance.name }}</td>
+                                <td>{{ record.date }}</td>
+                                <td>{{ record.participation }}</td>
+                                <td>{{ record.discipline }}</td>
+                                <td>
+                                    {% if record.is_present %}
+                                        Present
+                                    {% else %}
+                                        Absent
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="7" class="text-center">No attendance records available.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+
+
+{% comment %} 
+
+
+{% extends "platformTK/Prof/HomeBase.html" %}
+{% load static %}
+
+{% block content %}
+{% include 'platformTK/Prof/navbar.html' %}
+
+<div class="container py-5">
+    <h2 class="text-center mb-4">Participation and Discipline History</h2>
+
+    <!-- Dropdown to select group or view all -->
+    <form method="get" class="text-center mb-4">
+        <label for="group_id">Select Group:</label>
+        <select name="group_id" id="group_id" class="form-select d-inline-block w-auto">
+            <option value="">All Groups</option>
+            {% for group in groups %}
+                <option value="{{ group.id }}" {% if selected_group and group.id == selected_group.id %}selected{% endif %}>
+                    {{ group.name }}
+                </option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="btn btn-primary">Filter</button>
+    </form>
+
+    <!-- Attendance Table -->
+    <div class="card shadow-lg">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>Student</th>
+                            <th>Average Participation</th>
+                            <th>Average Discipline</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for student in student_averages %}
+                            <tr>
+                                <td>{{ student.student__prenom }} {{ student.student__nom }}</td>
+                                <td>{{ student.avg_participation|floatformat:1 }}</td>
+                                <td>{{ student.avg_discipline|floatformat:1 }}</td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="3" class="text-center">No attendance records available.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %} {% endcomment %}
