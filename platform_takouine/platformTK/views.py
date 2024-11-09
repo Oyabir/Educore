@@ -497,6 +497,134 @@ def homeParents(request):
 
 
 
+@login_required(login_url='login')
+@allowedUsers(allowedGroups=['Parents'])
+def rapports_parents(request):
+   
+    # context = {
+    #     'student_data': student_data,  # Pass the list of student data to the template
+    #     'num_etudiants': num_etudiants,
+    # }
+
+    return render(request, "platformTK/Parents/rapports_parents.html")
+
+
+from django.shortcuts import render, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from .models import Attendance, Etudiant, Parents
+
+@login_required
+def attendance_report_for_parent(request):
+    # Get the logged-in parent
+    parent = request.user.parents
+
+    # Get the children (Etudiants) associated with the parent
+    children = parent.etudiants.all()
+
+    # Get the selected child ID from GET parameters (if specified)
+    etudiant_id = request.GET.get('etudiant_id')
+    
+    if etudiant_id and etudiant_id.isdigit():
+        # Filter attendance records for the selected child
+        selected_child = get_object_or_404(Etudiant, id=etudiant_id, parents=parent)
+        attendance_records = Attendance.objects.filter(student=selected_child)
+
+        # Calculate attendance summary
+        total_sessions = attendance_records.count()
+        present_count = attendance_records.filter(is_present=True).count()
+        absent_count = total_sessions - present_count
+    else:
+        selected_child = None
+        attendance_records = None
+        total_sessions = 0
+        present_count = 0
+        absent_count = 0
+
+    # Pass data to the template
+    return render(request, 'platformTK/Parents/attendance_report.html', {
+        'children': children,
+        'selected_child': selected_child,
+        'attendance_records': attendance_records,
+        'total_sessions': total_sessions,
+        'present_count': present_count,
+        'absent_count': absent_count
+    })
+
+
+
+
+
+@login_required
+def competition_history_for_parent(request):
+    # Get the logged-in parent
+    parent = request.user.parents
+
+    # Get the children (Etudiants) associated with the parent
+    children = parent.etudiants.all()
+
+    # Get the selected child ID from GET parameters (if specified)
+    etudiant_id = request.GET.get('etudiant_id')
+    
+    if etudiant_id and etudiant_id.isdigit():
+        # Filter competition history and total points for the selected child
+        selected_child = get_object_or_404(Etudiant, id=etudiant_id, parents=parent)
+        
+        # Get the sections for the selected child (assuming child is linked to sections through the `sections` many-to-many relationship)
+        sections = selected_child.sections.all()
+
+        # Sum the points from the sections
+        total_points = sum([section.points for section in sections])
+
+        # Retrieve unique competitions related to the sections
+        competitions = {section.competition for section in sections}
+    else:
+        selected_child = None
+        competitions = None
+        total_points = 0
+
+    # Pass data to the template
+    return render(request, 'platformTK/Parents/competition_history.html', {
+        'children': children,
+        'selected_child': selected_child,
+        'competitions': competitions,
+        'total_points': total_points,
+    })
+
+
+
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from .models import Parents, Etudiant, Attendance
+
+@login_required
+def participation_history(request):
+    # Ensure the logged-in user is a parent
+    parent = Parents.objects.get(user=request.user)
+
+    # Get all Etudiants related to this parent
+    etudiants = parent.etudiants.all()
+
+    # Get the selected Etudiant from the POST request or default to the first one
+    selected_etudiant_id = request.POST.get('etudiant_id')
+    selected_etudiant = Etudiant.objects.get(id=selected_etudiant_id) if selected_etudiant_id else etudiants.first()
+
+    # Fetch the participation and discipline data for the selected Etudiant
+    attendances = Attendance.objects.filter(student=selected_etudiant)
+
+    # Pass data to the template
+    return render(request, 'platformTK/Parents/participation_history.html', {
+        'parent': parent,
+        'etudiants': etudiants,
+        'selected_etudiant': selected_etudiant,
+        'attendances': attendances
+    })
+
+
+
+
+
+
+
 
 @login_required(login_url='login')
 @allowedUsers(allowedGroups=['Parents'])
@@ -1653,6 +1781,40 @@ def participation_discipline_history(request):
 #         'groups': groups,
 #         'selected_group': selected_group
 #     })
+
+
+
+
+from django.shortcuts import render, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from .models import Attendance, Etudiant, Groups
+
+@login_required
+def student_participation_discipline_history(request):
+    professor = request.user.prof  # Get the logged-in professor
+
+    # Get all groups the professor is associated with
+    professor_groups = professor.groups.all()
+    
+    # Get students who are in these groups
+    students = Etudiant.objects.filter(groups__in=professor_groups).distinct() 
+
+    # Get the selected student from GET parameters (if specified)
+    student_id = request.GET.get('student_id')
+    
+    # Filter attendance records based on selected student
+    if student_id and student_id.isdigit():
+        selected_student = get_object_or_404(Etudiant, id=student_id, groups__in=professor_groups)
+        attendance_records = Attendance.objects.filter(student=selected_student)
+    else:
+        selected_student = None
+        attendance_records = None  # No records if no student is selected
+
+    return render(request, 'platformTK/Prof/student_participation_discipline_history.html', {
+        'attendance_records': attendance_records,
+        'students': students,
+        'selected_student': selected_student
+    })
 
 
 

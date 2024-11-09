@@ -50,6 +50,7 @@ urlpatterns = [
     path('student_balance_report/', views.student_balance_report, name='student_balance_report'),
     path('competition_history_for_prof/', views.competition_history_for_prof, name='competition_history_for_prof'),
     path('participation_discipline_history/', views.participation_discipline_history, name='participation_discipline_history'),
+    path('participation_discipline_history/student/', views.student_participation_discipline_history, name='student_participation_discipline_history'),
 
 
     
@@ -180,6 +181,10 @@ urlpatterns = [
     path('competitions/', views.parent_competitions, name='parent_competitions'),
     path('profil_parent/', views.profil_parent, name='profil_parent'),
     path('update-profil/', views.update_profil_parent, name='update_profil_parent'),
+    path('rapports_parents/', views.rapports_parents, name='rapports_parents'),
+    path('participation_discipline_history/attendance_report/', views.attendance_report_for_parent, name='attendance_report_for_parent'),
+    path('participation_discipline_history/competition_history/', views.competition_history_for_parent, name='competition_history_for_parent'),
+    path('participation_history/', views.participation_history, name='participation_history'),
 
 
 

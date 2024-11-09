@@ -1,0 +1,43 @@
+{% extends "platformTK/Parents/HomeBase.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container py-5">
+    <h2 class="text-center mb-4">Competition History and Total Points</h2>
+
+    <!-- Dropdown to select child -->
+    <form method="get" class="text-center mb-4">
+        <label for="etudiant_id">Select Child:</label>
+        <select name="etudiant_id" id="etudiant_id" class="form-select d-inline-block w-auto">
+            <option value="">Select Child</option>
+            {% for child in children %}
+                <option value="{{ child.id }}" {% if selected_child and child.id == selected_child.id %}selected{% endif %}>
+                    {{ child.prenom }} {{ child.nom }}
+                </option>
+            {% endfor %}
+        </select>
+        <button type="submit" class="btn btn-primary">Generate Report</button>
+    </form>
+
+    {% if selected_child %}
+        <!-- Display Competitions and Total Points for selected child -->
+        <div class="child-history">
+            <h3>{{ selected_child.prenom }} {{ selected_child.nom }}</h3>
+            <p>Total Points Earned: {{ total_points }} $</p>
+            <p>Total Points Global: {{ selected_child.points }} $</p>
+
+
+            <h4>Competitions:</h4>
+            <ul>
+                {% for competition in competitions %}
+                    <li>{{ competition.name }} - Sections: {{ competition.number_of_sections }} - Date: {{ competition.date_created }}</li>
+                {% empty %}
+                    <li>No competitions found for this student.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% else %}
+        <p class="text-center">Please select a child to view the competition history and points.</p>
+    {% endif %}
+</div>
+{% endblock %}

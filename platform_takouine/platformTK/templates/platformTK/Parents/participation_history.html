@@ -1,0 +1,41 @@
+{% extends "platformTK/Parents/HomeBase.html" %}
+{% load static %}
+
+{% block content %}
+    <h1>Historique de Participation et Discipline</h1>
+
+    <form method="POST">
+        {% csrf_token %}
+        <label for="etudiant">Sélectionner un Étudiant:</label>
+        <select name="etudiant_id" id="etudiant">
+            {% for etudiant in etudiants %}
+                <option value="{{ etudiant.id }}" {% if etudiant == selected_etudiant %}selected{% endif %}>
+                    {{ etudiant.prenom }} {{ etudiant.nom }}
+                </option>
+            {% endfor %}
+        </select>
+        <button type="submit">Voir l'historique</button>
+    </form>
+
+    <h2>Historique de {{ selected_etudiant.prenom }} {{ selected_etudiant.nom }}</h2>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Discipline</th>
+                <th>Participation</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for attendance in attendances %}
+                <tr>
+                    <td>{{ attendance.date }}</td>
+                    <td>{{ attendance.discipline }}</td>
+                    <td>{{ attendance.participation }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+{% endblock %}
