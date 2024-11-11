@@ -68,6 +68,125 @@ def userLogout(request):
 
 
 
+
+
+def center_list(request):
+    centers = Center.objects.all()
+    return render(request, 'platformTK/SuperAdmin/center_list.html', {'centers': centers})
+
+
+
+
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from .models import Center
+
+def add_center(request):
+    if request.method == 'POST':
+        name = request.POST.get('name')
+        address = request.POST.get('address')
+        phone = request.POST.get('phone')
+        email = request.POST.get('email')
+
+        # Optionally add validation logic here
+
+        # Create and save the Center instance
+        center = Center(name=name, address=address, phone=phone, email=email)
+        center.save()
+        
+        messages.success(request, "Center ajouté avec succès.")
+        return redirect('center_list')
+
+    return redirect('center_list')
+
+
+
+
+
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib import messages
+from .models import Center
+
+def edit_center(request):
+    if request.method == 'POST':
+        center_id = request.POST.get('center_id')
+        name = request.POST.get('name')
+        address = request.POST.get('address')
+        phone = request.POST.get('phone')
+        email = request.POST.get('email')
+
+        if center_id and name and address and phone and email:
+            center = get_object_or_404(Center, id=center_id)
+            center.name = name
+            center.address = address
+            center.phone = phone
+            center.email = email
+            center.save()
+
+            messages.success(request, "Centre modifié avec succès.")
+        else:
+            messages.error(request, "Veuillez fournir toutes les informations nécessaires.")
+
+        return redirect('center_list')  # Redirect to the center list page
+
+    return redirect('center_list')  # In case of invalid request
+
+
+
+
+
+
+
+def delete_center(request, center_id):
+    center = get_object_or_404(Center, id=center_id)  # Fetch the center by its ID
+    center.delete()  # Delete the center
+    messages.success(request, "Centre supprimé avec succès.")  # Add success message
+    return redirect('center_list')  # Redirect to the list page
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 from django.utils import timezone
 
 def is_birthday(etudiant):
@@ -1984,6 +2103,8 @@ def download_students_attendance_pdf(request, class_code):
 @login_required(login_url='login')
 @allowedUsers(allowedGroups=['SuperAdmin'])
 def add_groupe(request):
+    centers = Center.objects.all()
+
     name_filter = request.GET.get('name', '')
     code_group_filter = request.GET.get('code_group', '')
 
@@ -2007,6 +2128,7 @@ def add_groupe(request):
         'profs': profs,
         'name_filter': name_filter,
         'code_group_filter': code_group_filter,
+        'centers': centers,
     })
 
 
@@ -2048,12 +2170,18 @@ def add_student(request):
 
 
 
+
+
+
 @login_required(login_url='login')
 @allowedUsers(allowedGroups=['SuperAdmin'])
 def group_list(request):
     if request.method == 'POST':
         group_name = request.POST.get('group_name')
         description = request.POST.get('description')
+        center_id = request.POST.get('center')  # Capture the selected center
+        language = request.POST.get('language')  # Capture the selected language
+
         student_ids_str = request.POST.get('students', '')
         prof_ids_str = request.POST.get('profs', '')
 
@@ -2061,8 +2189,11 @@ def group_list(request):
             student_ids = [int(id) for id in student_ids_str.split(',') if id.isdigit()]
             prof_ids = [int(id) for id in prof_ids_str.split(',') if id.isdigit()]
 
-            # Create and save the new group
-            group = Groups(name=group_name, description=description)
+            # Get the Center instance
+            center = Center.objects.get(id=center_id)
+
+            # Create and save the new group, including the language field
+            group = Groups(name=group_name, description=description, center=center, language=language)
             group.save()
 
             # Add students and professors to the group
@@ -2073,7 +2204,7 @@ def group_list(request):
             group.profs.set(profs)
             group.save()
 
-            # Create Membership
+            # Create Memberships for students
             for student in students:
                 Membership.objects.create(etudiant=student, group=group, pointsG=0)
 
@@ -2082,8 +2213,10 @@ def group_list(request):
         except Exception as e:
             messages.error(request, f'Error occurred while creating the group: {str(e)}')
 
-        return redirect('add_groupe') 
+        return redirect('add_groupe')
 
+    # Get all centers, students, professors, and groups
+    centers = Center.objects.all()
     etudiants = Etudiant.objects.all()
     profs = prof.objects.all()
     groups = Groups.objects.all()
@@ -2091,32 +2224,41 @@ def group_list(request):
     return render(request, 'platformTK/SuperAdmin/add_groupe.html', {
         'groups': groups,
         'etudiants': etudiants,
-        'profs': profs
+        'profs': profs,
+        'centers': centers,  # Pass centers to the template
     })
 
 
 
 
-@login_required(login_url='login')
-@allowedUsers(allowedGroups=['SuperAdmin'])
 def edit_group(request):
     if request.method == 'POST':
         group_id = request.POST.get('group_id')
         name = request.POST.get('name')
         description = request.POST.get('description')
-        
-        if group_id and name and description:
+        language = request.POST.get('language')  # Capture the selected language
+        center_id = request.POST.get('center')  # Capture the selected center
+
+        if group_id and name and description and language and center_id:
             group = get_object_or_404(Groups, id=group_id)
             group.name = name
             group.description = description
+            group.language = language  # Update the language field
+            group.center = Center.objects.get(id=center_id)  # Update the center field
             group.save()
+
             messages.success(request, 'Group updated successfully!')
         else:
             messages.error(request, 'Please provide all required fields.')
-        
-        return redirect('add_groupe')  
 
-    return redirect('add_groupe') 
+        return redirect('add_groupe')  # Redirect back to the group list page
+
+    # Get all centers to populate the dropdown in the modal
+    centers = Center.objects.all()
+    return render(request, 'platformTK/SuperAdmin/edit_group.html', {'centers': centers})
+
+
+
 
 
 

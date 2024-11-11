@@ -5,6 +5,32 @@ import uuid
 
 
 
+def generate_center_code():
+    unique_id = str(uuid.uuid4()).replace('-', '')[:8]  
+    return f"Center-{unique_id}"
+
+
+class Center(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+    address = models.TextField(blank=True, null=True)
+    phone = models.CharField(max_length=20, blank=True, null=True)
+    email = models.EmailField(blank=True, null=True)
+    code = models.CharField(max_length=100, unique=True, blank=True, default=generate_center_code)
+    slug = models.SlugField(unique=True, blank=True, null=True)
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super(Center, self).save(*args, **kwargs)
+
+    def __str__(self):
+        return self.name
+
+
+
+
+
+
 def generate_etudiant_code():
     unique_id = str(uuid.uuid4()).replace('-', '')[:8]  # Take the first 8 characters of the UUID
     return f"TK-{unique_id}"
@@ -131,7 +157,6 @@ def generate_group_code():
 
 
 
-
 class Groups(models.Model):
     name = models.CharField(max_length=100)
     description = models.CharField(max_length=300)
@@ -140,7 +165,7 @@ class Groups(models.Model):
     profs = models.ManyToManyField('Prof', related_name='groups')
     date_created = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     language = models.CharField(max_length=50, choices=[('Anglais', 'Anglais'), ('Français', 'Français')])
-
+    center = models.ForeignKey(Center, on_delete=models.SET_NULL, related_name='groups', null=True, blank=True) 
 
     def save(self, *args, **kwargs):
         if not self.code_group:
@@ -149,7 +174,7 @@ class Groups(models.Model):
 
     def __str__(self):
         return self.name
-    
+
     @property
     def student_names(self):
         return ', '.join(f'{student.prenom} {student.nom}' for student in self.etudiants.all())
@@ -169,6 +194,7 @@ class Groups(models.Model):
     @property
     def total_present(self):
         return Attendance.objects.filter(group=self, is_present=True).count()
+
 
 
 

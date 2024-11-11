@@ -82,8 +82,12 @@
                     </td>
                     <td>
                         <!-- Trigger for Edit Group Modal -->
-                        <button class="btn btn-warning btn-sm" onclick="openEditModal('{{ group.id }}', '{{ group.name }}', '{{ group.description }}')" style="width: 114px;margin-bottom: 10px;">Modifier</button>
-
+                        <button class="btn btn-warning btn-sm" 
+                        onclick="openEditModal('{{ group.id }}', '{{ group.name }}', '{{ group.description }}', '{{ group.language }}', '{{ group.center.id }}')" 
+                        style="width: 114px;margin-bottom: 10px;">
+                            Modifier
+                        </button>
+                
                         <!-- Trigger for Delete Confirmation Modal -->
                         <button class="btn btn-danger btn-sm" onclick="openDeleteModal('{{ group.id }}', '{{ group.name }}')">Supprimer</button>                   
                     </td>
@@ -189,25 +193,57 @@
 
 
 <!-- Edit Group Modal -->
-<div id="editGroupModal" class="modal-overlay" tabindex="-1" role="dialog" style="display:none;">
-    <div class="modal-content">
-        <h5>Modifier le groupe</h5>
+<div id="editGroupModal" class="modal" tabindex="-1" role="dialog" style="display:none;">
+    <div class="modal-content" style="margin-top: -56px;">
+        <div class="modal-header">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h5>Modifier le groupe</h5>
+        </div>
         <form method="post" action="{% url 'edit_group' %}">
             {% csrf_token %}
             <input type="hidden" id="group_id" name="group_id">
+            
+            <!-- Group Name -->
             <div class="mb-3">
                 <label for="name" class="form-label">Nom du groupe</label>
                 <input type="text" class="form-control" id="name" name="name" required>
             </div>
+
+            <!-- Group Description -->
             <div class="mb-3">
                 <label for="description" class="form-label">Description</label>
                 <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
             </div>
+
+            <!-- Language Dropdown -->
+            <div class="mb-3">
+                <label for="language" class="form-label">Langue</label>
+                <select class="form-control" id="language" name="language" required>
+                    <option value="Français">Français</option>
+                    <option value="Anglais">Anglais</option>
+                </select>
+            </div>
+
+            <!-- Center Dropdown -->
+            <div class="mb-3">
+                <label for="center" class="form-label">Centre</label>
+                <select class="form-control" id="center" name="center" required>
+                    {% for center in centers %}
+                        <option value="{{ center.id }}">{{ center.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Submit Button -->
             <button type="submit" class="btn btn-primary">Enregistrer les modifications</button>
             <button type="button" class="btn btn-secondary" onclick="closeEditModal();">Fermer</button>
         </form>
     </div>
 </div>
+
+
+
+
 
 <style>
     /* Modal Overlay */
@@ -247,16 +283,24 @@
 
 
 <script>
-    function openEditModal(groupId, groupName, groupDescription) {
-        document.getElementById('editGroupModal').style.display = 'flex';
+    function openEditModal(groupId, groupName, groupDescription, groupLanguage, groupCenterId) {
+        // Set the values of the form fields in the modal
         document.getElementById('group_id').value = groupId;
         document.getElementById('name').value = groupName;
         document.getElementById('description').value = groupDescription;
+        document.getElementById('language').value = groupLanguage;  // Set the language field
+        document.getElementById('center').value = groupCenterId;    // Set the center field
+    
+        // Show the modal
+        document.getElementById('editGroupModal').style.display = 'block';
     }
     
     function closeEditModal() {
+        // Close the modal
         document.getElementById('editGroupModal').style.display = 'none';
     }
+    
+    
     
     // Ensure the modal is hidden by default
     document.addEventListener('DOMContentLoaded', function() {
@@ -285,6 +329,27 @@
                 <div class="mb-3">
                     <label for="description" class="form-label">Description</label>
                     <textarea class="form-control" id="description" name="description" rows="1" required></textarea>
+                </div>
+
+                <div class="mb-3">
+                    <label for="language" class="form-label">Language</label>
+                    <select class="form-control" id="language" name="language">
+                        <option value="Français" {% if group.language == 'Français' %}selected{% endif %}>Français</option>
+                        <option value="Anglais" {% if group.language == 'Anglais' %}selected{% endif %}>Anglais</option>
+                    </select>
+                </div>
+
+
+
+                <!-- Center Selection -->
+                <div class="mb-3">
+                    <label for="center" class="form-label">Sélectionner un Centre</label>
+                    <select class="form-control" id="center" name="center" required>
+                        <option value="" disabled selected>Choisir un centre</option>
+                        {% for center in centers %}
+                            <option value="{{ center.id }}">{{ center.name }}</option>
+                        {% endfor %}
+                    </select>
                 </div>
 
                 <!-- Students Section -->
@@ -347,6 +412,7 @@
         </div>
     </div>
 </div>
+
 
 
 

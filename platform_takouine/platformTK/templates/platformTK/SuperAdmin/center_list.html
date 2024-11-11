@@ -1,0 +1,299 @@
+{% extends "platformTK/SuperAdmin/HomeBase.html" %}
+{% load static %}
+{% load custom_filters %}
+
+{% block content %}
+{% include 'platformTK/SuperAdmin/navbar.html' %}
+
+<div class="container mt-5">
+    {% if messages %}
+    <div id="message-container">
+        {% for message in messages %}
+            {% if message.tags == 'error' %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endif %}
+            {% if message.tags == 'success' %}
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+{% endif %}
+
+<script>
+    setTimeout(function() {
+        var messageContainer = document.getElementById('message-container');
+        if (messageContainer) {
+            messageContainer.style.display = 'none';
+        }
+    }, 5000);
+</script>
+
+ 
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-center">Centers</h2>
+        <button class="btn btn-primary" onclick="openModal()">Ajouter un Center</button>
+        {% if error %}
+            <p style="color: red;">{{ error }}</p>
+        {% endif %}
+    </div>
+    
+
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>Nom</th>
+                    <th>Address</th>
+                    <th>Téléphone</th>
+                    <th>Email</th>
+                    <th>Code Center</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for center in centers %}
+                <tr>
+                    <td>{{ center.name}}</td>
+                    <td>{{ center.address}}</td>
+                    <td>{{ center.phone}}</td>
+                    <td>{{ center.email}}</td>
+                    <td>{{ center.code}}</td>
+                    <td>
+                        <button class="btn btn-warning btn-sm"
+                            onclick="openEditModal('{{ center.id }}', '{{ center.name|escapejs }}', '{{ center.address|escapejs }}', '{{ center.phone }}', '{{ center.email }}')"
+                            style="width: 114px; margin-bottom: 10px;">
+                        Modifier
+                    </button>     
+
+                    <button type="button" class="btn btn-danger btn-sm"
+                            onclick="openDeleteModal('{{ center.id }}', '{{ center.name|escapejs }}')">
+                        Supprimer
+                    </button>
+
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+
+    <!-- Delete Confirmation Modal -->
+<div id="deleteConfirmationModal" class="modal" tabindex="-1" role="dialog" style="display:none;">
+    <div class="modal-content" style="margin-top: -39px;">
+        <h5>Êtes-vous sûr de vouloir supprimer le centre "<span id="centerName"></span>" ?</h5>
+        <p>Cette action est irréversible.</p>
+        <form id="deleteForm" method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Supprimer</button>
+            <button type="button" class="btn btn-secondary" onclick="closeDeleteModal();">Annuler</button>
+        </form>
+    </div>
+</div>
+
+
+
+
+<script>
+    function openDeleteModal(centerId, centerName) {
+        // Set the center name in the modal
+        document.getElementById('centerName').textContent = centerName;
+
+        // Set the form's action to delete the selected center
+        const deleteForm = document.getElementById('deleteForm');
+        deleteForm.action = `{% url 'delete_center' 0 %}`.replace('0', centerId);
+        
+        // Show the modal
+        document.getElementById('deleteConfirmationModal').style.display = 'block';
+    }
+
+    function closeDeleteModal() {
+        // Close the modal
+        document.getElementById('deleteConfirmationModal').style.display = 'none';
+    }
+</script>
+
+
+
+
+
+    
+<!-- Edit Center Modal -->
+<div id="editCenterModal" class="modal" tabindex="-1" role="dialog" style="display:none;">
+    <div class="modal-content" style="margin-top: -39px;">
+        <h5>Modifier le centre</h5>
+        <form method="post" action="{% url 'edit_center' %}">
+            {% csrf_token %}
+            <input type="hidden" id="center_id" name="center_id">
+
+            <div class="mb-3">
+                <label for="name" class="form-label">Nom du centre</label>
+                <input type="text" class="form-control" id="name" name="name" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="address" class="form-label">Adresse</label>
+                <textarea class="form-control" id="address" name="address" rows="3" required></textarea>
+            </div>
+
+            <div class="mb-3">
+                <label for="phone" class="form-label">Téléphone</label>
+                <input type="text" class="form-control" id="phone" name="phone" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" class="form-control" id="email" name="email" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Enregistrer les modifications</button>
+            <button type="button" class="btn btn-secondary" onclick="closeEditModal();">Fermer</button>
+        </form>
+    </div>
+</div>
+
+
+<script>
+    function openEditModal(centerId, centerName, centerAddress, centerPhone, centerEmail) {
+        // Populate the modal fields with the current values of the center
+        document.getElementById('center_id').value = centerId;
+        document.getElementById('name').value = centerName;
+        document.getElementById('address').value = centerAddress;
+        document.getElementById('phone').value = centerPhone;
+        document.getElementById('email').value = centerEmail;
+    
+        // Show the modal by adding the 'active' class
+        document.getElementById('editCenterModal').style.display = 'block';
+    }
+    
+    function closeEditModal() {
+        // Close the modal by removing the 'active' class
+        document.getElementById('editCenterModal').style.display = 'none';
+    }
+    
+    
+</script>
+  
+
+
+
+<!-- Modal Structure -->
+<div id="addCenterModal" class="modal">
+    <div class="modal-content" style="margin-top: -39px;">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <h3>Ajouter un Center</h3>
+        <form method="post" action="{% url 'add_center' %}">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="name" class="form-label">Nom</label>
+                <input type="text" name="name" id="name" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label for="address" class="form-label">Address</label>
+                <textarea name="address" id="address" class="form-control"></textarea>
+            </div>
+            <div class="mb-3">
+                <label for="phone" class="form-label">Téléphone</label>
+                <input type="text" name="phone" id="phone" class="form-control">
+            </div>
+            <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" name="email" id="email" class="form-control">
+            </div>
+            <button type="submit" class="btn btn-primary">Ajouter</button>
+        </form>
+    </div>
+</div>
+
+<!-- JavaScript for Modal -->
+<script>
+    function openModal() {
+        document.getElementById("addCenterModal").style.display = "block";
+    }
+
+    function closeModal() {
+        document.getElementById("addCenterModal").style.display = "none";
+    }
+
+    window.onclick = function(event) {
+        var modal = document.getElementById("addCenterModal");
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+</script>
+
+
+
+
+
+<style>
+    /* CSS for Full Width Modal */
+    .modal {
+        display: none; /* Hidden by default */
+        position: fixed; /* Stay in place */
+        {% comment %} z-index: 1; /* Sit on top */ {% endcomment %}
+        left: 0;
+        top: 0;
+        width: 100%; /* Full width */
+        height: 100%; /* Full height */
+        overflow: auto; /* Enable scroll if needed */
+        background-color: rgba(0,0,0,0.4); /* Black background with opacity */
+    }
+    
+    .modal-content {
+        background-color: #fefefe;
+        margin: 15% auto; /* 15% from the top and centered */
+        padding: 20px;
+        border: 1px solid #888;
+        width: 100%; /* Width of modal content */
+        max-width: 1000px; /* Max width */
+        border-radius: 5px;
+    }
+    
+    .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+    }
+    
+    .close:hover,
+    .close:focus {
+        color: black;
+        text-decoration: none;
+        cursor: pointer;
+    }
+    
+    
+</style>
+
+
+<style>
+    .page-item.active .page-link {
+        z-index: 3;
+        color: #fff;
+        background-color: #176b90;
+        border-color: #176b90;
+    }
+    .page-link {
+        color: #176b90;
+    }
+
+    .modal-header {
+    background-color: #30bb96;
+    }
+    .btn-primary {
+        background-color: #176b90;
+        color: #ffffff;
+    }
+</style>
+
+{% endblock %}

@@ -149,6 +149,15 @@ urlpatterns = [
 
 
 
+    path('center_list/', views.center_list, name='center_list'),
+    path('add-center/', views.add_center, name='add_center'),
+    path('edit-center/', views.edit_center, name='edit_center'),
+    path('delete_center/<int:center_id>/', views.delete_center, name='delete_center'),
+
+
+
+
+
 
 
 
