@@ -42,6 +42,11 @@
         {% if error %}
             <p style="color: red;">{{ error }}</p>
         {% endif %}
+        <a href="{% url 'center_groups' %}"> <button class="btn btn-primary">center_groups</button>
+        <a href="{% url 'center_students' %}"> <button class="btn btn-primary">View Students by Center</button>
+        <a href="{% url 'center_profs' %}"> <button class="btn btn-primary">View Prof by Center</button>
+
+        </a>
     </div>
     
 

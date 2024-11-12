@@ -33,73 +33,83 @@
         }
     }, 5000);
 </script>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="text-center">Groupes</h2>
+    <button class="btn btn-primary" onclick="openModal()" style="background-color: #176b90;">Ajouter un nouveau groupe</button>
+</div>
 
 
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="text-center">Groupes</h2>
-            <button class="btn btn-primary" onclick="openModal()" style="background-color: #176b90;">Ajouter un nouveau groupe</button>
-        </div>
 
-    <!-- Filter Form Start -->
-    <div class="mb-4">
-        <form method="get" class="d-flex">
-            <input type="text" class="form-control me-2" style="height: 42px;" name="name" placeholder="Filtrer par nom" value="{{ name_filter }}">
-            <input type="text" class="form-control me-2" style="height: 42px;" name="code_group" placeholder="Filtrer par code groupe" value="{{ code_group_filter }}">
-            <button type="submit" style="height: 42px;" class="btn btn-primary">Appliquer</button>&nbsp;
-            <a href="{% url 'add_groupe' %}" style="height: 42px;" class="btn btn-secondary">Annuler</a>
-        </form>
-    </div>
-    <!-- Filter Form End -->
 
-    <div class="table-responsive">
-        <table class="table table-striped table-hover">
-            <thead>
-                <tr>
-                    <th>Nom du groupe</th>
-                    <th>Enseignants</th>
-                    <th>Membres</th>
-                    <th>Code du groupe</th>
-                    <th>Gestion de ressources</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for group in groups %}
-                <tr>
-                    <td>{{ group.name }}</td>
-                    <td>
-                        {% for professor in group.profs.all %}
-                            {{ professor.prenom|capitalize_first }} {{ professor.nom|capitalize_first }}{% if not forloop.last %}, {% endif %}
-                        {% empty %}
-                        Aucun Enseignant assigné
-                        {% endfor %}
-                    </td>
-                    <td>{{ group.etudiants.count }}</td>
-                    <td>{{ group.code_group }}</td>
-                    <td>
-                        <a href="{% url 'add_profs_etudiants' group.id %}" class="btn btn-danger btn-sm" style="width: 114px;margin-bottom: 10px;">Ajouter</a>
-                        <a href="{% url 'delete_profs_etudiants' group.id %}" class="btn btn-danger btn-sm">Supprimer</a>
-                    </td>
-                    <td>
-                        <!-- Trigger for Edit Group Modal -->
-                        <button class="btn btn-warning btn-sm" 
-                        onclick="openEditModal('{{ group.id }}', '{{ group.name }}', '{{ group.description }}', '{{ group.language }}', '{{ group.center.id }}')" 
-                        style="width: 114px;margin-bottom: 10px;">
-                            Modifier
-                        </button>
-                
-                        <!-- Trigger for Delete Confirmation Modal -->
-                        <button class="btn btn-danger btn-sm" onclick="openDeleteModal('{{ group.id }}', '{{ group.name }}')">Supprimer</button>                   
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="6" class="text-center">Aucun groupe trouvé.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
+<!-- Filter Form Start -->
+<div class="mb-4">
+    <form method="get" class="d-flex">
+        <!-- Center Dropdown -->
+        <select name="center_id" class="form-control me-2" onchange="this.form.submit()">
+            <option value="">-- Sélectionnez un centre --</option>
+            {% for center in centers %}
+                <option value="{{ center.id }}" {% if center.id|stringformat:"s" == selected_center_id %}selected{% endif %}>{{ center.name }}</option>
+            {% endfor %}
+        </select> 
+        <input type="text" class="form-control me-2" style="height: 42px;" name="name" placeholder="Filtrer par nom" value="{{ name_filter }}">
+        <input type="text" class="form-control me-2" style="height: 42px;" name="code_group" placeholder="Filtrer par code groupe" value="{{ code_group_filter }}">
+        <button type="submit" style="height: 42px;" class="btn btn-primary">Appliquer</button>
+        <a href="{% url 'add_groupe' %}" style="height: 42px;" class="btn btn-secondary">Annuler</a>
+    </form>
+</div>
+<!-- Filter Form End -->
+
+<!-- Groups Table -->
+<div class="table-responsive">
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr>
+                <th>Nom du groupe</th>
+                <th>Enseignants</th>
+                <th>Membres</th>
+                <th>Code du groupe</th>
+                <th>Gestion de ressources</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for group in groups %}
+            <tr>
+                <td>{{ group.name }}</td>
+                <td>
+                    {% for professor in group.profs.all %}
+                        {{ professor.prenom|capitalize_first }} {{ professor.nom|capitalize_first }}{% if not forloop.last %}, {% endif %}
+                    {% empty %}
+                    Aucun Enseignant assigné
+                    {% endfor %}
+                </td>
+                <td>{{ group.etudiants.count }}</td>
+                <td>{{ group.code_group }}</td>
+                <td>
+                    <a href="{% url 'add_profs_etudiants' group.id %}" class="btn btn-danger btn-sm" style="width: 114px;margin-bottom: 10px;">Ajouter</a>
+                    <a href="{% url 'delete_profs_etudiants' group.id %}" class="btn btn-danger btn-sm">Supprimer</a>
+                </td>
+                <td>
+                    <!-- Trigger for Edit Group Modal -->
+                    <button class="btn btn-warning btn-sm" 
+                    onclick="openEditModal('{{ group.id }}', '{{ group.name }}', '{{ group.description }}', '{{ group.language }}', '{{ group.center.id }}')" 
+                    style="width: 114px;margin-bottom: 10px;">
+                        Modifier
+                    </button>
+
+                    <!-- Trigger for Delete Confirmation Modal -->
+                    <button class="btn btn-danger btn-sm" onclick="openDeleteModal('{{ group.id }}', '{{ group.name }}')">Supprimer</button>                   
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="text-center">Aucun groupe trouvé.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
 
     <!-- Pagination -->
     <div class="d-flex justify-content-center mt-4">

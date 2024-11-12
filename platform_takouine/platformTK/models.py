@@ -49,6 +49,8 @@ class Etudiant(models.Model):
     points = models.IntegerField(default=0, blank=True, null=True)
     EtudiantCode = models.CharField(max_length=100, unique=True, null=True, blank=True, default=generate_etudiant_code)
 
+  
+
     def save(self, *args, **kwargs):
         # Ensure slugEtudiant is set based on username if not provided
         if not self.slugEtudiant:

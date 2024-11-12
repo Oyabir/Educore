@@ -1,0 +1,48 @@
+{% extends "platformTK/SuperAdmin/HomeBase.html" %}
+{% load static %}
+{% load custom_filters %}
+
+{% block content %}
+{% include 'platformTK/SuperAdmin/navbar.html' %}
+
+<div class="container mt-5">
+
+<form method="get" action="{% url 'center_groups' %}">
+    <label for="center_select">Select a Center:</label>
+    <select id="center_select" name="center_id" onchange="this.form.submit()">
+        <option value="">-- Select Center --</option>
+        {% for center in centers %}
+            <option value="{{ center.id }}" {% if selected_center and center.id == selected_center.id %}selected{% endif %}>
+                {{ center.name }}
+            </option>
+        {% endfor %}
+    </select>
+</form>
+
+{% if selected_center %}
+    <h5>Selected Center: {{ selected_center.name }}</h5>
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Group Name</th>
+                    <th>Description</th>
+                    <!-- Add other columns as needed -->
+                </tr>
+            </thead>
+            <tbody>
+                {% for group in groups %}
+                <tr>
+                    <td>{{ group.name }}</td>
+                    <td>{{ group.description }}</td>
+                    <!-- Add other fields as needed -->
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% else %}
+    <p>Please select a center to view its groups.</p>
+{% endif %}
+</div>
+{% endblock %}

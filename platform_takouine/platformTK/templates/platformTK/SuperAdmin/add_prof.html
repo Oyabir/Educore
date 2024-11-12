@@ -53,90 +53,96 @@
             <p style="color: red;">{{ error }}</p>
         {% endif %}
     </div>
+<!-- Filter Form Start -->
+<div class="mb-4">
+    <form method="get" class="d-flex">
+        <!-- Center Dropdown -->
+        <select name="center_id" class="form-control me-2" onchange="this.form.submit()">
+            <option value="">-- Sélectionnez un centre --</option>
+            {% for center in centers %}
+                <option value="{{ center.id }}" {% if center.id|stringformat:"s" == selected_center_id %}selected{% endif %}>{{ center.name }}</option>
+            {% endfor %}
+        </select>
 
-    <!-- Filter Form Start -->
-    <div class="mb-4">
-        <form method="get" class="d-flex">
-            <input type="text" class="form-control me-2" style="height: 42px;" name="prenom" placeholder="Filtrer par Prénom" value="{{ prenom_filter }}">
-            <input type="text" class="form-control me-2" style="height: 42px;" name="nom" placeholder="Filtrer par Nom" value="{{ nom_filter }}">
-            <input type="text" class="form-control me-2" style="height: 42px;" name="prof_code" placeholder="Filtrer par Code Prof" value="{{ prof_code_filter }}">
-            <button type="submit" style="height: 42px;" class="btn btn-primary">Appliquer</button>&nbsp;
-            <a href="{% url 'add_prof' %}" style="height: 42px;" class="btn btn-secondary">Annuler</a>
-        </form>
-    </div>
-    <!-- Filter Form End -->
-
-    <!-- Table displaying professors -->
-    <div class="table-responsive">
-        <table class="table table-striped table-hover">
-            <thead>
-                <tr>
-                    <th>Nom d'utilisateur</th>
-                    <th>Nom et Prénom</th>
-                    <th>Téléphone</th>
-                    <th>Avatar</th>
-                    <th>Code Enseignant</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for prof in profs %}
-                <tr>
-                    <td>{{ prof.user.username }}</td>
-                    <td>{{ prof.nom|capitalize_first }} {{ prof.prenom|capitalize_first}} </td>
-                    <td>{{ prof.numéro_de_téléphone }}</td>
-                    <td>
-                        {% if prof.avatar %}
-                            <img src="{{ prof.avatar.url }}" style="width: 48px; height: 48px;" alt="Avatar">
-                        {% else %}
-                            Aucun Avatar
-                        {% endif %}
-                    </td>
-                    <td>{{ prof.ProfCode }}</td>
-                    <td>
-                        <!-- Trigger Edit Modal -->
-                        <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#editModal{{ prof.id }}" style="width: 114px;margin-bottom: 10px;">Modifier</button>
-                        <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal{{ prof.id }}">Supprimer</button>
-                    </td>
-                </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="6" class="text-center">Aucun professeur trouvé.</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-
-    <!-- Pagination Controls -->
-    <div class="d-flex justify-content-center mt-4">
-        <nav>
-            <ul class="pagination">
-                {% if profs.has_previous %}
-                    <li class="page-item">
-                        <a class="page-link" href="?page=1{% if prenom_filter %}&prenom={{ prenom_filter }}{% endif %}{% if nom_filter %}&nom={{ nom_filter }}{% endif %}{% if prof_code_filter %}&prof_code={{ prof_code_filter }}{% endif %}">Première</a>
-                    </li>
-                    <li class="page-item">
-                        <a class="page-link" href="?page={{ profs.previous_page_number }}{% if prenom_filter %}&prenom={{ prenom_filter }}{% endif %}{% if nom_filter %}&nom={{ nom_filter }}{% endif %}{% if prof_code_filter %}&prof_code={{ prof_code_filter }}{% endif %}">Précédente</a>
-                    </li>
-                {% endif %}
-                {% for num in profs.paginator.page_range %}
-                    <li class="page-item {% if num == profs.number %}active{% endif %}">
-                        <a class="page-link" href="?page={{ num }}{% if prenom_filter %}&prenom={{ prenom_filter }}{% endif %}{% if nom_filter %}&nom={{ nom_filter }}{% endif %}{% if prof_code_filter %}&prof_code={{ prof_code_filter }}{% endif %}">{{ num }}</a>
-                    </li>
-                {% endfor %}
-                {% if profs.has_next %}
-                    <li class="page-item">
-                        <a class="page-link" href="?page={{ profs.next_page_number }}{% if prenom_filter %}&prenom={{ prenom_filter }}{% endif %}{% if nom_filter %}&nom={{ nom_filter }}{% endif %}{% if prof_code_filter %}&prof_code={{ prof_code_filter }}{% endif %}">Suivante</a>
-                    </li>
-                    <li class="page-item">
-                        <a class="page-link" href="?page={{ profs.paginator.num_pages }}{% if prenom_filter %}&prenom={{ prenom_filter }}{% endif %}{% if nom_filter %}&nom={{ nom_filter }}{% endif %}{% if prof_code_filter %}&prof_code={{ prof_code_filter }}{% endif %}">Dernière</a>
-                    </li>
-                {% endif %}
-            </ul>
-        </nav>
-    </div>
+        <input type="text" class="form-control me-2" style="height: 42px;" name="prenom" placeholder="Filtrer par Prénom" value="{{ prenom_filter }}">
+        <input type="text" class="form-control me-2" style="height: 42px;" name="nom" placeholder="Filtrer par Nom" value="{{ nom_filter }}">
+        <input type="text" class="form-control me-2" style="height: 42px;" name="prof_code" placeholder="Filtrer par Code Prof" value="{{ prof_code_filter }}">
+        <button type="submit" style="height: 42px;" class="btn btn-primary">Appliquer</button>&nbsp;
+        <a href="{% url 'add_prof' %}" style="height: 42px;" class="btn btn-secondary">Annuler</a>
+    </form>
 </div>
+<!-- Filter Form End -->
+
+<!-- Table displaying professors -->
+<div class="table-responsive">
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr>
+                <th>Nom d'utilisateur</th>
+                <th>Nom et Prénom</th>
+                <th>Téléphone</th>
+                <th>Avatar</th>
+                <th>Code Enseignant</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for prof in profs %}
+            <tr>
+                <td>{{ prof.user.username }}</td>
+                <td>{{ prof.nom|capitalize_first }} {{ prof.prenom|capitalize_first }} </td>
+                <td>{{ prof.numéro_de_téléphone }}</td>
+                <td>
+                    {% if prof.avatar %}
+                        <img src="{{ prof.avatar.url }}" style="width: 48px; height: 48px;" alt="Avatar">
+                    {% else %}
+                        Aucun Avatar
+                    {% endif %}
+                </td>
+                <td>{{ prof.ProfCode }}</td>
+                <td>
+                    <button class="btn btn-warning btn-sm" data-bs-toggle="modal" data-bs-target="#editModal{{ prof.id }}" style="width: 114px;margin-bottom: 10px;">Modifier</button>
+                    <button class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#deleteModal{{ prof.id }}">Supprimer</button>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="text-center">Aucun professeur trouvé.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Pagination Controls -->
+<div class="d-flex justify-content-center mt-4">
+    <nav>
+        <ul class="pagination">
+            {% if profs.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1{% if prenom_filter %}&prenom={{ prenom_filter }}{% endif %}{% if nom_filter %}&nom={{ nom_filter }}{% endif %}{% if prof_code_filter %}&prof_code={{ prof_code_filter }}{% endif %}{% if selected_center_id %}&center_id={{ selected_center_id }}{% endif %}">Première</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ profs.previous_page_number }}{% if prenom_filter %}&prenom={{ prenom_filter }}{% endif %}{% if nom_filter %}&nom={{ nom_filter }}{% endif %}{% if prof_code_filter %}&prof_code={{ prof_code_filter }}{% endif %}{% if selected_center_id %}&center_id={{ selected_center_id }}{% endif %}">Précédente</a>
+                </li>
+            {% endif %}
+            {% for num in profs.paginator.page_range %}
+                <li class="page-item {% if num == profs.number %}active{% endif %}">
+                    <a class="page-link" href="?page={{ num }}{% if prenom_filter %}&prenom={{ prenom_filter }}{% endif %}{% if nom_filter %}&nom={{ nom_filter }}{% endif %}{% if prof_code_filter %}&prof_code={{ prof_code_filter }}{% endif %}{% if selected_center_id %}&center_id={{ selected_center_id }}{% endif %}">{{ num }}</a>
+                </li>
+            {% endfor %}
+            {% if profs.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ profs.next_page_number }}{% if prenom_filter %}&prenom={{ prenom_filter }}{% endif %}{% if nom_filter %}&nom={{ nom_filter }}{% endif %}{% if prof_code_filter %}&prof_code={{ prof_code_filter }}{% endif %}{% if selected_center_id %}&center_id={{ selected_center_id }}{% endif %}">Suivante</a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ profs.paginator.num_pages }}{% if prenom_filter %}&prenom={{ prenom_filter }}{% endif %}{% if nom_filter %}&nom={{ nom_filter }}{% endif %}{% if prof_code_filter %}&prof_code={{ prof_code_filter }}{% endif %}{% if selected_center_id %}&center_id={{ selected_center_id }}{% endif %}">Dernière</a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+</div>
+
 
 <!-- Edit Modals (Move this outside the table) -->
 {% for prof in profs %}

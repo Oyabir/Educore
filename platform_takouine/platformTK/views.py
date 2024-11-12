@@ -149,10 +149,69 @@ def delete_center(request, center_id):
 
 
 
+def center_groups_view(request):
+    selected_center_id = request.GET.get('center_id')  # Retrieve center_id from the GET request
+    centers = Center.objects.all()  # Fetch all centers for the dropdown
+    selected_center = None
+    groups = []
+
+    if selected_center_id:  # If a center_id was passed in the URL
+        selected_center = get_object_or_404(Center, id=selected_center_id)
+        groups = Groups.objects.filter(center=selected_center)  # Get groups related to the selected center
+
+    context = {
+        'centers': centers,
+        'selected_center': selected_center,
+        'groups': groups,
+    }
+    return render(request, 'platformTK/SuperAdmin/center_groups.html', context)  # Replace 'your_template.html' with your actual template name
 
 
 
 
+
+from django.shortcuts import render, get_object_or_404
+from .models import Center, Etudiant  # Make sure Etudiant and Center models are imported
+
+@login_required(login_url='login')
+@allowedUsers(allowedGroups=['SuperAdmin'])
+def center_students_view(request):
+    selected_center_id = request.GET.get('center_id')  # Retrieve center_id from the GET request
+    centers = Center.objects.all()  # Fetch all centers for the dropdown
+    selected_center = None
+    students = []
+
+    if selected_center_id:  # If a center_id was passed in the URL
+        selected_center = get_object_or_404(Center, id=selected_center_id)
+        students = Etudiant.objects.filter(groups__center=selected_center)  # Get students related to the selected center's groups
+
+    context = {
+        'centers': centers,
+        'selected_center': selected_center,
+        'students': students,
+    }
+    return render(request, 'platformTK/SuperAdmin/center_students.html', context)
+
+
+from django.shortcuts import render, get_object_or_404
+from .models import Center, prof
+
+def center_profs_view(request):
+    selected_center_id = request.GET.get('center_id')  # Get center_id from URL parameters
+    centers = Center.objects.all()  # Retrieve all centers for the dropdown
+    selected_center = None
+    professors = []
+
+    if selected_center_id:  # If a center_id is passed
+        selected_center = get_object_or_404(Center, id=selected_center_id)
+        professors = prof.objects.filter(groups__center=selected_center).distinct()  # Filter professors by center
+
+    context = {
+        'centers': centers,
+        'selected_center': selected_center,
+        'professors': professors,
+    }
+    return render(request, 'platformTK/SuperAdmin/center_profs.html', context)
 
 
 
@@ -2098,24 +2157,30 @@ def download_students_attendance_pdf(request, class_code):
 
 
 
-
+from django.shortcuts import render, get_object_or_404
+from django.core.paginator import Paginator
+from .models import Center, Groups, Etudiant, prof
 
 @login_required(login_url='login')
 @allowedUsers(allowedGroups=['SuperAdmin'])
 def add_groupe(request):
-    centers = Center.objects.all()
-
+    centers = Center.objects.all()  # Fetch all centers for the dropdown
+    
+    # Get filters from request
     name_filter = request.GET.get('name', '')
     code_group_filter = request.GET.get('code_group', '')
+    selected_center_id = request.GET.get('center_id')  # Get the selected center ID
 
-    etudiants = Etudiant.objects.all()
-    profs = prof.objects.all()
+    # Initialize groups query
     groups = Groups.objects.order_by('-date_created')
-
+    
+    # Apply filters based on user input
     if name_filter:
         groups = groups.filter(name__icontains=name_filter)
     if code_group_filter:
         groups = groups.filter(code_group__icontains=code_group_filter)
+    if selected_center_id:
+        groups = groups.filter(center_id=selected_center_id)  # Filter by selected center
 
     # Pagination
     paginator = Paginator(groups, 10)
@@ -2124,12 +2189,14 @@ def add_groupe(request):
 
     return render(request, "platformTK/SuperAdmin/add_groupe.html", {
         'groups': paginated_groups,
-        'etudiants': etudiants,
-        'profs': profs,
+        'etudiants': Etudiant.objects.all(),
+        'profs': prof.objects.all(),
         'name_filter': name_filter,
         'code_group_filter': code_group_filter,
         'centers': centers,
+        'selected_center_id': selected_center_id,
     })
+
 
 
 
@@ -2140,6 +2207,7 @@ def add_student(request):
     prenom_filter = request.GET.get('prenom', '')
     nom_filter = request.GET.get('nom', '')
     etudiant_code_filter = request.GET.get('etudiant_code', '')
+    center_filter = request.GET.get('center', '')
 
     etudiants = Etudiant.objects.order_by('-date_created')
 
@@ -2149,6 +2217,8 @@ def add_student(request):
         etudiants = etudiants.filter(nom__icontains=nom_filter)
     if etudiant_code_filter:
         etudiants = etudiants.filter(EtudiantCode__icontains=etudiant_code_filter)
+    if center_filter:
+        etudiants = etudiants.filter(groups__center__id=center_filter)
 
     # Pagination
     paginator = Paginator(etudiants, 15)  
@@ -2157,16 +2227,18 @@ def add_student(request):
 
     groups = Groups.objects.all()
     profs = prof.objects.all()
+    centers = Center.objects.all()
 
     return render(request, "platformTK/SuperAdmin/add_student.html", {
         'groups': groups,
         'etudiants': paginated_etudiants,
         'profs': profs,
+        'centers': centers,
         'prenom_filter': prenom_filter,
         'nom_filter': nom_filter,
         'etudiant_code_filter': etudiant_code_filter,
+        'center_filter': center_filter,
     })
-
 
 
 
@@ -2551,18 +2623,28 @@ def add_students_from_file(request):
 @login_required(login_url='login')
 @allowedUsers(allowedGroups=['SuperAdmin'])
 def add_prof(request):
+    # Retrieve filter values from request
     prenom_filter = request.GET.get('prenom', '')
     nom_filter = request.GET.get('nom', '')
     prof_code_filter = request.GET.get('prof_code', '')
+    selected_center_id = request.GET.get('center_id', '')  # Get selected center ID
 
+    # Fetch all centers for the dropdown
+    centers = Center.objects.all()
+
+    # Initialize professors query
     profs = prof.objects.order_by('-date_created')
 
+    # Apply filters based on user input
     if prenom_filter:
         profs = profs.filter(prenom__icontains=prenom_filter)
     if nom_filter:
         profs = profs.filter(nom__icontains=nom_filter)
     if prof_code_filter:
         profs = profs.filter(ProfCode__icontains=prof_code_filter)
+    if selected_center_id:
+        # Filter professors by groups that belong to the selected center
+        profs = profs.filter(groups__center_id=selected_center_id).distinct()
 
     # Pagination
     paginator = Paginator(profs, 10)
@@ -2579,7 +2661,12 @@ def add_prof(request):
         'prenom_filter': prenom_filter,
         'nom_filter': nom_filter,
         'prof_code_filter': prof_code_filter,
+        'centers': centers,
+        'selected_center_id': selected_center_id,
     })
+
+
+
 
 
 

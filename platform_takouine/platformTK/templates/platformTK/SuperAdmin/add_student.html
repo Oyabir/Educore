@@ -59,19 +59,29 @@
         {% endif %}
     </div>
     
+<!-- Filter Form Start -->
+<div class="mb-4">
+    <form method="get" class="d-flex">
+         <!-- Center Filter Dropdown -->
+         <select name="center" class="form-control me-2" onchange="this.form.submit()" style="height: 42px;">
+            <option value="">Filtrer par Centre</option>
+            {% for center in centers %}
+                <option value="{{ center.id }}" {% if center_filter == center.id|stringformat:"s" %}selected{% endif %}>
+                    {{ center.name }}
+                </option>
+            {% endfor %}
+        </select>
+        
+        <input type="text" class="form-control me-2" style="height: 42px;" name="prenom" placeholder="Filtrer par Prénom" value="{{ prenom_filter }}">
+        <input type="text" class="form-control me-2" style="height: 42px;" name="nom" placeholder="Filtrer par Nom" value="{{ nom_filter }}">
+        <input type="text" class="form-control me-2" style="height: 42px;" name="etudiant_code" placeholder="Filtrer par Code Étudiant" value="{{ etudiant_code_filter }}">
+        
+        <button type="submit" style="height: 42px;" class="btn btn-primary">Appliquer</button>&nbsp;
+        <a href="{% url 'add_student' %}" style="height: 42px;" class="btn btn-secondary">Annuler</a>
+    </form>
+</div>
+<!-- Filter Form End -->
 
-    <!-- Filter Form Start -->
-    <div class="mb-4">
-        <form method="get" class="d-flex">
-            <input type="text" class="form-control me-2" style="height: 42px;" name="prenom" placeholder="Filtrer par Prénom" value="{{ prenom_filter }}">
-            <input type="text" class="form-control me-2" style="height: 42px;" name="nom" placeholder="Filtrer par Nom" value="{{ nom_filter }}">
-            <input type="text" class="form-control me-2" style="height: 42px;" name="etudiant_code" placeholder="Filtrer par Code Étudiant" value="{{ etudiant_code_filter }}">
-            <button type="submit" style="height: 42px;" class="btn btn-primary">Appliquer</button>&nbsp;
-            <a href="{% url 'add_student' %}" style="height: 42px;" class="btn btn-secondary">Annuler</a>
-
-        </form>
-    </div>
-    <!-- Filter Form End -->
 
     <div class="table-responsive">
         <table class="table table-striped table-hover">
