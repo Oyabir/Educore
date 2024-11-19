@@ -1,103 +1,161 @@
 {% extends "platformTK/SuperAdmin/HomeBase.html" %}
 {% load static %}
+{% load custom_filters %}
 
 {% block content %}
 {% include 'platformTK/SuperAdmin/navbar.html' %}
 
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-
-    <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-
-    <!-- Popper.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
-
-    <!-- Bootstrap JS -->
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-
-
 <div class="container mt-5">
+    <!-- Afficher les Messages -->
     {% if messages %}
-    <div id="message-container">
-        {% for message in messages %}
-            {% if message.tags == 'error' %}
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <div id="message-container">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
                     {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
                 </div>
-            {% endif %}
-            {% if message.tags == 'success' %}
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            {% endif %}
-        {% endfor %}
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Titre de la Page -->
+    <div class="text-center mb-4">
+        <h1 class="page-title" style="color: #176b90; font-weight: bold;">Tableau de Bord de Gestion des Absences</h1>
     </div>
-{% endif %}
 
-<script>
-    setTimeout(function() {
-        var messageContainer = document.getElementById('message-container');
-        if (messageContainer) {
-            messageContainer.style.display = 'none';
-        }
-    }, 5000); 
-</script>
+    <!-- Section des Boutons -->
+    <div class="row mb-4">
+        <div class="col-md-12 d-flex flex-wrap justify-content-center gap-3">
+            <a href="{% url 'absence_by_group' %}" class="btn btn-outline-primary">Absence par Groupe</a>
+            <a href="{% url 'rapport_soldes' %}" class="btn btn-outline-primary">Rapport des Soldes</a>
+            <a href="{% url 'competition_history' %}" class="btn btn-outline-primary">Historique des Compétitions</a>
+            <a href="{% url 'participation_discipline' %}" class="btn btn-outline-primary">Participation par Discipline</a>
+            <a href="{% url 'validate_absences_history' %}" class="btn btn-outline-primary">Valider les Absences</a>
+            <a href="{% url 'absenteeism_report' %}" class="btn btn-outline-primary">Rapport d'Absentéisme</a>
+            <a href="{% url 'create_classes_aa' %}" class="btn btn-outline-primary">Créer des Classes</a>
+            <a href="{% url 'real_time_absenteeism_by_group' %}" class="btn btn-outline-primary">Absentéisme en Temps Réel</a>
+            <a href="{% url 'calculate_absenteeism_rate' %}" class="btn btn-outline-primary">Taux d'Absentéisme</a>
+            <a href="{% url 'calculate_absenteeism_by_language' %}" class="btn btn-outline-primary">Par Langue</a>
+            <a href="{% url 'calculate_global_absenteeism_rate' %}" class="btn btn-outline-primary">Absentéisme Global</a>
+            <a href="{% url 'show_absenteeism_statistics' %}" class="btn btn-outline-primary">Statistiques</a>
+        </div>
+    </div>
 
-   
-<a href="{% url "absence_by_group" %}"> <button class="btn btn-primary mb-3"  style="background-color: #176b90;">absence_by_group</button></a>
+    <!-- Déclencheur de Modal -->
+    <div class="text-center">
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#absenceModal">
+            Générer le PDF des Absences
+        </button>
+    </div>
 
-
-<a href="{% url "rapport_soldes" %}"> <button class="btn btn-primary mb-3"  style="background-color: #176b90;">rapport_soldes</button></a>
-
-
-<a href="{% url 'competition_history' %}"> <button class="btn btn-primary mb-3"  style="background-color: #176b90;">competition_history</button></a>
-
-<a href="{% url 'participation_discipline' %}"> <button class="btn btn-primary mb-3"  style="background-color: #176b90;">participation_discipline</button></a>
-
-
-<a href="{% url 'validate_absences_history' %}"> <button class="btn btn-primary mb-3"  style="background-color: #176b90;">validate_absences_history</button></a>
-
-
-<a href="{% url 'absenteeism_report' %}"> <button class="btn btn-primary mb-3"  style="background-color: #176b90;">absenteeism_report</button></a>
-
-
-<a href="{% url 'create_classes_aa' %}"> <button class="btn btn-primary mb-3"  style="background-color: #176b90;">create_classes_aa</button></a>
-
-
-<!-- Button to open the modal -->
-<button type="button" class="btn btn-primary mb-3" data-toggle="modal" data-target="#absenceModal">
-    Generate Absence PDF
-</button>
-
-<!-- Modal Structure -->
-<div class="modal fade" id="absenceModal" tabindex="-1" role="dialog" aria-labelledby="absenceModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
+   <!-- Structure du Modal -->
+<div class="modal fade" id="absenceModal" tabindex="-1" aria-labelledby="absenceModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="width: 100%; height: 350px;">
             <div class="modal-header">
-                <h5 class="modal-title" id="absenceModalLabel">Generate Absence PDF</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
+                <h5 class="modal-title" id="absenceModalLabel" style="color: #ffffff;">Générer le PDF des Absences</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
             </div>
             <div class="modal-body">
                 <form id="absenceForm">
                     <div class="form-group">
-                        <label for="student">Select Student</label>
+                        <label for="student">Sélectionnez un Étudiant</label>
+                        <div class="mb-3">
+                            {% comment %} <label for="searchStudent" class="form-label">Rechercher un utilisateur :</label> {% endcomment %}
+                            <input type="text" id="searchStudent" class="form-control" placeholder="Tapez un prénom ou un nom...">
+                        </div>
                         <select class="form-control" id="student" name="student" required>
+                            <option value="" disabled selected>Choisir un étudiant</option>
                             {% for student in students %}
-                                <option value="{{ student.id }}">{{ student.prenom }} {{ student.nom }}</option>
+                                <option value="{{ student.id }}">{{ student.prenom|capitalize_first }} {{ student.nom|capitalize_first }}</option>
                             {% endfor %}
                         </select>
                     </div>
-                    <button type="submit" class="btn btn-primary">Generate PDF</button>
+                    <button type="submit" class="btn btn-success mt-3 w-100">Générer le PDF</button>
                 </form>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+    // Functionality to filter student options based on input search
+    document.getElementById('searchStudent').addEventListener('input', function() {
+        const searchValue = this.value.toLowerCase(); // Convert search input to lowercase
+        const options = document.querySelectorAll('#student option');
+
+        options.forEach(option => {
+            const studentName = option.textContent.toLowerCase(); // Get the option text and convert to lowercase
+            if (studentName.includes(searchValue)) {
+                option.style.display = ''; // Show matching options
+            } else {
+                option.style.display = 'none'; // Hide non-matching options
+            }
+        });
+    });
+
+    // Optional: Form submit event to handle PDF generation logic
+    document.getElementById('absenceForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+        // Add your PDF generation logic here
+        const selectedStudentId = document.getElementById('student').value;
+        if (selectedStudentId) {
+            // Implement your logic to generate PDF for the selected student
+            alert('PDF des absences généré pour l\'étudiant avec ID: ' + selectedStudentId);
+        } else {
+            alert('Veuillez sélectionner un étudiant.');
+        }
+    });
+</script>
+
+
+
+
+<style>
+    body {
+        font-family: 'Roboto', sans-serif;
+        background-color: #f9f9f9;
+    }
+
+    .page-title {
+        font-size: 2rem;
+        margin-bottom: 20px;
+    }
+
+    .btn {
+        border-radius: 20px;
+        transition: all 0.3s ease;
+    }
+
+    .btn-outline-primary {
+        border: 2px solid #176b90;
+        color: #176b90;
+    }
+
+    .btn-outline-primary:hover {
+        background-color: #176b90;
+        color: #ffffff;
+        border-color: #176b90;
+    }
+
+    .modal-header {
+        background-color: #176b90;
+    }
+
+    .modal-title {
+        font-weight: bold;
+    }
+
+    .btn-primary {
+        background-color: #176b90;
+        border-color: #176b90;
+    }
+
+    .btn-primary:hover {
+        background-color: #145770;
+        border-color: #176b90;
+    }
+</style>
 
 <script>
     document.getElementById('absenceForm').addEventListener('submit', function(event) {
@@ -113,7 +171,7 @@
         })
         .then(response => {
             if (!response.ok) {
-                throw new Error('Network response was not ok');
+                throw new Error('Erreur réseau');
             }
             return response.blob();
         })
@@ -122,168 +180,17 @@
             const a = document.createElement('a');
             a.style.display = 'none';
             a.href = url;
-            a.download = 'absence_report.pdf';
+            a.download = 'rapport_absences.pdf';
             document.body.appendChild(a);
             a.click();
             window.URL.revokeObjectURL(url);
-            // Hide the modal after successful generation
             $('#absenceModal').modal('hide');
         })
         .catch(error => {
-            console.error('Error:', error);
-            alert('An error occurred while generating the PDF. Please try again.');
+            console.error('Erreur:', error);
+            alert('Une erreur s\'est produite lors de la génération du PDF. Veuillez réessayer.');
         });
     });
 </script>
-
-
-<a href="{% url 'real_time_absenteeism_by_group' %}"> <button class="btn btn-primary mb-3"  style="background-color: #176b90;">real_time_absenteeism_by_group</button></a>
-
-<a href="{% url 'calculate_absenteeism_rate' %}"> <button class="btn btn-primary mb-3"  style="background-color: #176b90;">calculate_absenteeism_rate</button></a>
-
-<a href="{% url 'calculate_absenteeism_by_language' %}"> <button class="btn btn-primary mb-3"  style="background-color: #176b90;">calculate_absenteeism_by_language</button></a>
-
-<a href="{% url 'calculate_global_absenteeism_rate' %}"> <button class="btn btn-primary mb-3"  style="background-color: #176b90;">calculate_global_absenteeism_rate</button></a>
-
-<a href="{% url 'show_absenteeism_statistics' %}"> <button class="btn btn-primary mb-3"  style="background-color: #176b90;">show_absenteeism_statistics</button></a>
-
-
-    {% comment %} <!-- Product List Table -->
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Nom</th>
-                <th>Description</th>
-                <th>Catégorie</th>
-                <th>Prix</th>
-                <th>Stock</th>
-                <th>Image</th>
-                <th>Date Ajoutée</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for product in products %}
-            <tr>
-                <td>{{ product.name }}</td>
-                <td>{{ product.description|truncatechars:50 }}</td>
-                <td>{{ product.category.name }}</td>
-                <td>${{ product.price }}</td>
-                <td>{{ product.stock }}</td>
-                <td>
-                    {% if product.image %}
-                        <img src="{{ product.image.url }}" alt="{{ product.name }}" style="width: 100px;">
-                    {% else %}
-                        Pas d'Image
-                    {% endif %}
-                </td>
-                <td>{{ product.date_added|date:"M d, Y" }}</td>
-                <td>
-                    <!-- Edit Button -->
-                    <button type="button" class="btn btn-warning btn-sm" data-bs-toggle="modal" style="width: 114px;margin-bottom: 10px;" data-bs-target="#editProductModal{{ product.ProductCode }}">
-                        Modifier
-                    </button>
-                    
-                    <!-- Delete Button -->
-                    <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal" data-bs-target="#confirmDeleteModal{{ product.ProductCode }}">
-                        Supprimer
-                    </button>
-                </td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="8" class="text-center">Aucun produit trouvé.</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table> {% endcomment %}
-</div>
-</div>
-
-<style>
-    .center-buttons {
-        display: flex;
-        justify-content: center;
-        gap: 10px; /* Optional: adds space between the buttons */
-    }
-
-    /* Full Width Modal Styles */
-.full-width-modal .modal-dialog.modal-full-width {
-    max-width: 100%; /* Full width */
-    margin: 0; /* Remove default margin */
-    width: 100%; /* Ensure full width */
-}
-
-.full-width-modal .modal-content {
-    border-radius: 0; /* Optional: remove rounded corners */
-}
-
-.center-buttons {
-    display: flex;
-    justify-content: center;
-    gap: 10px; /* Optional: adds space between the buttons */
-}
-
-/* CSS for Full Width Modal */
-.modal {
-    display: none; /* Hidden by default */
-    position: fixed; /* Stay in place */
-    {% comment %} z-index: 1; /* Sit on top */ {% endcomment %}
-    left: 0;
-    top: 0;
-    width: 100%; /* Full width */
-    height: 100%; /* Full height */
-    overflow: auto; /* Enable scroll if needed */
-    background-color: rgba(0,0,0,0.4); /* Black background with opacity */
-}
-
-.modal-content {
-    background-color: #fefefe;
-    margin: 15% auto; /* 15% from the top and centered */
-    padding: 20px;
-    border: 1px solid #888;
-    width: 100%; /* Width of modal content */
-    max-width: 1000px; /* Max width */
-    border-radius: 5px;
-    margin-top: -53px;
-
-}
-
-.close {
-    color: #aaa;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
-}
-
-.close:hover,
-.close:focus {
-    color: black;
-    text-decoration: none;
-    cursor: pointer;
-}
-</style>
-
-<style>
-    .page-item.active .page-link {
-        z-index: 3;
-        color: #fff;
-        background-color: #176b90;
-        border-color: #176b90;
-    }
-    .page-link {
-        color: #176b90;
-    }
-
-    .modal-header {
-    background-color: #30bb96;
-    }
-    .btn-primary {
-        background-color: #176b90;
-        color: #ffffff;
-    }
-</style>
-
-
 
 {% endblock %}

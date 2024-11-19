@@ -1,28 +1,135 @@
-{% load custom_filters %}
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
 
-{% block content %}
-<h1>Taux d’absentéisme GLOBAL PAR LANGUE (Anglais – Français)</h1>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Taux d’absentéisme GLOBAL PAR LANGUE (Anglais – Français)</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* General Body Styling */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f6f9;
+            color: #333;
+            padding: 40px 0;
+        }
 
-<!-- Displaying Absenteeism Data -->
-<table class="table">
-    <thead>
-        <tr>
-            <th>Langue</th>
-            <th>Taux d'absentéisme (Global)</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for language, rate in absenteeism_rates.items %}
-        <tr>
-            <td>{{ language }}</td>
-            <td>{{ rate|default:0 }}%</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+        /* Container to Center Content */
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
 
-<!-- Chart.js Bar Chart -->
-<canvas id="absenteeismChart" width="400" height="200"></canvas>
+        /* Page Header */
+        h1 {
+            color: #007bff;
+            text-align: center;
+            margin-bottom: 40px;
+            font-size: 2.2rem;
+            font-weight: 700;
+        }
+
+        /* Table Styling */
+        .table {
+            width: 100%;
+            margin-bottom: 30px;
+            border-collapse: collapse;
+        }
+
+        .table th, .table td {
+            text-align: center;
+            padding: 12px;
+            border: 1px solid #dee2e6;
+        }
+
+        .table th {
+            background-color: #f8f9fa;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .table td {
+            background-color: #fff;
+        }
+
+        /* Chart Container Styling */
+        .chart-container {
+            position: relative;
+            margin: 40px 0;
+        }
+
+        /* Chart Styling */
+        canvas {
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Footer Styling */
+        .footer {
+            margin-top: 50px;
+            text-align: center;
+            color: #868e96;
+            font-size: 1rem;
+        }
+
+        .footer a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+    </style>
+</head>
+
+<body>
+<div class="container">
+    <!-- Page Title -->
+    <h1>Taux d’absentéisme GLOBAL PAR LANGUE (Anglais – Français)</h1>
+
+    <!-- Displaying Absenteeism Data -->
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Langue</th>
+                <th>Taux d'absentéisme (Global)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for language, rate in absenteeism_rates.items %}
+            <tr>
+                <td>{{ language }}</td>
+                <td>{{ rate|default:0 }}%</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Chart.js Bar Chart -->
+    <div class="chart-container">
+        <canvas id="absenteeismChart" width="400" height="200"></canvas>
+
+        <!-- Back Button (Optional) -->
+    <div class="text-center mt-4">
+        <a href="{% url 'rapports' %}" class="btn btn-outline-primary">Retour aux Rapports</a>
+    </div>
+    </div>
+
+    {% comment %} <!-- Footer -->
+    <div class="footer">
+        <p>© 2024 <a href="#">Retour à la page principale</a></p>
+    </div> {% endcomment %}
+</div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
@@ -37,19 +144,39 @@
                     {{ absenteeism_rates.Anglais|default:0 }},
                     {{ absenteeism_rates.Francais|default:0 }}
                 ],
-                backgroundColor: 'rgba(75, 192, 192, 0.2)',  // Light green color for bars
+                backgroundColor: 'rgba(75, 192, 192, 0.5)',  // Light green color for bars
                 borderColor: 'rgba(75, 192, 192, 1)',      // Darker green for borders
-                borderWidth: 1
+                borderWidth: 2
             }]
         },
         options: {
             scales: {
                 y: {
-                    beginAtZero: true
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Taux d’Absentéisme (%)'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Langues'
+                    }
+                }
+            },
+            responsive: true,
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                },
+                tooltip: {
+                    enabled: true
                 }
             }
         }
     });
 </script>
-
-{% endblock %}
+</body>
+</html>

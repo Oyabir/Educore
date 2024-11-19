@@ -70,78 +70,66 @@ def userLogout(request):
 
 
 
-def center_list(request):
-    centers = Center.objects.all()
-    return render(request, 'platformTK/SuperAdmin/center_list.html', {'centers': centers})
+# def center_list(request):
+#     centers = Center.objects.all()
+#     return render(request, 'platformTK/SuperAdmin/center_list.html', {'centers': centers})
 
 
 
 
-from django.shortcuts import render, redirect
-from django.contrib import messages
-from .models import Center
+# from django.shortcuts import render, redirect
+# from django.contrib import messages
+# from .models import Center
 
-def add_center(request):
-    if request.method == 'POST':
-        name = request.POST.get('name')
-        address = request.POST.get('address')
-        phone = request.POST.get('phone')
-        email = request.POST.get('email')
+# def add_center(request):
+#     if request.method == 'POST':
+#         name = request.POST.get('name')
+#         address = request.POST.get('address')
+#         phone = request.POST.get('phone')
+#         email = request.POST.get('email')
 
-        # Optionally add validation logic here
+#         # Optionally add validation logic here
 
-        # Create and save the Center instance
-        center = Center(name=name, address=address, phone=phone, email=email)
-        center.save()
+#         # Create and save the Center instance
+#         center = Center(name=name, address=address, phone=phone, email=email)
+#         center.save()
         
-        messages.success(request, "Center ajouté avec succès.")
-        return redirect('center_list')
+#         messages.success(request, "Center ajouté avec succès.")
+#         return redirect('center_list')
 
-    return redirect('center_list')
-
-
-
-
-
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib import messages
-from .models import Center
-
-def edit_center(request):
-    if request.method == 'POST':
-        center_id = request.POST.get('center_id')
-        name = request.POST.get('name')
-        address = request.POST.get('address')
-        phone = request.POST.get('phone')
-        email = request.POST.get('email')
-
-        if center_id and name and address and phone and email:
-            center = get_object_or_404(Center, id=center_id)
-            center.name = name
-            center.address = address
-            center.phone = phone
-            center.email = email
-            center.save()
-
-            messages.success(request, "Centre modifié avec succès.")
-        else:
-            messages.error(request, "Veuillez fournir toutes les informations nécessaires.")
-
-        return redirect('center_list')  # Redirect to the center list page
-
-    return redirect('center_list')  # In case of invalid request
+#     return redirect('center_list')
 
 
 
 
 
+# from django.shortcuts import render, get_object_or_404, redirect
+# from django.contrib import messages
+# from .models import Center
 
+# def edit_center(request):
+#     if request.method == 'POST':
+#         center_id = request.POST.get('center_id')
+#         name = request.POST.get('name')
+#         address = request.POST.get('address')
+#         phone = request.POST.get('phone')
+#         email = request.POST.get('email')
 
-def delete_center(request, center_id):
-    center = get_object_or_404(Center, id=center_id)  # Fetch the center by its ID
-    center.delete()  # Delete the center
-    messages.success(request, "Centre supprimé avec succès.")  # Add success message
-    return redirect('center_list')  # Redirect to the list page
+#         if center_id and name and address and phone and email:
+#             center = get_object_or_404(Center, id=center_id)
+#             center.name = name
+#             center.address = address
+#             center.phone = phone
+#             center.email = email
+#             center.save()
+
+#             messages.success(request, "Centre modifié avec succès.")
+#         else:
+#             messages.error(request, "Veuillez fournir toutes les informations nécessaires.")
+
+#         return redirect('center_list')  # Redirect to the center list page
+
+#     return redirect('center_list')  # In case of invalid request
 
 
 
@@ -149,69 +137,81 @@ def delete_center(request, center_id):
 
 
 
-def center_groups_view(request):
-    selected_center_id = request.GET.get('center_id')  # Retrieve center_id from the GET request
-    centers = Center.objects.all()  # Fetch all centers for the dropdown
-    selected_center = None
-    groups = []
-
-    if selected_center_id:  # If a center_id was passed in the URL
-        selected_center = get_object_or_404(Center, id=selected_center_id)
-        groups = Groups.objects.filter(center=selected_center)  # Get groups related to the selected center
-
-    context = {
-        'centers': centers,
-        'selected_center': selected_center,
-        'groups': groups,
-    }
-    return render(request, 'platformTK/SuperAdmin/center_groups.html', context)  # Replace 'your_template.html' with your actual template name
+# def delete_center(request, center_id):
+#     center = get_object_or_404(Center, id=center_id)  # Fetch the center by its ID
+#     center.delete()  # Delete the center
+#     messages.success(request, "Centre supprimé avec succès.")  # Add success message
+#     return redirect('center_list')  # Redirect to the list page
 
 
 
 
 
-from django.shortcuts import render, get_object_or_404
-from .models import Center, Etudiant  # Make sure Etudiant and Center models are imported
-
-@login_required(login_url='login')
-@allowedUsers(allowedGroups=['SuperAdmin'])
-def center_students_view(request):
-    selected_center_id = request.GET.get('center_id')  # Retrieve center_id from the GET request
-    centers = Center.objects.all()  # Fetch all centers for the dropdown
-    selected_center = None
-    students = []
-
-    if selected_center_id:  # If a center_id was passed in the URL
-        selected_center = get_object_or_404(Center, id=selected_center_id)
-        students = Etudiant.objects.filter(groups__center=selected_center)  # Get students related to the selected center's groups
-
-    context = {
-        'centers': centers,
-        'selected_center': selected_center,
-        'students': students,
-    }
-    return render(request, 'platformTK/SuperAdmin/center_students.html', context)
 
 
-from django.shortcuts import render, get_object_or_404
-from .models import Center, prof
+# def center_groups_view(request):
+#     selected_center_id = request.GET.get('center_id')  # Retrieve center_id from the GET request
+#     centers = Center.objects.all()  # Fetch all centers for the dropdown
+#     selected_center = None
+#     groups = []
 
-def center_profs_view(request):
-    selected_center_id = request.GET.get('center_id')  # Get center_id from URL parameters
-    centers = Center.objects.all()  # Retrieve all centers for the dropdown
-    selected_center = None
-    professors = []
+#     if selected_center_id:  # If a center_id was passed in the URL
+#         selected_center = get_object_or_404(Center, id=selected_center_id)
+#         groups = Groups.objects.filter(center=selected_center)  # Get groups related to the selected center
 
-    if selected_center_id:  # If a center_id is passed
-        selected_center = get_object_or_404(Center, id=selected_center_id)
-        professors = prof.objects.filter(groups__center=selected_center).distinct()  # Filter professors by center
+#     context = {
+#         'centers': centers,
+#         'selected_center': selected_center,
+#         'groups': groups,
+#     }
+#     return render(request, 'platformTK/SuperAdmin/center_groups.html', context)  # Replace 'your_template.html' with your actual template name
 
-    context = {
-        'centers': centers,
-        'selected_center': selected_center,
-        'professors': professors,
-    }
-    return render(request, 'platformTK/SuperAdmin/center_profs.html', context)
+
+
+
+
+# from django.shortcuts import render, get_object_or_404
+# from .models import Center, Etudiant  # Make sure Etudiant and Center models are imported
+
+# @login_required(login_url='login')
+# @allowedUsers(allowedGroups=['SuperAdmin'])
+# def center_students_view(request):
+#     selected_center_id = request.GET.get('center_id')  # Retrieve center_id from the GET request
+#     centers = Center.objects.all()  # Fetch all centers for the dropdown
+#     selected_center = None
+#     students = []
+
+#     if selected_center_id:  # If a center_id was passed in the URL
+#         selected_center = get_object_or_404(Center, id=selected_center_id)
+#         students = Etudiant.objects.filter(groups__center=selected_center)  # Get students related to the selected center's groups
+
+#     context = {
+#         'centers': centers,
+#         'selected_center': selected_center,
+#         'students': students,
+#     }
+#     return render(request, 'platformTK/SuperAdmin/center_students.html', context)
+
+
+# from django.shortcuts import render, get_object_or_404
+# from .models import Center, prof
+
+# def center_profs_view(request):
+#     selected_center_id = request.GET.get('center_id')  # Get center_id from URL parameters
+#     centers = Center.objects.all()  # Retrieve all centers for the dropdown
+#     selected_center = None
+#     professors = []
+
+#     if selected_center_id:  # If a center_id is passed
+#         selected_center = get_object_or_404(Center, id=selected_center_id)
+#         professors = prof.objects.filter(groups__center=selected_center).distinct()  # Filter professors by center
+
+#     context = {
+#         'centers': centers,
+#         'selected_center': selected_center,
+#         'professors': professors,
+#     }
+#     return render(request, 'platformTK/SuperAdmin/center_profs.html', context)
 
 
 
@@ -1731,7 +1731,6 @@ def rapports_prof(request):
 
 
 
-# views.py
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from .models import prof, Groups, Attendance
@@ -1766,7 +1765,8 @@ def attendance_by_group_for_prof(request):
     })
 
 
-# views.py
+
+
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from .models import Attendance, Etudiant, Groups  # Import necessary models
@@ -2159,17 +2159,16 @@ def download_students_attendance_pdf(request, class_code):
 
 from django.shortcuts import render, get_object_or_404
 from django.core.paginator import Paginator
-from .models import Center, Groups, Etudiant, prof
+from .models import Groups, Etudiant, prof
 
 @login_required(login_url='login')
 @allowedUsers(allowedGroups=['SuperAdmin'])
 def add_groupe(request):
-    centers = Center.objects.all()  # Fetch all centers for the dropdown
     
     # Get filters from request
     name_filter = request.GET.get('name', '')
     code_group_filter = request.GET.get('code_group', '')
-    selected_center_id = request.GET.get('center_id')  # Get the selected center ID
+    # selected_center_id = request.GET.get('center_id')  # Get the selected center ID
 
     # Initialize groups query
     groups = Groups.objects.order_by('-date_created')
@@ -2179,8 +2178,8 @@ def add_groupe(request):
         groups = groups.filter(name__icontains=name_filter)
     if code_group_filter:
         groups = groups.filter(code_group__icontains=code_group_filter)
-    if selected_center_id:
-        groups = groups.filter(center_id=selected_center_id)  # Filter by selected center
+    # if selected_center_id:
+    #     groups = groups.filter(center_id=selected_center_id)  
 
     # Pagination
     paginator = Paginator(groups, 10)
@@ -2193,8 +2192,8 @@ def add_groupe(request):
         'profs': prof.objects.all(),
         'name_filter': name_filter,
         'code_group_filter': code_group_filter,
-        'centers': centers,
-        'selected_center_id': selected_center_id,
+        # 'centers': centers,
+        # 'selected_center_id': selected_center_id,
     })
 
 
@@ -2207,7 +2206,6 @@ def add_student(request):
     prenom_filter = request.GET.get('prenom', '')
     nom_filter = request.GET.get('nom', '')
     etudiant_code_filter = request.GET.get('etudiant_code', '')
-    center_filter = request.GET.get('center', '')
 
     etudiants = Etudiant.objects.order_by('-date_created')
 
@@ -2217,9 +2215,7 @@ def add_student(request):
         etudiants = etudiants.filter(nom__icontains=nom_filter)
     if etudiant_code_filter:
         etudiants = etudiants.filter(EtudiantCode__icontains=etudiant_code_filter)
-    if center_filter:
-        etudiants = etudiants.filter(groups__center__id=center_filter)
-
+        
     # Pagination
     paginator = Paginator(etudiants, 15)  
     page_number = request.GET.get('page', 1)
@@ -2227,17 +2223,14 @@ def add_student(request):
 
     groups = Groups.objects.all()
     profs = prof.objects.all()
-    centers = Center.objects.all()
 
     return render(request, "platformTK/SuperAdmin/add_student.html", {
         'groups': groups,
         'etudiants': paginated_etudiants,
         'profs': profs,
-        'centers': centers,
         'prenom_filter': prenom_filter,
         'nom_filter': nom_filter,
         'etudiant_code_filter': etudiant_code_filter,
-        'center_filter': center_filter,
     })
 
 
@@ -2251,7 +2244,6 @@ def group_list(request):
     if request.method == 'POST':
         group_name = request.POST.get('group_name')
         description = request.POST.get('description')
-        center_id = request.POST.get('center')  # Capture the selected center
         language = request.POST.get('language')  # Capture the selected language
 
         student_ids_str = request.POST.get('students', '')
@@ -2261,11 +2253,9 @@ def group_list(request):
             student_ids = [int(id) for id in student_ids_str.split(',') if id.isdigit()]
             prof_ids = [int(id) for id in prof_ids_str.split(',') if id.isdigit()]
 
-            # Get the Center instance
-            center = Center.objects.get(id=center_id)
 
             # Create and save the new group, including the language field
-            group = Groups(name=group_name, description=description, center=center, language=language)
+            group = Groups(name=group_name, description=description, language=language)
             group.save()
 
             # Add students and professors to the group
@@ -2287,8 +2277,7 @@ def group_list(request):
 
         return redirect('add_groupe')
 
-    # Get all centers, students, professors, and groups
-    centers = Center.objects.all()
+    # Get all  students, professors, and groups
     etudiants = Etudiant.objects.all()
     profs = prof.objects.all()
     groups = Groups.objects.all()
@@ -2297,7 +2286,6 @@ def group_list(request):
         'groups': groups,
         'etudiants': etudiants,
         'profs': profs,
-        'centers': centers,  # Pass centers to the template
     })
 
 
@@ -2308,15 +2296,14 @@ def edit_group(request):
         group_id = request.POST.get('group_id')
         name = request.POST.get('name')
         description = request.POST.get('description')
-        language = request.POST.get('language')  # Capture the selected language
-        center_id = request.POST.get('center')  # Capture the selected center
+        language = request.POST.get('language')
 
-        if group_id and name and description and language and center_id:
+        if group_id and name and description and language:
             group = get_object_or_404(Groups, id=group_id)
             group.name = name
             group.description = description
             group.language = language  # Update the language field
-            group.center = Center.objects.get(id=center_id)  # Update the center field
+            # group.center = Center.objects.get(id=center_id)  # Update the center field
             group.save()
 
             messages.success(request, 'Group updated successfully!')
@@ -2326,7 +2313,7 @@ def edit_group(request):
         return redirect('add_groupe')  # Redirect back to the group list page
 
     # Get all centers to populate the dropdown in the modal
-    centers = Center.objects.all()
+    # centers = Center.objects.all()
     return render(request, 'platformTK/SuperAdmin/edit_group.html', {'centers': centers})
 
 
@@ -2627,10 +2614,7 @@ def add_prof(request):
     prenom_filter = request.GET.get('prenom', '')
     nom_filter = request.GET.get('nom', '')
     prof_code_filter = request.GET.get('prof_code', '')
-    selected_center_id = request.GET.get('center_id', '')  # Get selected center ID
 
-    # Fetch all centers for the dropdown
-    centers = Center.objects.all()
 
     # Initialize professors query
     profs = prof.objects.order_by('-date_created')
@@ -2642,9 +2626,6 @@ def add_prof(request):
         profs = profs.filter(nom__icontains=nom_filter)
     if prof_code_filter:
         profs = profs.filter(ProfCode__icontains=prof_code_filter)
-    if selected_center_id:
-        # Filter professors by groups that belong to the selected center
-        profs = profs.filter(groups__center_id=selected_center_id).distinct()
 
     # Pagination
     paginator = Paginator(profs, 10)
@@ -2661,8 +2642,6 @@ def add_prof(request):
         'prenom_filter': prenom_filter,
         'nom_filter': nom_filter,
         'prof_code_filter': prof_code_filter,
-        'centers': centers,
-        'selected_center_id': selected_center_id,
     })
 
 
@@ -3061,17 +3040,15 @@ def export_parents_to_excel(request):
 
 
 
-
-
 def update_parent(request, parent_id):
     parent = get_object_or_404(Parents, id=parent_id)
 
     if request.method == 'POST':
         # Update parent's basic information
-        parent.prenom = request.POST.get('prenom')
-        parent.nom = request.POST.get('nom')
-        parent.email = request.POST.get('email')
-        parent.numéro_de_téléphone = request.POST.get('numéro_de-téléphone')
+        parent.prenom = request.POST.get('prenom', '').strip()
+        parent.nom = request.POST.get('nom', '').strip()
+        parent.email = request.POST.get('email', '').strip()
+        parent.numéro_de_téléphone = request.POST.get('numéro_de-téléphone', '').strip()
 
         # Handle avatar upload if provided
         avatar = request.FILES.get('avatar')
@@ -3080,13 +3057,22 @@ def update_parent(request, parent_id):
 
         # Handle selected students
         etudiant_ids = request.POST.get('etudiants', '').strip()
-        if etudiant_ids:  # Only update if there are selected students
-            selected_ids = list(map(int, etudiant_ids.split(',')))
-            parent.etudiants.set(selected_ids)  # Updates the many-to-many relationship
-        # If etudiant_ids is empty, it will skip updating the students, keeping the existing ones
+        if etudiant_ids:  # Only process if etudiant_ids is not empty
+            try:
+                selected_ids = list(map(int, filter(None, etudiant_ids.split(','))))
+                parent.etudiants.set(selected_ids)  # Update many-to-many relationship
+            except ValueError:
+                # Handle invalid IDs gracefully (log or provide feedback as necessary)
+                pass
 
         parent.save()  # Save the parent object
-        return redirect('list_parents')  # Adjust as necessary
+
+        # Redirect to the list of parents after successful update
+        return redirect('list_parents')
+
+    # Redirect if the request is not POST (optional)
+    return redirect('list_parents')
+
 
 
 
@@ -3797,18 +3783,38 @@ from itertools import groupby
 from operator import attrgetter
 
 
-
 @login_required(login_url='login')
 @allowedUsers(allowedGroups=['SuperAdmin'])
 def validate_absences_history(request):
-    # Get all records from AbsenceValidationHistory
-    history = AbsenceValidationHistory.objects.all().order_by('class_instance', 'date')
-    
+    # Get filter values from request
+    date_filter = request.GET.get('date_filter', '')
+    absence_status_filter = request.GET.get('absence_status_filter', '')
+
+    # Build the query to filter AbsenceValidationHistory
+    history = AbsenceValidationHistory.objects.all()
+
+    # Filter by date if provided
+    if date_filter:
+        history = history.filter(date=date_filter)
+
+    # Filter by absence status if provided
+    if absence_status_filter:
+        if absence_status_filter == 'Validated':
+            history = history.filter(absence_status='Validated')
+        elif absence_status_filter == 'Not Validated yet':
+            history = history.filter(absence_status='Not Validated yet')
+
+    # Order by class and date
+    history = history.order_by('class_instance', 'date')
+
     return render(request, 'platformTK/SuperAdmin/absence_validation_history.html', {
-        'history': history
+        'history': history,
     })
 
 
+    
+    
+    
 import json
 from django.shortcuts import render
 from .models import Attendance
@@ -3817,30 +3823,32 @@ def absenteeism_report(request):
     attendances = Attendance.objects.all()
     absenteeism_data = {}
 
+    # Grouping absenteeism data by group and date
     for attendance in attendances:
-        class_instance = attendance.class_instance
+        group = attendance.group  # Get group for the attendance
         date = str(attendance.date)  # Convert date to string
 
-        # Ensure class is tracked separately
-        if class_instance.name not in absenteeism_data:
-            absenteeism_data[class_instance.name] = {}
+        # Ensure the group is tracked separately
+        if group.name not in absenteeism_data:
+            absenteeism_data[group.name] = {}
 
-        # Ensure date is properly tracked
-        if date not in absenteeism_data[class_instance.name]:
-            absenteeism_data[class_instance.name][date] = {'absent': 0, 'total': 0}
+        # Ensure the date is properly tracked for the group
+        if date not in absenteeism_data[group.name]:
+            absenteeism_data[group.name][date] = {'absent': 0, 'total': 0}
 
-        absenteeism_data[class_instance.name][date]['total'] += 1
+        absenteeism_data[group.name][date]['total'] += 1
         if not attendance.is_present:
-            absenteeism_data[class_instance.name][date]['absent'] += 1
+            absenteeism_data[group.name][date]['absent'] += 1
 
-    # Calculate the absenteeism percentages
+    # Calculate the absenteeism percentages for each group
     formatted_data = {}
-    for class_name, dates in absenteeism_data.items():
-        formatted_data[class_name] = {}
+    for group_name, dates in absenteeism_data.items():
+        formatted_data[group_name] = {}
         for date, counts in dates.items():
             percentage = (counts['absent'] / counts['total']) * 100 if counts['total'] > 0 else 0
-            formatted_data[class_name][date] = percentage
+            formatted_data[group_name][date] = percentage
 
+    # Pass the data to the template
     return render(request, 'platformTK/SuperAdmin/absenteeism_report.html', {
         'absenteeism_data': json.dumps(formatted_data)
     })
@@ -4067,6 +4075,8 @@ def calculate_final_global_absenteeism_rate():
     real_time_absenteeism_rate = calculate_real_time_global_absenteeism()
     final_absenteeism_rate = real_time_absenteeism_rate / 60
     return final_absenteeism_rate
+
+
 
 def show_absenteeism_statistics(request):
     average_sessions = calculate_average_sessions_per_group()

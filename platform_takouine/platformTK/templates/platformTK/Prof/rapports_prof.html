@@ -1,90 +1,198 @@
+{% extends "platformTK/Prof/HomeBase.html" %}
 {% load static %}
 {% load custom_filters %}
 
 {% block content %}
 {% include 'platformTK/Prof/navbar.html' %}
 
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+<!-- CSS de Bootstrap (utiliser des fichiers locaux si nécessaire) -->
+<link rel="stylesheet" href="{% static 'path/to/bootstrap.min.css' %}">
 
-    <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+<!-- jQuery -->
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
 
-    <!-- Popper.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+<!-- Popper.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
 
-    <!-- Bootstrap JS -->
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-
+<!-- Bootstrap JS -->
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
 <div class="container mt-5">
+    <!-- Afficher les messages -->
     {% if messages %}
-    <div id="message-container">
-        {% for message in messages %}
-            {% if message.tags == 'error' %}
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <div id="message-container">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
                     {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
                 </div>
-            {% endif %}
-            {% if message.tags == 'success' %}
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            {% endif %}
-        {% endfor %}
+            {% endfor %}
+        </div>
+    {% endif %}
+    <div class="text-center mb-4">
+        <h1 class="page-title" style="color: #176b90; font-weight: bold;">Tableau de Bord des Rapports</h1>
     </div>
-{% endif %}
 
+    <div class="row mb-4">
+        <div class="col-md-12 d-flex flex-wrap justify-content-center gap-3">
+            <!-- Boutons de navigation -->
+            <a href="{% url "attendance_by_group_for_prof" %}" class="btn btn-outline-primary">Présence par groupe</a>
+            <a href="{% url "student_balance_report" %}" class="btn btn-outline-primary">Rapport de solde étudiant</a>
+            <a href="{% url "competition_history_for_prof" %}" class="btn btn-outline-primary">Historique des compétitions</a>
+            <a href="{% url "participation_discipline_history" %}" class="btn btn-outline-primary">Historique de participation à la discipline</a>
+            <a href="{% url "student_participation_discipline_history" %}" class="btn btn-outline-primary">Participation des étudiants à la discipline</a>
+        </div>
+    </div>
 
-
-
-<a href="{% url "attendance_by_group_for_prof" %}"> <button class="btn btn-primary mb-3"  style="background-color: #176b90;">attendance_by_group_for_prof</button></a>
-
-<a href="{% url "student_balance_report" %}"> <button class="btn btn-primary mb-3"  style="background-color: #176b90;">student_balance_report</button></a>
-
-<a href="{% url "competition_history_for_prof" %}"> <button class="btn btn-primary mb-3"  style="background-color: #176b90;">competition_history_for_prof</button></a>
-
-<a href="{% url "participation_discipline_history" %}"> <button class="btn btn-primary mb-3"  style="background-color: #176b90;">participation_discipline_history</button></a>
-
-<a href="{% url "student_participation_discipline_history" %}"> <button class="btn btn-primary mb-3"  style="background-color: #176b90;">student_participation_discipline_history</button></a>
-
-
-<!-- Button to open the modal -->
-<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#studentModal">
-    Select Student
-</button>
-
-<!-- Modal Popup -->
-<div class="modal fade" id="studentModal" tabindex="-1" aria-labelledby="studentModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="studentModalLabel">Select a Student</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <form method="post" action="{% url 'absence_by_student_for_prof' %}">
-                    {% csrf_token %}
-                    <div class="form-group">
-                        <label for="studentSelect">Choose a Student:</label>
-                        <select class="form-control" id="studentSelect" name="student_id">
-                            {% for student in students %}
-                                <option value="{{ student.id }}">{{ student.prenom|capitalize_first  }} {{ student.nom|capitalize_first  }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Generate Attendance Report</button>
-                </form>
+    <div class="text-center">
+        <!-- Bouton pour déclencher le modal -->
+        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#studentModal">Sélectionner un étudiant</button>
+    </div>
+    
+    <!-- Fenêtre modale -->
+    <div class="modal fade" id="studentModal" tabindex="-1" aria-labelledby="studentModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content" style="width: 100%; height: 330px;">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="studentModalLabel">Sélectionner un étudiant</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Fermer">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <!-- Formulaire pour la sélection d'un étudiant -->
+                    <form method="post" action="{% url 'absence_by_student_for_prof' %}">
+                        {% csrf_token %}
+                        <div class="form-group">
+                            <label for="searchStudent">Rechercher un étudiant :</label>
+                            <input type="text" id="searchStudent" class="form-control mb-3" placeholder="Tapez un prénom ou un nom...">
+    
+                            <label for="studentSelect">Choisir un étudiant :</label>
+                            <select class="form-control" id="studentSelect" name="student_id">
+                                <option value="" disabled selected>Choisir un étudiant</option>
+                                {% for student in students %}
+                                    <option value="{{ student.id }}">
+                                        {{ student.prenom|capitalize_first }} {{ student.nom|capitalize_first }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <br>
+                        <button type="submit" class="btn btn-primary">Générer le rapport de présence</button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
 </div>
+<br><br><br><br><br><br>
+
+<script>
+    // Fonctionnalité pour filtrer les options d'étudiants en fonction de la recherche
+    document.getElementById('searchStudent').addEventListener('input', function() {
+        const searchValue = this.value.toLowerCase(); // Convertir l'entrée de recherche en minuscules
+        const options = document.querySelectorAll('#studentSelect option'); // Cibler les options à l'intérieur du select
+    
+        options.forEach(option => {
+            const studentName = option.textContent.toLowerCase(); // Obtenir le texte de l'option et le convertir en minuscules
+            if (studentName.includes(searchValue)) {
+                option.style.display = ''; // Afficher les options correspondantes
+            } else {
+                option.style.display = 'none'; // Cacher les options non correspondantes
+            }
+        });
+    });
+    
+    // Facultatif : Événement de soumission du formulaire pour gérer la logique de génération de PDF
+    document.getElementById('absenceForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+        // Ajouter votre logique de génération de PDF ici
+        const selectedStudentId = document.getElementById('studentSelect').value;
+        if (selectedStudentId) {
+            // Implémentez votre logique pour générer le PDF pour l'étudiant sélectionné
+            alert('Le rapport de présence a été généré pour l\'étudiant avec l\'ID : ' + selectedStudentId);
+        } else {
+            alert('Veuillez sélectionner un étudiant.');
+        }
+    });
+</script>
+
+<style>
+    body {
+        font-family: 'Roboto', sans-serif;
+        background-color: #f9f9f9;
+    }
+
+    
+    button.close {
+        background-color: transparent; /* Transparent background */
+        border: none; /* No border */
+        font-size: 1.5rem; /* Increase size for better visibility */
+        font-weight: bold; /* Bold font */
+        color: #333; /* Default color */
+        cursor: pointer; /* Pointer cursor */
+        outline: none; /* Remove focus outline */
+        transition: color 0.3s ease, transform 0.3s ease; /* Smooth transitions */
+    }
+
+    
+    button.close:hover {
+        color: #176b90; /* Change color on hover */
+        transform: scale(1.1); /* Slight zoom effect */
+    }
+
+    
+    button.close:focus {
+        color: #0056b3; /* Different color for focus */
+        outline: none; /* No default outline */
+        box-shadow: 0 0 0 2px rgba(23, 107, 144, 0.5); /* Custom focus ring */
+    }
+
+    
+    button.close span {
+        display: inline-block; /* Ensure span behaves properly */
+        line-height: 1; /* Adjust spacing */
+    }
 
 
+    .page-title {
+        font-size: 2rem;
+        margin-bottom: 20px;
+    }
 
+    .btn {
+        border-radius: 20px;
+        transition: all 0.3s ease;
+    }
+
+    .btn-outline-primary {
+        border: 2px solid #176b90;
+        color: #176b90;
+    }
+
+    .btn-outline-primary:hover {
+        background-color: #176b90;
+        color: #ffffff;
+        border-color: #176b90;
+    }
+
+    .modal-header {
+        background-color: #176b90;
+    }
+
+    .modal-title {
+        font-weight: bold;
+    }
+
+    .btn-primary {
+        background-color: #176b90;
+        border-color: #176b90;
+    }
+
+    .btn-primary:hover {
+        background-color: #145770;
+        border-color: #176b90;
+    }
+</style>
 
 {% endblock %}

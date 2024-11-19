@@ -56,14 +56,6 @@
 <!-- Filter Form Start -->
 <div class="mb-4">
     <form method="get" class="d-flex">
-        <!-- Center Dropdown -->
-        <select name="center_id" class="form-control me-2" onchange="this.form.submit()">
-            <option value="">-- Sélectionnez un centre --</option>
-            {% for center in centers %}
-                <option value="{{ center.id }}" {% if center.id|stringformat:"s" == selected_center_id %}selected{% endif %}>{{ center.name }}</option>
-            {% endfor %}
-        </select>
-
         <input type="text" class="form-control me-2" style="height: 42px;" name="prenom" placeholder="Filtrer par Prénom" value="{{ prenom_filter }}">
         <input type="text" class="form-control me-2" style="height: 42px;" name="nom" placeholder="Filtrer par Nom" value="{{ nom_filter }}">
         <input type="text" class="form-control me-2" style="height: 42px;" name="prof_code" placeholder="Filtrer par Code Prof" value="{{ prof_code_filter }}">

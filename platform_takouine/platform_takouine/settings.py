@@ -25,11 +25,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-be=^g@@71&j3djui!5)(=k#5^e8e_s8n-m!x@^z&j@&ndl0w6y'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+# DEBUG = True
 
 # ALLOWED_HOSTS = ['192.168.11.109']
 
-ALLOWED_HOSTS = []
+# ALLOWED_HOSTS = []
+
+DEBUG = False
+ALLOWED_HOSTS = ['Educore.takouine.com']
 
 # Application definition
 

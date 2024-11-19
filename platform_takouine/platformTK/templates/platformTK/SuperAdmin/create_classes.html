@@ -1,32 +1,180 @@
+{% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Classes for Next Week</title>
-</head>
-<body>
-    <h1>Create Classes for the Next Week</h1>
-    <form id="create-classes-form" method="POST" action="{% url 'create_classes' %}">
-        {% csrf_token %}
-        <button type="submit">Create Classes</button>
-    </form>
+    <title>Créer des Classes pour la Semaine Prochaine</title>
 
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- CSS personnalisé pour styles supplémentaires -->
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f7f8fc;
+            color: #4c4f56;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            margin-top: 100px;
+            max-width: 500px;
+        }
+
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            background-color: #ffffff;
+            padding: 30px;
+        }
+
+        .card-header {
+            font-size: 1.5rem;
+            color: #2d3a3f;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .btn-custom {
+            background-color: #007bff;
+            color: white;
+            border-radius: 50px;
+            padding: 15px 25px;
+            font-size: 16px;
+            font-weight: 500;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+
+        .btn-custom:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+        }
+
+        .btn-back {
+            background-color: #6c757d;
+            color: white;
+            border-radius: 50px;
+            padding: 15px 25px;
+            font-size: 16px;
+            font-weight: 500;
+            width: 100%;
+            margin-top: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-back:hover {
+            background-color: #5a6268;
+            transform: translateY(-2px);
+        }
+
+        .alert {
+            border-radius: 12px;
+            font-size: 1.1rem;
+            margin-top: 20px;
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .alert-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .alert-message {
+            font-weight: 500;
+        }
+
+        .form-group {
+            margin-bottom: 30px;
+        }
+
+        .footer {
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            background-color: #f1f3f5;
+            padding: 15px 0;
+            text-align: center;
+            font-size: 0.9rem;
+            color: #868e96;
+        }
+
+        .footer a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="card">
+            <div class="card-header">
+                Créer des Classes pour la Semaine Prochaine
+            </div>
+            <div class="card-body">
+                <form id="create-classes-form" method="POST" action="{% url 'create_classes' %}">
+                    {% csrf_token %}
+                    <div class="form-group mb-4">
+                        <button type="submit" class="btn-custom">Créer les Classes</button>
+                    </div>
+                </form>
+
+                <!-- Message de succès ou d'erreur -->
+                <div id="message-container"></div>
+
+                <!-- Back to Reports Button -->
+                <a href="{% url 'rapports' %}" class="btn-back">Rapports</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    {% comment %} <div class="footer">
+        <p>Réalisé par <a href="#">Votre Entreprise</a></p>
+    </div> {% endcomment %}
+
+    <!-- JavaScript -->
     <script>
-        document.getElementById('create-classes-form').addEventListener('submit', function(event) {
-            event.preventDefault(); // Prevent default form submission
+        document.getElementById('create-classes-form').addEventListener('submit', function (event) {
+            event.preventDefault(); // Empêcher l'envoi par défaut du formulaire
+
             fetch(this.action, {
                 method: this.method,
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRFToken': '{{ csrf_token }}' // Use the CSRF token if using Django templates
+                    'X-CSRFToken': '{{ csrf_token }}' // Token CSRF pour la sécurité
                 },
-                body: JSON.stringify({}) // Sending an empty object as payload
+                body: JSON.stringify({}) // Envoi d'un objet vide comme payload
             })
-            .then(response => response.json())
-            .then(data => alert(data.message))
-            .catch(error => console.error('Error:', error));
+                .then(response => response.json())
+                .then(data => {
+                    // Afficher le message de succès ou d'erreur
+                    const messageContainer = document.getElementById('message-container');
+                    messageContainer.innerHTML = `<div class="alert alert-success alert-message">${data.message}</div>`;
+                })
+                .catch(error => {
+                    const messageContainer = document.getElementById('message-container');
+                    messageContainer.innerHTML = `<div class="alert alert-danger alert-message">Une erreur s'est produite. Veuillez réessayer plus tard.</div>`;
+                    console.error('Erreur:', error);
+                });
         });
     </script>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>

@@ -21,8 +21,6 @@
                         <li><a class="dropdown-item" href="{% url 'add_student' %}">Étudiant</a></li>
                         <li><a class="dropdown-item" href="{% url 'add_prof' %}">Enseignant</a></li>
                         <li><a class="dropdown-item" href="{% url "list_parents" %}">Parents</a></li>
-                        <li><a class="dropdown-item" href="{% url "center_list" %}">Centers</a></li>
-
                     </ul>
                 </div>
 
@@ -30,6 +28,7 @@
                 <a href="{% url 'store_admin' %}" class="nav-item nav-link">Store</a>
                 <a href="{% url 'commandes_admin' %}" class="nav-item nav-link">Commandes</a>
                 <a href="{% url 'schedule_list' %}" class="nav-item nav-link">Emploi du temps</a>
+                <a href="{% url "rapports" %}" class="nav-item nav-link">Rapports</a>
                 <a href="{% url 'dashboard' %}" class="nav-item nav-link">Dashboard</a>
                 <a href="{% url 'userLogout' %}" class="nav-item nav-link">Déconnexion</a>
             </div>

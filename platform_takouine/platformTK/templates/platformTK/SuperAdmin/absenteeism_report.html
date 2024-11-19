@@ -4,12 +4,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rapport d'Absentéisme</title>
+    <title>Rapport d'Absentéisme par Groupe</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 1200px;
+            margin-top: 50px;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #007bff;
+        }
+        .chart-container {
+            background-color: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            border-radius: 8px;
+        }
+        .card {
+            border-radius: 8px;
+        }
+        .card-body {
+            padding: 30px;
+        }
+    </style>
 </head>
 <body>
-    <h1>Rapport d'Absentéisme par Groupe</h1>
-    <canvas id="absenteeismChart" width="400" height="200" style="border: 1px solid black;"></canvas>
+    <div class="container">
+        <div class="card">
+            <div class="card-body">
+                <h1>Rapport d'Absentéisme par Groupe</h1>
+                <div class="chart-container">
+                    <canvas id="absenteeismChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script>
         // Parse the absenteeism data passed from the view
@@ -17,15 +56,15 @@
         console.log('Parsed absenteeism data:', absenteeismData);
 
         const labels = [];  // Store dates
-        const datasets = [];  // Store data for each class
+        const datasets = [];  // Store data for each group
 
-        // Prepare data for each class
-        for (const className in absenteeismData) {
-            const classData = absenteeismData[className];
+        // Prepare data for each group
+        for (const groupName in absenteeismData) {
+            const groupData = absenteeismData[groupName];
             const data = [];
 
-            for (const date in classData) {
-                data.push(classData[date]);
+            for (const date in groupData) {
+                data.push(groupData[date]);
 
                 // Add date to labels if it's not already present
                 if (!labels.includes(date)) {
@@ -34,20 +73,24 @@
             }
 
             datasets.push({
-                label: className,  // Class name as dataset label
-                data: data,  // Absenteeism percentages for the class
-                borderColor: `hsl(${Math.random() * 360}, 100%, 50%)`,  // Random color for each class
-                fill: false  // Line chart style
+                label: groupName,  // Group name as dataset label
+                data: data,  // Absenteeism percentages for the group
+                backgroundColor: `hsl(${Math.random() * 360}, 100%, 70%)`,  // Random color for each group
+                borderColor: `hsl(${Math.random() * 360}, 100%, 50%)`,  // Border color for bars
+                borderWidth: 1,
+                hoverBackgroundColor: '#f39c12',  // Hover effect for bars
+                hoverBorderColor: '#d35400',
+                hoverBorderWidth: 2
             });
         }
 
         // Create the chart
         const ctx = document.getElementById('absenteeismChart').getContext('2d');
         const absenteeismChart = new Chart(ctx, {
-            type: 'bar',  // Change chart type here, e.g., 'bar', 'pie', 'radar', 'doughnut'
+            type: 'bar',  // Bar chart for absenteeism
             data: {
                 labels: labels,  // X-axis dates
-                datasets: datasets  // Y-axis data for each class
+                datasets: datasets  // Y-axis data for each group
             },
             options: {
                 responsive: true,
@@ -55,24 +98,42 @@
                     x: {
                         title: {
                             display: true,
-                            text: 'Date'
+                            text: 'Date',
+                            color: '#6c757d'
+                        },
+                        ticks: {
+                            maxRotation: 45,
+                            minRotation: 30
                         }
                     },
                     y: {
                         title: {
                             display: true,
-                            text: 'Taux d\'Absentéisme (%)'
+                            text: 'Taux d\'Absentéisme (%)',
+                            color: '#6c757d'
                         },
-                        beginAtZero: true
+                        beginAtZero: true,
+                        suggestedMax: 100
                     }
                 },
                 plugins: {
                     legend: {
                         display: true,
-                        position: 'top'
+                        position: 'top',
+                        labels: {
+                            font: {
+                                size: 12,
+                                weight: 'bold'
+                            }
+                        }
                     },
                     tooltip: {
-                        enabled: true
+                        enabled: true,
+                        backgroundColor: 'rgba(0,0,0,0.7)',
+                        titleColor: '#fff',
+                        bodyColor: '#fff',
+                        borderColor: 'rgba(0,0,0,0.3)',
+                        borderWidth: 1
                     }
                 }
             }

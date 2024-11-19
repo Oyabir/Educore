@@ -1,54 +1,81 @@
+{% extends "platformTK/Parents/HomeBase.html" %}
 {% load static %}
 {% load custom_filters %}
 
 {% block content %}
 {% include 'platformTK/Parents/navbar.html' %}
+    <div class="container mt-5">
+        <!-- Afficher les Messages -->
+        {% if messages %}
+            <div id="message-container">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
 
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 
-    <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-
-    <!-- Popper.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
-
-    <!-- Bootstrap JS -->
-    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-
-
-<div class="container mt-5">
-    {% if messages %}
-    <div id="message-container">
-        {% for message in messages %}
-            {% if message.tags == 'error' %}
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            {% endif %}
-            {% if message.tags == 'success' %}
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            {% endif %}
-        {% endfor %}
+    <div class="text-center mb-4">
+        <h1 class="page-title" style="color: #176b90; font-weight: bold;">Rapports de l'Enfants</h1>
     </div>
-{% endif %}
 
+    <div class="row mb-4">
+        <div class="col-md-12 d-flex flex-wrap justify-content-center gap-3">
+            <a class="btn btn-outline-primary" href="{% url 'attendance_report_for_parent' %}">Rapport de Présence</a>
+            <a class="btn btn-outline-primary" href="{% url 'competition_history_for_parent' %}">Historique des Compétitions</a>
+            <a class="btn btn-outline-primary" href="{% url 'participation_history' %}">Historique de Participation</a>            
+        </div>
+    </div>        
+</div> 
+<br><br><br><br><br><br><br>
 
+<style>
+    body {
+        font-family: 'Roboto', sans-serif;
+        background-color: #f9f9f9;
+    }
 
+    .page-title {
+        font-size: 2rem;
+        margin-bottom: 20px;
+    }
 
-<a href="{% url "attendance_report_for_parent" %}"> <button class="btn btn-primary mb-3"  style="background-color: #176b90;">attendance_report_for_parent</button></a>
+    .btn {
+        border-radius: 20px;
+        transition: all 0.3s ease;
+    }
 
+    .btn-outline-primary {
+        border: 2px solid #176b90;
+        color: #176b90;
+    }
 
-<a href="{% url "competition_history_for_parent" %}"> <button class="btn btn-primary mb-3"  style="background-color: #176b90;">competition_history_for_parent</button></a>
+    .btn-outline-primary:hover {
+        background-color: #176b90;
+        color: #ffffff;
+        border-color: #176b90;
+    }
 
+    .modal-header {
+        background-color: #176b90;
+    }
 
+    .modal-title {
+        font-weight: bold;
+    }
 
-<a href="{% url "participation_history" %}"> <button class="btn btn-primary mb-3"  style="background-color: #176b90;">participation_history</button></a>
+    .btn-primary {
+        background-color: #176b90;
+        border-color: #176b90;
+    }
 
-
+    .btn-primary:hover {
+        background-color: #145770;
+        border-color: #176b90;
+    }
+</style>
 
 {% endblock %}

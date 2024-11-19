@@ -10,21 +10,21 @@ def generate_center_code():
     return f"Center-{unique_id}"
 
 
-class Center(models.Model):
-    name = models.CharField(max_length=100, unique=True)
-    address = models.TextField(blank=True, null=True)
-    phone = models.CharField(max_length=20, blank=True, null=True)
-    email = models.EmailField(blank=True, null=True)
-    code = models.CharField(max_length=100, unique=True, blank=True, default=generate_center_code)
-    slug = models.SlugField(unique=True, blank=True, null=True)
+# class Center(models.Model):
+#     name = models.CharField(max_length=100, unique=True)
+#     address = models.TextField(blank=True, null=True)
+#     phone = models.CharField(max_length=20, blank=True, null=True)
+#     email = models.EmailField(blank=True, null=True)
+#     code = models.CharField(max_length=100, unique=True, blank=True, default=generate_center_code)
+#     slug = models.SlugField(unique=True, blank=True, null=True)
 
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = slugify(self.name)
-        super(Center, self).save(*args, **kwargs)
+#     def save(self, *args, **kwargs):
+#         if not self.slug:
+#             self.slug = slugify(self.name)
+#         super(Center, self).save(*args, **kwargs)
 
-    def __str__(self):
-        return self.name
+#     def __str__(self):
+#         return self.name
 
 
 
@@ -167,7 +167,7 @@ class Groups(models.Model):
     profs = models.ManyToManyField('Prof', related_name='groups')
     date_created = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     language = models.CharField(max_length=50, choices=[('Anglais', 'Anglais'), ('Français', 'Français')])
-    center = models.ForeignKey(Center, on_delete=models.SET_NULL, related_name='groups', null=True, blank=True) 
+    # center = models.ForeignKey(Center, on_delete=models.SET_NULL, related_name='groups', null=True, blank=True) 
 
     def save(self, *args, **kwargs):
         if not self.code_group:

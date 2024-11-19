@@ -16,13 +16,13 @@
         <thead>
             <tr>
                 <th>Student Name</th>
-                <th>Balance</th>
+                <th>Solde</th>
             </tr>
         </thead>
         <tbody>
             {% for student in group.students %}
                 <tr>
-                    <td>{{ student.student_name }}</td>
+                    <td>{{ student.student_name|capitalize_first }}</td>
                     <td>{{ student.balance }}</td>
                 </tr>
             {% endfor %}

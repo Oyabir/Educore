@@ -5,12 +5,12 @@ from .models import *
 
 
 
-@admin.register(Center)
-class CenterAdmin(admin.ModelAdmin):
-    list_display = ('name', 'address', 'phone', 'email', 'code')
-    fields = ('name', 'address', 'phone', 'email', 'code')
-    # readonly_fields = ('date_created',)
-    # search_fields = ('prenom', 'nom')
+# @admin.register(Center)
+# class CenterAdmin(admin.ModelAdmin):
+#     list_display = ('name', 'address', 'phone', 'email', 'code')
+#     fields = ('name', 'address', 'phone', 'email', 'code')
+#     # readonly_fields = ('date_created',)
+#     # search_fields = ('prenom', 'nom')
 
 
 

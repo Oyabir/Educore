@@ -1,30 +1,167 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
 
-{% block content %}
-<div class="container mt-5">
-    <h1 class="text-center">Statistiques d'absentéisme</h1>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Statistiques d'absentéisme</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f0f4f8;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
 
-    <!-- Display average sessions per group -->
-    <div class="card mt-4">
-        <div class="card-body">
-            <h3 class="card-title">Moyenne des Séances par Groupe</h3>
-            <p class="card-text"><strong>{{ average_sessions|floatformat:2 }}</strong> sessions</p>
+        .container {
+            max-width: 1000px;
+            margin: 50px auto;
+            background-color: #ffffff;
+            padding: 40px 50px;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #2c3e50;
+            font-size: 2.5rem;
+            text-align: center;
+            font-weight: 700;
+            margin-bottom: 50px;
+        }
+
+        .card {
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .card:hover {
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.1);
+            transform: translateY(-5px);
+        }
+
+        .card-title {
+            color: #2980b9;
+            font-size: 1.75rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .card-body {
+            padding: 25px;
+        }
+
+        .card-text {
+            font-size: 1.25rem;
+            color: #555;
+        }
+
+        .card-body strong {
+            font-size: 1.5rem;
+            color: #27ae60;
+            font-weight: bold;
+        }
+
+        .btn {
+            background-color: #2980b9;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .btn:hover {
+            background-color: #3498db;
+            transform: scale(1.05);
+        }
+
+        .btn:focus {
+            outline: none;
+            box-shadow: 0 0 5px rgba(41, 128, 185, 0.5);
+        }
+
+        /* Subtle fade-in animation */
+        .fade-in {
+            animation: fadeIn 1s ease-out;
+        }
+
+        @keyframes fadeIn {
+            0% {
+                opacity: 0;
+            }
+            100% {
+                opacity: 1;
+            }
+        }
+
+        /* Add mobile responsiveness */
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+                margin-bottom: 30px;
+            }
+            .container {
+                padding: 25px;
+            }
+            .card-body {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container fade-in">
+        <h1>Statistiques d'absentéisme</h1>
+
+        <!-- Display average sessions per group -->
+        <div class="card">
+            <div class="card-body">
+                <h3 class="card-title">Moyenne des Séances par Groupe</h3>
+                <p class="card-text">
+                    <strong>{{ average_sessions|floatformat:2 }}</strong> sessions
+                </p>
+            </div>
         </div>
-    </div>
 
-    <!-- Display real-time absenteeism rate -->
-    <div class="card mt-4">
-        <div class="card-body">
-            <h3 class="card-title">Taux d'absentéisme Global en Temps Réel</h3>
-            <p class="card-text"><strong>{{ real_time_absenteeism_rate|floatformat:2 }}%</strong></p>
+        <!-- Display real-time absenteeism rate -->
+        <div class="card">
+            <div class="card-body">
+                <h3 class="card-title">Taux d'absentéisme Global en Temps Réel</h3>
+                <p class="card-text">
+                    <strong>{{ real_time_absenteeism_rate|floatformat:2 }}%</strong>
+                </p>
+            </div>
         </div>
-    </div>
 
-    <!-- Display final global absenteeism rate -->
-    <div class="card mt-4">
-        <div class="card-body">
-            <h3 class="card-title">Taux d'absentéisme Global Final</h3>
-            <p class="card-text"><strong>{{ final_global_absenteeism_rate|floatformat:2 }}%</strong></p>
+        <!-- Display final global absenteeism rate -->
+        <div class="card">
+            <div class="card-body">
+                <h3 class="card-title">Taux d'absentéisme Global Final</h3>
+                <p class="card-text">
+                    <strong>{{ final_global_absenteeism_rate|floatformat:2 }}%</strong>
+                </p>
+            </div>
         </div>
+
+        <!-- Optional Button for Interaction -->
+        {% comment %} <button class="btn">Rafraîchir les Statistiques</button> {% endcomment %}
+        <!-- Back Button (Optional) -->
+    <div class="text-center mt-4">
+        <a href="{% url 'rapports' %}" class="btn btn-outline-primary">Retour aux Rapports</a>
     </div>
-</div>
-{% endblock %}
+    </div>
+</body>
+
+</html>

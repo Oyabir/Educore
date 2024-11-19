@@ -1,24 +1,25 @@
 {% extends "platformTK/Prof/HomeBase.html" %}
 {% load static %}
+{% load custom_filters %}
 
 {% block content %}
 {% include 'platformTK/Prof/navbar.html' %}
 
 <div class="container py-5">
-    <h2 class="text-center mb-4">Participation and Discipline History by Student</h2>
+    <h2 class="text-center mb-4">Historique de Participation et Discipline par Étudiant</h2>
 
     <!-- Dropdown to select student -->
     <form method="get" class="text-center mb-4">
-        <label for="student_id">Select Student:</label>
+        <label for="student_id">Sélectionner un étudiant :</label>
         <select name="student_id" id="student_id" class="form-select d-inline-block w-auto">
-            <option value="">Choose a Student</option>
+            <option value="">Choisir un étudiant</option>
             {% for student in students %}
                 <option value="{{ student.id }}" {% if selected_student and student.id == selected_student.id %}selected{% endif %}>
-                    {{ student.prenom }} {{ student.nom }}
+                    {{ student.prenom|capitalize_first }} {{ student.nom|capitalize_first }}
                 </option>
             {% endfor %}
         </select>
-        <button type="submit" class="btn btn-primary">Filter</button>
+        <button type="submit" class="btn btn-primary">Filtrer</button>
     </form>
 
     <!-- Attendance Table for Selected Student -->
@@ -30,11 +31,11 @@
                     <thead>
                         <tr>
                             <th>Date</th>
-                            <th>Group</th>
-                            <th>Class</th>
+                            <th>Groupe</th>
+                            <th>Classe</th>
                             <th>Participation</th>
                             <th>Discipline</th>
-                            <th>Presence</th>
+                            <th>Présence</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -47,7 +48,7 @@
                                 <td>{{ record.discipline }}</td>
                                 <td>
                                     {% if record.is_present %}
-                                        Present
+                                        Présent
                                     {% else %}
                                         Absent
                                     {% endif %}
@@ -55,7 +56,7 @@
                             </tr>
                         {% empty %}
                             <tr>
-                                <td colspan="6" class="text-center">No attendance records available for this student.</td>
+                                <td colspan="6" class="text-center">Aucun enregistrement de présence disponible pour cet étudiant.</td>
                             </tr>
                         {% endfor %}
                     </tbody>
@@ -64,8 +65,9 @@
         </div>
     </div>
     {% else %}
-        <p class="text-center">Select a student to view attendance history.</p>
+        <p class="text-center">Sélectionnez un étudiant pour voir l'historique de présence.</p>
     {% endif %}
 </div>
+<br><br><br>
 
 {% endblock %}

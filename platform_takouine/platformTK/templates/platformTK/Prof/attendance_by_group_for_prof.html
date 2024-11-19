@@ -1,13 +1,13 @@
 {% extends "platformTK/Prof/HomeBase.html" %}
-
 {% load static %}
+{% load custom_filters %}
 
 {% block content %}
     {% include 'platformTK/Prof/navbar.html' %}
 
 <div class="container mt-5">
-    <h1 class="text-center">Absence des utilisateurs par groupes</h1>
-    <p><strong>Professeur:</strong> {{ professor.prenom }} {{ professor.nom }}</p>
+    <h1 class="text-center">Absence des Étudiants par groupes</h1>
+    <p><strong>Professeur:</strong> {{ professor.prenom|capitalize_first }} {{ professor.nom|capitalize_first }}</p>
 
     {% for group, students in attendance_data.items %}
         <div class="card mt-4">
@@ -29,7 +29,7 @@
                         {% for student_info in students %}
                             {% for record in student_info.attendance_records %}
                                 <tr>
-                                    <td>{{ student_info.student.prenom }} {{ student_info.student.nom }}</td>
+                                    <td>{{ student_info.student.prenom|capitalize_first }} {{ student_info.student.nom|capitalize_first }}</td>
                                     <td>{{ record.date }}</td>
                                     <td>
                                         {% if record.is_present %}

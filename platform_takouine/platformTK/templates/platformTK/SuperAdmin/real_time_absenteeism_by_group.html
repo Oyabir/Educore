@@ -1,16 +1,84 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Taux d'Absentéisme par Groupe en Temps Réel</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-</head>
-<body>
-    <h1>Taux d'Absentéisme par Groupe en Temps Réel</h1>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f7f8fc;
+            color: #4c4f56;
+            padding: 30px 0;
+        }
 
-    <canvas id="absenteeismChart" width="400" height="200"></canvas>
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 30px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            color: #007bff;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+        }
+
+        .chart-container {
+            position: relative;
+            margin: 20px 0;
+            max-width: 100%;
+        }
+
+        .footer {
+            margin-top: 30px;
+            text-align: center;
+            color: #868e96;
+        }
+
+        .footer a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* Improve Chart Appearance */
+        canvas {
+            background-color: #ffffff;
+            border-radius: 8px;
+        }
+
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Taux d'Absentéisme par Groupe en Temps Réel</h1>
+
+        <div class="chart-container">
+            <canvas id="absenteeismChart" width="400" height="200"></canvas>
+        </div>
+
+        <!-- Back Button (Optional) -->
+    <div class="text-center mt-4">
+        <a href="{% url 'rapports' %}" class="btn btn-outline-primary">Retour aux Rapports</a>
+    </div>
+
+        {% comment %} <div class="footer">
+            <p>© 2024 Votre Entreprise. <a href="#">Politique de confidentialité</a></p>
+        </div> {% endcomment %}
+    </div>
 
     <script>
         // Get data from Django context
@@ -37,13 +105,13 @@
                         beginAtZero: true,
                         title: {
                             display: true,
-                            text: 'Absenteeism Rate (%)'
+                            text: 'Taux d\'Absentéisme (%)'
                         }
                     },
                     x: {
                         title: {
                             display: true,
-                            text: 'Groups'
+                            text: 'Groupes'
                         }
                     }
                 },
@@ -60,5 +128,8 @@
             }
         });
     </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>
